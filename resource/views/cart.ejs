@@ -1,0 +1,247 @@
+<div class="container" style="padding: 2rem 0;">
+    <h1 style="margin-bottom: 2rem; color: var(--dark-gray);">
+        <i class="fas fa-shopping-cart" style="color: var(--accent-orange);"></i>
+        سبد خرید
+    </h1>
+    
+    <% if (cart && cart.items && cart.items.length > 0) { %>
+        <div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem;">
+            <!-- Cart Items -->
+            <div>
+                <div class="card">
+                    <div style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <span style="color: #666;">تعداد کالا: <strong><%= cart.items.length %></strong></span>
+                            <button onclick="clearCart()" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                <i class="fas fa-trash"></i>
+                                پاک کردن سبد
+                            </button>
+                        </div>
+                        
+                        <!-- Cart Items List -->
+                        <% cart.items.forEach((item, index) => { %>
+                            <div class="cart-item" style="display: grid; grid-template-columns: 100px 1fr auto; gap: 1rem; padding: 1.5rem; background: var(--light-gray); border-radius: 12px; margin-bottom: 1rem;">
+                                <!-- Product Image -->
+                                <img src="<%= item.product.images[0] || 'https://via.placeholder.com/100' %>" 
+                                     alt="<%= item.product.name %>" 
+                                     style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                                
+                                <!-- Product Details -->
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">
+                                        <a href="/products/<%= item.product._id %>" style="color: var(--dark-gray); text-decoration: none;">
+                                            <%= item.product.name %>
+                                        </a>
+                                    </h4>
+                                    <p style="color: var(--accent-orange); font-weight: 600; margin-bottom: 0.5rem;">
+                                        <%= item.product.brand %>
+                                    </p>
+                                    <% if (item.product.flavor) { %>
+                                        <p style="color: #666; font-size: 0.9rem;">طعم: <%= item.product.flavor %></p>
+                                    <% } %>
+                                    
+                                    <!-- Quantity Controls -->
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem;">
+                                        <div style="display: flex; align-items: center; border: 1px solid #E0E0E0; border-radius: 8px; background: white;">
+                                            <button onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity - 1 %>)" 
+                                                    style="padding: 0.5rem 0.75rem; background: none; border: none; cursor: pointer;"
+                                                    <%= item.quantity <= 1 ? 'disabled' : '' %>>
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" value="<%= item.quantity %>" min="1" max="<%= item.product.stock %>" 
+                                                   style="width: 50px; text-align: center; border: none;">
+                                            <button onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity + 1 %>)" 
+                                                    style="padding: 0.5rem 0.75rem; background: none; border: none; cursor: pointer;"
+                                                    <%= item.quantity >= item.product.stock ? 'disabled' : '' %>>
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <button onclick="removeFromCart('<%= item.product._id %>')" style="color: var(--danger); background: none; border: none; cursor: pointer;">
+                                            <i class="fas fa-trash"></i>
+                                            حذف
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Price -->
+                                <div style="text-align: left;">
+                                    <% if (item.product.discountPrice) { %>
+                                        <p style="text-decoration: line-through; color: #999; font-size: 0.9rem;">
+                                            <%= (item.product.price * item.quantity).toLocaleString('fa-IR') %> تومان
+                                        </p>
+                                    <% } %>
+                                    <p style="font-size: 1.25rem; font-weight: bold; color: var(--primary-blue);">
+                                        <%= (item.product.currentPrice * item.quantity).toLocaleString('fa-IR') %> تومان
+                                    </p>
+                                    <% if (item.quantity > 1) { %>
+                                        <p style="color: #666; font-size: 0.85rem;">
+                                            هر عدد: <%= item.product.currentPrice.toLocaleString('fa-IR') %> تومان
+                                        </p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+                
+                <!-- Coupon Section -->
+                <div class="card" style="margin-top: 1rem;">
+                    <div style="padding: 1.5rem;">
+                        <h4 style="margin-bottom: 1rem;">
+                            <i class="fas fa-ticket-alt" style="color: var(--accent-orange);"></i>
+                            کد تخفیف
+                        </h4>
+                        <form style="display: flex; gap: 1rem;">
+                            <input type="text" placeholder="کد تخفیف خود را وارد کنید" class="form-control" style="flex: 1;">
+                            <button type="submit" class="btn btn-secondary">اعمال کد</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Summary -->
+            <div>
+                <div class="card" style="position: sticky; top: 90px;">
+                    <div style="padding: 1.5rem;">
+                        <h3 style="margin-bottom: 1.5rem;">خلاصه سفارش</h3>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                                <span style="color: #666;">قیمت کالاها:</span>
+                                <strong><%= cart.total.toLocaleString('fa-IR') %> تومان</strong>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                                <span style="color: #666;">تخفیف:</span>
+                                <strong style="color: var(--success);">0 تومان</strong>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                                <span style="color: #666;">هزینه ارسال:</span>
+                                <strong>رایگان</strong>
+                            </div>
+                            
+                            <hr style="margin: 1rem 0;">
+                            
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="font-size: 1.1rem; font-weight: 600;">جمع کل:</span>
+                                <strong style="font-size: 1.5rem; color: var(--primary-blue);">
+                                    <%= cart.total.toLocaleString('fa-IR') %> تومان
+                                </strong>
+                            </div>
+                        </div>
+                        
+                        <a href="/checkout" class="btn btn-accent" style="width: 100%; font-size: 1.1rem; padding: 1rem;">
+                            <i class="fas fa-credit-card"></i>
+                            ادامه و پرداخت
+                        </a>
+                        
+                        <a href="/products" class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">
+                            <i class="fas fa-arrow-right"></i>
+                            ادامه خرید
+                        </a>
+                        
+                        <!-- Features -->
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #E0E0E0;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                                <i class="fas fa-shield-alt" style="color: var(--success);"></i>
+                                <span style="font-size: 0.9rem;">ضمانت اصالت کالا</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                                <i class="fas fa-truck" style="color: var(--success);"></i>
+                                <span style="font-size: 0.9rem;">ارسال سریع</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-undo" style="color: var(--success);"></i>
+                                <span style="font-size: 0.9rem;">7 روز ضمانت بازگشت</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% } else { %>
+        <!-- Empty Cart -->
+        <div class="card" style="text-align: center; padding: 4rem;">
+            <i class="fas fa-shopping-basket" style="font-size: 5rem; color: #E0E0E0; margin-bottom: 2rem;"></i>
+            <h2 style="color: #666; margin-bottom: 1rem;">سبد خرید شما خالی است</h2>
+            <p style="color: #999; margin-bottom: 2rem;">برای افزودن محصول به سبد خرید، به صفحه محصولات مراجعه کنید</p>
+            <a href="/products" class="btn btn-primary" style="padding: 1rem 2rem;">
+                <i class="fas fa-shopping-bag"></i>
+                مشاهده محصولات
+            </a>
+        </div>
+    <% } %>
+    
+    <!-- Recommended Products -->
+    <div style="margin-top: 4rem;">
+        <h2 style="margin-bottom: 2rem;">پیشنهاد ویژه</h2>
+        <div class="products-grid">
+            <!-- Recommended products would be loaded here -->
+        </div>
+    </div>
+</div>
+
+<script>
+function updateQuantity(productId, newQuantity) {
+    if (newQuantity < 1) return;
+    
+    fetch('/cart/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            productId: productId,
+            quantity: newQuantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function removeFromCart(productId) {
+    if (confirm('آیا از حذف این محصول اطمینان دارید؟')) {
+        fetch('/cart/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                productId: productId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+
+function clearCart() {
+    if (confirm('آیا از پاک کردن کل سبد خرید اطمینان دارید؟')) {
+        fetch('/cart/clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+</script>

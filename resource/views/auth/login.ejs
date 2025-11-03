@@ -1,0 +1,100 @@
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 2rem 0; background: linear-gradient(135deg, var(--light-blue) 0%, var(--light-gray) 100%);">
+    <div class="card" style="max-width: 450px; width: 100%; padding: 0; overflow: hidden;">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); color: white; padding: 2rem; text-align: center;">
+            <i class="fas fa-user-circle" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+            <h2>ورود به حساب کاربری</h2>
+            <p style="opacity: 0.9;">خوش آمدید</p>
+        </div>
+        
+        <!-- Form -->
+        <div style="padding: 2rem;">
+            <form action="/auth/login" method="POST">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-envelope" style="margin-left: 5px; color: var(--primary-blue);"></i>
+                        ایمیل
+                    </label>
+                    <input type="email" name="email" class="form-control" placeholder="example@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock" style="margin-left: 5px; color: var(--primary-blue);"></i>
+                        رمز عبور
+                    </label>
+                    <div style="position: relative;">
+                        <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
+                        <button type="button" onclick="togglePassword()" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #666; cursor: pointer;">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" name="remember" style="margin-left: 5px;">
+                        مرا به خاطر بسپار
+                    </label>
+                    <a href="/auth/forgot-password" style="color: var(--primary-blue); text-decoration: none; font-size: 0.9rem;">
+                        فراموشی رمز عبور؟
+                    </a>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 1rem;">
+                    <i class="fas fa-sign-in-alt" style="margin-left: 5px;"></i>
+                    ورود
+                </button>
+            </form>
+            
+            <!-- Social Login -->
+            <div style="margin: 2rem 0;">
+                <div style="position: relative; text-align: center;">
+                    <hr style="border: 1px solid #E0E0E0;">
+                    <span style="position: absolute; top: 50%; right: 50%; transform: translate(50%, -50%); background: white; padding: 0 1rem; color: #666;">
+                        یا ورود با
+                    </span>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <button class="btn" style="background: #4267B2; color: white;">
+                    <i class="fab fa-facebook-f" style="margin-left: 5px;"></i>
+                    فیسبوک
+                </button>
+                <button class="btn" style="background: #DB4437; color: white;">
+                    <i class="fab fa-google" style="margin-left: 5px;"></i>
+                    گوگل
+                </button>
+            </div>
+            
+            <!-- Register Link -->
+            <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #E0E0E0;">
+                <p style="color: #666;">
+                    حساب کاربری ندارید؟
+                    <a href="/auth/register" style="color: var(--accent-orange); text-decoration: none; font-weight: 600;">
+                        ثبت نام کنید
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+</script>
