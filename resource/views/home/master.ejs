@@ -25,7 +25,9 @@
 
 <body>
 
-    <%- body %>
+
+
+    <%- include(viewPath('layout/header')) %><%- include(viewPath('layout/svg')) %> <%- body %> <%- include(viewPath('layout/footer')) %>
     <div class="overlay"></div>
     <div class="search-overlay"></div>
     <script src="scripts/swiper-bundle.min.js"></script>
