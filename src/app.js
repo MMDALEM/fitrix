@@ -11,6 +11,8 @@ const cookieParser = require('cookie-parser');
 const expressLayouts = require("express-ejs-layouts");
 const path = require('path');
 const Helpers = require('./Helpers');
+const flash = require('connect-flash');
+const session = require('express-session');
 
 module.exports = class Application {
   constructor() {
@@ -22,10 +24,22 @@ module.exports = class Application {
   }
 
   configServer() {
+    app.use(flash());
+    // middleware برای دسترسی به flash messages در همه viewها (با EJS)
+    app.use((req, res, next) => {
+      res.locals.success_msg = req.flash('success_msg'); // برای پیام موفقیت
+      res.locals.error_msg = req.flash('error_msg'); // برای پیام خطا
+      next();
+    });
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json({ limit: '1024mb' }));
     app.use(cookieParser());
-
+    app.use(session({
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: true,
+      cookie: { maxAge: 2 * 60 * 1000 }
+    }));
     app.use(express.static(path.join(__dirname, "..", "public")));
     app.set("view engine", "ejs");
     app.set("views", path.resolve("./resource/views"));
