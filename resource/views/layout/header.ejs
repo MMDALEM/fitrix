@@ -11,7 +11,7 @@
                         <svg class="size-6 p-1.5 flex-center text-gray-100 bg-blue-600 rounded-full w-9 h-9">
                             <use href="#search" />
                         </svg>
-                        <input placeholder="جستجو در کارین..." type="text">
+                        <input placeholder="جستجو در فیت ریکس..." type="text">
                     </div>
                     <!-- Search Modal -->
                     <div class="search-modal space-y-4">
@@ -85,17 +85,15 @@
                 <!-- Logo -->
                 <a href="/" class="flex flex-col text-center ml-20">
                     <span class="font-MorabbaMedium text-4xl flex items-center">
-                        <span class="text-blue-500">کارین</span> شاپ
+                        <span class="text-blue-500">فیت ریکس</span> شاپ
                     </span>
-                    <p class="font-DanaMedium text-gray-400"> خرید موبایل و لپ‌تاپ</p>
+                    <p class="font-DanaMedium text-gray-400"> خرید ورزشی مکمل </p>
                 </a>
                 <!--  Action -->
                 <div class="flex items-center gap-x-3">
-                    
                      <% if(req.user){ %>
-                    <!-- Account Btn -->
                     <button class="group relative flex-center py-2 px-4 app-border rounded-full app-hover delay-75">
-                        <a href="dashboard.html"  class="flex items-center gap-x-1">
+                        <a href="/dashboard" class="flex items-center gap-x-1">
                             <svg class="size-5">
                                 <use href="#user" />
                             </svg>

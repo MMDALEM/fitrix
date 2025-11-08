@@ -1,14 +1,17 @@
 const router = require("express").Router();
 const { verifyUser, verifyAdmin } = require("../middlewares/auth.middleware");
+const { verifyTokenPublic } = require("../middlewares/authPublic.middleware");
+const { backTokenAuth } = require("../middlewares/backTokenAuth.middleware");
+
 
 const homeRouter = require("./home/home");
-router.use("/", homeRouter);
+router.use("/", verifyTokenPublic,homeRouter);
 
 const  authRouter  = require("./auth/auth");
-router.use("/auth",  authRouter);
+router.use("/auth", backTokenAuth, authRouter);
 
 const  shopRouter  = require("./shop/shop");
-router.use("/shop", shopRouter);
+router.use("/shop", verifyTokenPublic, shopRouter);
 
 const  dashboardRouter  = require("./dashboard/dashboard");
 router.use("/dashboard", verifyUser, dashboardRouter);

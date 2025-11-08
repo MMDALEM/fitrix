@@ -2,9 +2,10 @@ const experss = require("express");
 const router = experss.Router();
 
 //controllers
-// const authController = require("../../controllers/auth/auth.controller");
+const dashboradController = require("../../controllers/dashborad/dashborad.controller");
+
 
 // //home Rouer
-// router.get("/", authController.otp);
+router.get("/", dashboradController.dashborad);
 
 module.exports = router;
