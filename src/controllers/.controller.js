@@ -6,6 +6,32 @@ module.exports = class controller {
   }
 
   back(req, res) {
-    return res.redirect(req.header('Referer') || '/');
+    req.flash("formData", req.body);
+    return res.redirect(req.header("Referer") || "/");
   }
+
+  review(req, res, url) {
+    req.flash("formData", req.body);
+    return res.redirect(`${url}`);
+  }
+  
+  alert(req, data) {
+    let title = data.title || "",
+        icon = data.icon || "info",
+        button = data.button || null,
+        timer = data.timer || 4500;
+
+    req.flash("sweetalert", { title, icon, button, timer });
+  }
+
+  alertAndBack(req, res, data) {
+    this.alert(req, data);
+    this.back(req, res);
+  }
+
+  alertAndReview(req, res, data, url) {
+    this.alert(req, data);
+    this.review(req, res, url);
+  }
+
 };

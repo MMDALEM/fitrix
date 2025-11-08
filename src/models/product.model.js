@@ -11,6 +11,10 @@ const ProductSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    slug:{
+        type: String,
+        required: true
+    },
     category: {
         type: String,
         required: true,
@@ -31,11 +35,9 @@ const ProductSchema = new mongoose.Schema({
     price: {
         type: Number,
         required: true,
-        min: 0
     },
     discountPrice: {
         type: Number,
-        min: 0
     },
     images: [{
         type: String

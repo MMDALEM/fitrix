@@ -15,15 +15,20 @@ module.exports = class Helpers {
             // auth: this.auth(),
             viewPath: this.viewPath,
             date: this.date,
-            // ...this.getGlobalVaribales(),
+            ...this.getGlobalVaribales(),
             req: this.req,
+        };
+    }
+
+    getGlobalVaribales() {
+        return {
+            errors: this.req.flash("errors"),
         };
     }
 
     viewPath(dir) {
         return path.resolve(path.resolve("./resource/views") + "/" + dir);
     }
-
 
     date(time) {
         return moment(time);

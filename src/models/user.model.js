@@ -1,20 +1,19 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
     firstName: {
         type: String,
-        required: true,
+        default:"",
         trim: true
     },
     lastName: {
         type: String,
-        required: true,
+        default:"",
         trim: true
     },
     email: {
         type: String,
-        required: true,
+        default:"",
         unique: true,
         lowercase: true,
         trim: true
@@ -28,11 +27,14 @@ const UserSchema = new mongoose.Schema({
             type: Number,
             required: true,
         },
-        expiresAt: {
+        expiresIn: {
             type: Date,
             required: true,
-            default: Date.now() + 2 * 60 * 1000
         }
+    },
+    roles:{
+        type: [String],
+        default:["USER"]
     },
     address: {
         street: String,
@@ -55,6 +57,10 @@ const UserSchema = new mongoose.Schema({
     isAdmin: {
         type: Boolean,
         default: false
+    },
+    isActive: {
+        type: Boolean,
+        default: true
     },
     createdAt: {
         type: Date,

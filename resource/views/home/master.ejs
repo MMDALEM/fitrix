@@ -5,10 +5,11 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>قالب فروشگاهی کارین</title>
+    <title>فروشگاه فیت ریکس</title>
 
-    <link rel="stylesheet" href="styles/app.css">
-    <link rel="stylesheet" href="styles/swiper-bundle.css">
+    <link rel="stylesheet" href="/styles/app.css">
+    <link rel="stylesheet" href="/styles/swiper-bundle.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.min.css" rel="stylesheet">
     <!-- ==========================  DARK MODE SCRIPT ============================= -->
     <script type="text/javascript">
         if (
@@ -25,15 +26,37 @@
 
 <body>
 
-
-
     <%- include(viewPath('layout/header')) %><%- include(viewPath('layout/svg')) %> <%- body %> <%- include(viewPath('layout/footer')) %>
     <div class="overlay"></div>
     <div class="search-overlay"></div>
-    <script src="scripts/swiper-bundle.min.js"></script>
-    <script src="scripts/app.js"></script>
-    <script type="module" src="scripts/slider.js"></script>
-    <script src="scripts/timer.js"></script>
+    <script src="/scripts/swiper-bundle.min.js"></script>
+    <script src="/scripts/app.js"></script>
+    <script src="/scripts/slider.js" type="module"></script>
+    <script src="/scripts/timer.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.all.min.js"></script>
+    <script src="/js/conf.js"></script>
+    <script src="/js/jquery-3.2.1.slim.min.js"></script>
+    <script src="/js/1.12.9.popper.min.js"></script>
+    <%- script %> <% let sweetalert = req.flash('sweetalert'); if(sweetalert.length) { let data = sweetalert[0]; %>
+    <script>
+        const Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: <%= data.button !== null ? true : false %>,
+          timer: <%= data.button !== null ? 'null' : data.timer %>,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+          }
+        })
+        Toast.fire({
+          icon: '<%= data.icon %>',
+          title: '<%= data.title %>'
+        })
+    </script>
+    <% } %>
 </body>
 
 </html>
