@@ -14,8 +14,6 @@ exports.generateRandomNumber = () => {
     return Math.floor(100000 + Math.random() * 900000);
 }
 
-
-  
 exports.jwtSign = (id) =>{
     return new Promise(async (resolve, reject) => {
       const user = await userModel.findById(id);
