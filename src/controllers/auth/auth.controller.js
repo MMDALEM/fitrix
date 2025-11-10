@@ -20,11 +20,11 @@ class authController extends controller {
     
       const date = Date.now();
       if (user) {
-        // if (date <= user?.otp?.expiresIn)
-        //   return this.alertAndBack(req, res, {
-        //     title: "کد تایید به تازگی برای شماارسال شده، لطفا صبر کنید",
-        //     icon: "error",
-        //   });
+        if (date <= user?.otp?.expiresIn)
+          return this.alertAndBack(req, res, {
+            title: "کد تایید به تازگی برای شماارسال شده، لطفا صبر کنید",
+            icon: "error",
+          });
 
         await this.updateOtpForUser(phone, code);
       } else await this.register(phone, code);
@@ -35,7 +35,7 @@ class authController extends controller {
         expiresIn : user?.otp?.expiresIn
       }
 
-      res.cookie('fitrix_otp', cookie_otp, {             
+      res.cookie('fitrix_otp', cookie_otp, {
         httpOnly: process.env.NODE_ENV === 'production',
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -110,8 +110,8 @@ class authController extends controller {
             });
 
         const token = await jwtSign(user.id)
-          
-        res.cookie('token', token, {             
+
+        res.cookie('fitrix_token', token, {
             httpOnly: process.env.NODE_ENV === 'production',
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
@@ -144,6 +144,33 @@ class authController extends controller {
       (await userModel.updateOne({ phone }, { $set: { otp } })).modifiedCount >
       0
     );
+  }
+
+  async logout(req, res, next) {
+  try {
+      res.clearCookie('fitrix_token', {
+        httpOnly: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : ""
+      });
+
+      res.clearCookie('fitrix_otp', {
+        httpOnly: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : ""
+      });
+
+      return this.alertAndReview(req, res, {
+        title: "با موفقیت خارج شدید",
+        icon: "success",
+      }, '/');
+    } catch (err) {
+      next(err);
+    }
   }
 
 }

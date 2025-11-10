@@ -1,12 +1,15 @@
 const JWT = require('jsonwebtoken');
 const userModel= require('../models/user.model');
+const { verifyCookie } = require('../utils/function');
 
 exports.verifyUser = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const token = req.cookies.fitrix_token;
     if (!token) return res.redirect("/auth");
     JWT.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET_USER, async (err, paylod) => {
       if (err) return res.redirect("/auth");
+      const check = await verifyCookie(paylod.id,res);
+      if(!check) return next();
       const user = await userModel.findById(paylod.id, { phone:1 , isActive:1 , role:1 });
       if (!user) return res.redirect("/");
       req.user = user;
@@ -19,12 +22,14 @@ exports.verifyUser = async (req, res, next) => {
 
 exports.verifyAdmin = async (req, res, next) => {
     try {
-        const token = req.cookies.token;
+        const token = req.cookies.fitrix_token;
         if (!token)
           return res.redirect("/auth");
         let user = null;
         JWT.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET_MANAGER, async (err, paylod) => {
             if (err) return res.redirect("/auth");
+            const check = await verifyCookie(paylod.id,res);
+            if(!check) return next();
             user = await userModel.findById(paylod.id, { phone:1 , isActive:1 , isAdmin:1 });
             if (!user) return res.redirect("/auth");
             if(user.role !== 'ADMIN') return res.redirect("/");
