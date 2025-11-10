@@ -39,3 +39,18 @@ exports.jwtSignAdmin = (id) =>{
     });
 }
 
+exports.verifyCookie = async (id , res) =>{
+    const user = await userModel.findById(id);
+    if(!user) {
+        res.clearCookie('fitrix_token', {
+        httpOnly: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : ""
+      });
+      return false;
+    }
+    return true;
+}
+

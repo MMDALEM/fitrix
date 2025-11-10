@@ -20,7 +20,6 @@ module.exports = class controller {
         icon = data.icon || "info",
         button = data.button || null,
         timer = data.timer || 4500;
-
     req.flash("sweetalert", { title, icon, button, timer });
   }
 
