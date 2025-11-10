@@ -1,0 +1,215 @@
+<main class="container relative">      
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <!-- SIDE MENU -->
+        <div class="lg:sticky mb-8 top-1 h-fit lg:w-1/4 hidden lg:flex flex-col gap-y-4 items-center shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+             <!-- NAME AND AVATAR  -->
+             <div class="w-full flex items-center justify-between border-b border-gray-200 dark:border-white/20 py-3">
+                <div class="flex items-center gap-x-3">
+                    <img src="/images/svg/user.png" class="size-10 ring-2 ring-gray-400/20 rounded-full"
+                        alt="AVATAR">
+                    <span class="felx flex-col gap-y-2">
+                        <p class="font-DanaMedium text-lg">پارسا وصالی</p>
+                        <p class="text-gray-400">09100000001</p>
+                    </span>
+                </div>
+                <span>
+                    <svg class="w-6 h-6 cursor-pointer text-blue-500">
+                        <use href="#edit"></use>
+                    </svg>
+                </span>
+            </div> 
+            <ul
+            class="w-full relative space-y-2 child:duration-300 child:transition-all child:py-3  child:px-2 child:flex child:gap-x-2 text-lg child:cursor-pointer child:rounded-lg">
+                <li class="hover:text-blue-500">
+                    <svg class="w-6 h-6 ">
+                        <use href="#squares"></use>
+                    </svg>
+                    <a href="dashboard.html">داشبورد</a>
+                </li>
+                <li class="hover:text-blue-500">
+                    <svg class="w-6 h-6 ">
+                        <use href="#shopping-bag"></use>
+                    </svg>
+                    <a href="dashboard-orders.html">
+                        سفارش ها
+                    </a>
+                </li>
+                <li class="hover:text-blue-500">
+                    <svg class="w-6 h-6 ">
+                        <use href="#heart"></use>
+                    </svg>
+                    <a href="dashboard-favorite.html">علاقه‌مندی ها</a>
+                </li>
+                <li class="bg-blue-500/10 text-blue-500">
+                    <svg class="w-6 h-6 ">
+                        <use href="#map"></use>
+                    </svg>
+                    <a href="dashboard-address.html">آدرس ها</a>
+                </li>
+                <li class="hover:text-blue-500">
+                    <svg class="w-6 h-6 ">
+                        <use href="#bell"></use>
+                    </svg>
+                    <a href="dashboard-messages.html">پیام ها</a>
+                </li>
+                <li class="hover:text-blue-500">
+                    <svg class="w-6 h-6 ">
+                        <use href="#cog"></use>
+                    </svg>
+                    <a href="dashboard-account.html">اطلاعات حساب </a>
+                </li>
+                <li class="text-red-400">
+                    <svg class="w-6 h-6 ">
+                        <use href="#arrow-left-end"></use>
+                    </svg>
+                    <a href="index.html">خروج</a>
+                </li>
+            </ul>
+        </div>
+        <!-- TOP FILTER BOX & PRODUCT & PAGINATION -->
+        <div class="lg:w-3/4">
+            <div class="flex lg:hidden">
+                <button class="open-user-menu mr-2 bg-blue-500 flex items-center gap-x-1 font-DanaMedium text-white p-2 rounded-lg text-sm">
+                    <svg class="size-5">
+                        <use href="#bars-3" />
+                    </svg>
+                    منوی کاربری
+                </button>
+                <div class="user-menu">
+                     <button class="close-user-menu">
+                        <svg class="size-6">
+                        <use href="#x-mark" />
+                        </svg>
+                     </button>
+                     <!-- NAME AND AVATAR  -->
+                    <div class="w-full flex items-center justify-between border-b border-gray-200 dark:border-white/20 py-3">
+                <div class="flex items-center gap-x-3">
+                    <img src="/images/svg/user.png" class="size-10 ring-2 ring-gray-400/20 rounded-full"
+                        alt="AVATAR">
+                    <span class="felx flex-col gap-y-2">
+                        <p class="font-DanaMedium text-lg">پارسا وصالی</p>
+                        <p class="text-gray-400">09100000001</p>
+                    </span>
+                </div>
+                <span>
+                    <svg class="w-6 h-6 cursor-pointer text-blue-500">
+                        <use href="#edit"></use>
+                    </svg>
+                </span>
+                    </div> 
+                    <ul
+                    class="w-full relative space-y-2 child:duration-300 child:transition-all child:py-3  child:px-2 child:flex child:gap-x-2 text-lg child:cursor-pointer child:rounded-lg">
+                    <li class="hover:text-blue-500">
+                        <svg class="w-6 h-6 ">
+                            <use href="#squares"></use>
+                        </svg>
+                        <a href="dashboard.html">داشبورد</a>
+                    </li>
+                    <li class="hover:text-blue-500">
+                        <svg class="w-6 h-6 ">
+                            <use href="#shopping-bag"></use>
+                        </svg>
+                        <a href="dashboard-orders.html">
+                            سفارش ها
+                        </a>
+                    </li>
+                    <li class="hover:text-blue-500">
+                        <svg class="w-6 h-6 ">
+                            <use href="#heart"></use>
+                        </svg>
+                        <a href="dashboard-favorite.html">علاقه‌مندی ها</a>
+                    </li>
+                    <li class="bg-blue-500/10 text-blue-500">
+                        <svg class="w-6 h-6 ">
+                            <use href="#map"></use>
+                        </svg>
+                        <a href="dashboard-address.html">آدرس ها</a>
+                    </li>
+                    <li class="hover:text-blue-500">
+                        <svg class="w-6 h-6 ">
+                            <use href="#bell"></use>
+                        </svg>
+                        <a href="dashboard-messages.html">پیام ها</a>
+                    </li>
+                    <li class="hover:text-blue-500">
+                        <svg class="w-6 h-6 ">
+                            <use href="#cog"></use>
+                        </svg>
+                        <a href="dashboard-account.html">اطلاعات حساب </a>
+                    </li>
+                    <li class="text-red-400">
+                        <svg class="w-6 h-6 ">
+                            <use href="#arrow-left-end"></use>
+                        </svg>
+                        <a href="index.html">خروج</a>
+                    </li>
+                    </ul>
+                </div>
+            </div>
+           <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white mt-5 lg:mt-0">
+            <div class="flex items-center justify-between">
+             <span class="flex items-center gap-x-2">
+                <img src="/images/svg/map.png" class="w-8" alt="">
+                <h2 class="font-DanaMedium text-lg"> آدرس های من:</h2>
+            </span>
+             <a href="#" class="flex items-center gap-x-1 text-blue-500">
+                    <svg class="size-5  ">
+                        <use href="#plus"></use>
+                    </svg>
+                    <h2 class="font-DanaMedium">آدرس جدید</h2>
+                </a>
+            </div>
+           <ul class="mt-5 space-y-3">
+                <li class="relative w-full border border-blue-300 dark:border-blue-400 p-4 rounded-lg">
+                    <span href="#" class="flex items-center gap-x-1 text-blue-500 dark:text-blue-400">
+                        <svg class="size-6">
+                        <use href="#map"></use>
+                        </svg>
+                        <h2 class="font-DanaMedium">نام آدرس</h2>
+                    </span>
+                    <div class="space-y-1.5 text-gray-600 dark:text-gray-300 mt-3 mr-2">
+                        <p>استان تهران-بلوار آزادی، خیابان استاد معین، کوچه گلستان، پلاک ۱۰ </p>
+                    <p>کد پستی: 000000000</p>
+                    <p>گیرنده: پارسا وصالی</p>
+                    </div>
+                    <span class="absolute left-4 bottom-3 flex items-center gap-x-4 child:cursor-pointer">
+                        <svg class="size-6 text-blue-500">
+                            <use href="#edit"></use>
+                        </svg>
+                        <svg class="size-6 text-red-500">
+                            <use href="#trash"></use>
+                        </svg>
+                    </span>
+                </li>
+                <li class="relative w-full border border-blue-300 dark:border-blue-400 p-4 rounded-lg">
+                    <span href="#" class="flex items-center gap-x-1 text-blue-500 dark:text-blue-400">
+                        <svg class="size-6">
+                        <use href="#map"></use>
+                        </svg>
+                        <h2 class="font-DanaMedium">نام آدرس</h2>
+                    </span>
+                    <div class="space-y-1.5 text-gray-600 dark:text-gray-300 mt-3 mr-2">
+                        <p>استان تهران-بلوار آزادی، خیابان استاد معین، کوچه گلستان، پلاک ۱۰ </p>
+                    <p>کد پستی: 000000000</p>
+                    <p>گیرنده: پارسا وصالی</p>
+                    </div>
+                    <span class="absolute left-4 bottom-3 flex items-center gap-x-4 child:cursor-pointer">
+                        <svg class="size-6 text-blue-500">
+                            <use href="#edit"></use>
+                        </svg>
+                        <svg class="size-6 text-red-500">
+                            <use href="#trash"></use>
+                        </svg>
+                    </span>
+                </li>
+            </ul>
+           </div>
+        </div>
+    </div>
+</main>
+
+<!-- Overlay -->
+<div class="overlay"></div>
+<div class="search-overlay"></div>
+
+<script src="/scripts/dashboard.js"></script>

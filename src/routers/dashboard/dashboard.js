@@ -7,5 +7,7 @@ const dashboradController = require("../../controllers/dashborad/dashborad.contr
 
 // //home Rouer
 router.get("/", dashboradController.dashborad);
+router.get("/address", dashboradController.address);
+
 
 module.exports = router;

@@ -8,6 +8,16 @@ class dashboradController extends controller {
       next(err);
     }
   }
+
+  async address(req, res, next) {
+    try {
+        return res.render("dashborad/address");
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  
 }
 
 module.exports = new dashboradController();

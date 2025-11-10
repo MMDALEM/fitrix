@@ -11,7 +11,7 @@ exports.verifyTokenPublic = async (req, res, next) => {
       const check = await verifyCookie(paylod.id,res);
       if(!check) return next();
       const user = await userModel.findById(paylod.id, { phone:1 , isActive:1 , role:1 });
-      if (!user) { console.log("err"); return res.redirect("/");}
+      if (!user) return res.redirect("/");
       req.user = user;
       next();
     });
