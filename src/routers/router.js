@@ -5,10 +5,10 @@ const { backTokenAuth } = require("../middlewares/backTokenAuth.middleware");
 
 
 const homeRouter = require("./home/home");
-router.use("/", verifyTokenPublic,homeRouter);
+router.use("/",homeRouter);
 
 const  authRouter  = require("./auth/auth");
-router.use("/auth", backTokenAuth, authRouter);
+router.use("/auth", authRouter);
 
 const  shopRouter  = require("./shop/shop");
 router.use("/shop", verifyTokenPublic, shopRouter);
