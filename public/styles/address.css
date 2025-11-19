@@ -1,0 +1,54 @@
+
+    @font-face {
+        font-family: 'Dana';
+        src: url('./fonts/Dana-Regular.woff2') format('woff2');
+    }
+    @font-face {
+        font-family: 'DanaMedium';
+        src: url('./fonts/Dana-Medium.woff2') format('woff2');
+    }
+    body {
+        font-family: 'Dana', sans-serif;
+    }
+    .font-DanaMedium {
+        font-family: 'DanaMedium', sans-serif;
+    }
+    
+    /* استایل برای مودال */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideDown {
+        from { 
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to { 
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
