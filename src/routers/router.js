@@ -3,6 +3,7 @@ const { verifyUser, verifyAdmin } = require("../middlewares/auth.middleware");
 const { verifyTokenPublic } = require("../middlewares/authPublic.middleware");
 const { backTokenAuth } = require("../middlewares/backTokenAuth.middleware");
 const { logout } = require("../controllers/auth/auth.controller");
+const path = require('path')
 
 
 const homeRouter = require("./home/home");
