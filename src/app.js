@@ -13,6 +13,7 @@ const path = require('path');
 const Helpers = require('./Helpers');
 const flash = require('connect-flash');
 const session = require('express-session');
+const globalData = require('./middlewares/globalData');
 
 module.exports = class Application {
   constructor() {
@@ -66,6 +67,7 @@ module.exports = class Application {
   }
 
   createRoutes() {
+    app.use(globalData);
     app.use(AllRouters);
   }
 

@@ -12,11 +12,17 @@ module.exports = class Helpers {
 
     getObjects() {
         return {
-            // auth: this.auth(),
+            auth: this.auth(),
             viewPath: this.viewPath,
             date: this.date,
             ...this.getGlobalVaribales(),
             req: this.req,
+        };
+    }
+
+    auth() {
+        return {
+            auth: this.req.user,
         };
     }
 

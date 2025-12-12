@@ -1,4 +1,5 @@
 const experss = require("express");
+const categoriesController = require("../../controllers/admin/categories/categories.controller");
 const router = experss.Router();
 
 
@@ -18,10 +19,9 @@ const router = experss.Router();
 // //home
 // router.get("/", adminController.admin);
 
-// //blog 
-// router.get("/blog", blogController.index);
-// router.get("/blog/create", blogController.create);
-// router.post("/blog/insert", upload.single("image"), blogController.insert);
+//categories
+router.post("/categories", categoriesController.createCategories);
+router.post("/subCategories", categoriesController.createSubCategories);
 
 // //tag
 // router.get("/tags", tagController.index);

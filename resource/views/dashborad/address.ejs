@@ -72,13 +72,13 @@
                         alt="AVATAR">
                     <span class="felx flex-col gap-y-2">
                         <p class="font-DanaMedium text-lg">
-                            <% if(req.user.firstName && req.user.lastName){ %>
-                                <%= req.user.firstName %><%= req.user.lastName %>
+                            <% if(auth.firstName && auth.lastName){ %>
+                                <%= auth.firstName %><%= auth.lastName %>
                             <% }else{ %>
                                 کاربر گرامی
                             <% } %>
                         </p>
-                        <p class="text-gray-400"><%= req.user.phone %></p>
+                        <p class="text-gray-400"><%= auth.phone %></p>
                     </span>
                 </div>
                 <span>

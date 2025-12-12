@@ -1,3 +1,4 @@
+const categoriesModel = require("../../models/categories.model");
 const controller = require("../.controller");
 
 

@@ -280,12 +280,11 @@
                             class="megamenu">
                             <!-- RIGHT MENU -->
                             <ul class="megamenu_category">
-                                <li class="megamenu_category-item active">
-                                    <svg class="w-5 h-5">
-                                        <use href="#mobile"></use>
-                                    </svg>
-                                    <a href="">موبایل</a>
-                                </li>
+                                <% categories.forEach(function(category) { %>
+                                    <li class="megamenu_category-item">
+                                        <a href="/shop/<%= category.slug %>"><%= category.name %></a>
+                                    </li>
+                                <% }); %>
                                 <li class="megamenu_category-item ">
                                     <svg class="w-5 h-5">
                                         <use href="#tv"></use>
@@ -447,28 +446,8 @@
                     </li>
                     <li class="menu-item">
                         <a href="articles.html" class="menu-item_link">
-                            وبلاگ
+                            درباره ما
                         </a>
-                    </li>
-                    <!-- MENU ITEM --- Solid submenu -->
-                    <li class="menu-item group">
-                        <a class="menu-item_link cursor-pointer">
-                            منوی ساده
-                            <svg class="size-4 group-hover:rotate-180 duration-300">
-                                <use href="#chevron" />
-                            </svg>
-                        </a>
-                        <ul class="solid-menu">
-                            <li>
-                                <a href="aboute-us.html">درباره ما</a>
-                            </li>
-                            <li>
-                                <a href="questions.html">سوالات متداول</a>
-                            </li>
-                            <li>
-                                <a href="contact-us.html">تماس با ما</a>
-                            </li>
-                        </ul>
                     </li>
                 </ul>
                 <!-- Addres -->

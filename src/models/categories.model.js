@@ -1,12 +1,11 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const CategorySchema = new Schema(
+const categorySchema = new Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 100 },
     slug: {
       type: String,
-      required: false,
       unique: true,
       lowercase: true,
       trim: true,
@@ -22,6 +21,7 @@ const CategorySchema = new Schema(
       index: true,
       required: true,
     },
+    subCategories: [{ type: Schema.Types.ObjectId,ref: "Categories" , default: [] }],
     isActive: {
       type: Boolean,
       default: true,
@@ -36,4 +36,4 @@ const CategorySchema = new Schema(
   }
 );
 
-module.exports = mongoose.model("Categories", CategorySchema);
+module.exports = mongoose.model("Categories", categorySchema);
