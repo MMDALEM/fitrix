@@ -16,7 +16,7 @@ const router = experss.Router();
 //     next();
 //   });
 
-// //home
+//home
 // router.get("/", adminController.admin);
 
 //categories

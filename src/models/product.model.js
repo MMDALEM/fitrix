@@ -4,43 +4,72 @@ const ProductSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        maxlength: 200
     },
-    brand: {
+    slug: {
         type: String,
         required: true,
+        unique: true,
+        lowercase: true,
         trim: true
-    },
-    slug:{
-        type: String,
-        required: true
     },
     category: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Categories',
         required: true,
-        enum: ['پروتئین', 'کراتین', 'آمینو اسید', 'ویتامین', 'چربی سوز', 'گینر', 'پری ورکات', 'پست ورکات', 'سایر']
+        index: true
+    },
+    brand: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Brand',
+        required: true,
+        index: true
     },
     description: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     ingredients: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     usage: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     price: {
         type: Number,
         required: true,
+        min: 0
     },
-    discountPrice: {
+    // قیمت تخفیف خورده (برای فروش ویژه)
+    salePrice: {
         type: Number,
+        min: 0,
+        default: null
+    },
+    // آیا در فروش ویژه هست؟
+    onSale: {
+        type: Boolean,
+        default: false,
+        index: true
+    },
+    // تاریخ شروع و پایان فروش ویژه
+    saleStartDate: {
+        type: Date,
+        default: null
+    },
+    saleEndDate: {
+        type: Date,
+        default: null
     },
     images: [{
-        type: String
+        type: String,
+        required: true
     }],
     stock: {
         type: Number,
@@ -48,14 +77,20 @@ const ProductSchema = new mongoose.Schema({
         min: 0,
         default: 0
     },
-    weight: {
-        type: String // مثل "2.2kg" یا "1000g"
-    },
+    // تعداد سروینگ (وعده)
     servings: {
-        type: Number // تعداد سروینگ
+        type: Number,
+        min: 1
     },
+    // طعم محصول (شکلات، وانیل و...)
     flavor: {
-        type: String // طعم محصول
+        type: String,
+        trim: true
+    },
+    // وزن محصول (به گرم)
+    weight: {
+        type: Number,
+        min: 0
     },
     ratings: {
         average: {
@@ -66,13 +101,15 @@ const ProductSchema = new mongoose.Schema({
         },
         count: {
             type: Number,
-            default: 0
+            default: 0,
+            min: 0
         }
     },
     reviews: [{
         user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
+            ref: 'User',
+            required: true
         },
         rating: {
             type: Number,
@@ -80,37 +117,89 @@ const ProductSchema = new mongoose.Schema({
             min: 1,
             max: 5
         },
-        comment: String,
+        comment: {
+            type: String,
+            trim: true,
+            maxlength: 1000
+        },
         date: {
             type: Date,
             default: Date.now
+        },
+        // آیا خریدار تایید شده است؟
+        isVerifiedPurchase: {
+            type: Boolean,
+            default: false
         }
     }],
     featured: {
         type: Boolean,
-        default: false
+        default: false,
+        index: true
     },
     bestseller: {
         type: Boolean,
-        default: false
+        default: false,
+        index: true
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
+    soldCount: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    viewsCount: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    isActive: {
+        type: Boolean,
+        default: true,
+        index: true
     }
+}, {
+    timestamps: true,
 });
 
-// Virtual for discount percentage
+// Index برای جستجو
+ProductSchema.index({ name: 'text', description: 'text' });
+
+// Virtual برای محاسبه درصد تخفیف
 ProductSchema.virtual('discountPercentage').get(function() {
-    if (this.discountPrice && this.discountPrice < this.price) {
-        return Math.round(((this.price - this.discountPrice) / this.price) * 100);
+    if (this.salePrice && this.salePrice < this.price) {
+        return Math.round(((this.price - this.salePrice) / this.price) * 100);
     }
     return 0;
 });
 
-// Virtual for current price (considering discount)
-ProductSchema.virtual('currentPrice').get(function() {
-    return this.discountPrice && this.discountPrice < this.price ? this.discountPrice : this.price;
+// Virtual برای قیمت نهایی
+ProductSchema.virtual('finalPrice').get(function() {
+    if (this.onSale && this.salePrice && this.salePrice < this.price) {
+        const now = new Date();
+        if ((!this.saleStartDate || this.saleStartDate <= now) && 
+            (!this.saleEndDate || this.saleEndDate >= now)) {
+            return this.salePrice;
+        }
+    }
+    return this.price;
+});
+
+// Middleware برای بررسی خودکار وضعیت فروش ویژه
+ProductSchema.pre('save', function(next) {
+    const now = new Date();
+    
+    // اگر تاریخ فروش ویژه گذشته باشد، onSale را false کن
+    if (this.onSale && this.saleEndDate && this.saleEndDate < now) {
+        this.onSale = false;
+    }
+    
+    // اگر قیمت فروش بیشتر یا مساوی قیمت اصلی باشد، تخفیف را حذف کن
+    if (this.salePrice && this.salePrice >= this.price) {
+        this.salePrice = null;
+        this.onSale = false;
+    }
+    
+    next();
 });
 
 module.exports = mongoose.model('Product', ProductSchema);

@@ -5,9 +5,12 @@ const addressSchema = new mongoose.Schema({
     country: {type: String, default: 'ایران'},
     address: {type: String},
     receiver: {type: String},
-    postalCode: {type: Number},
-    phone: {type: Number},
+    postalCode: {type: String},
+    phone: {type: String},
     user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+},
+{
+    timestamps: true,
 });
     
 module.exports = mongoose.model('Address', addressSchema);
