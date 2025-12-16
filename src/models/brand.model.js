@@ -22,13 +22,6 @@ const brandSchema = new Schema({
         trim: true,
         maxlength: 2000
     },
-    // توضیحات کوتاه
-    shortDescription: {
-        type: String,
-        trim: true,
-        maxlength: 200
-    },
-    // فعال/غیرفعال
     isActive: {
         type: Boolean,
         default: true,
@@ -59,12 +52,6 @@ const brandSchema = new Schema({
     showInHomePage: {
         type: Boolean,
         default: false
-    },
-    // برند ویژه
-    isFeatured: {
-        type: Boolean,
-        default: false,
-        index: true
     },
     // ترتیب نمایش
     displayOrder: {
