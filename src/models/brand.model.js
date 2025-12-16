@@ -59,17 +59,6 @@ const brandSchema = new Schema({
         default: 0,
         index: true
     },
-    // تعداد محصولات
-    productCount: {
-        type: Number,
-        default: 0,
-        min: 0
-    },
-    // رنگ برند (برای نمایش در UI)
-    brandColor: {
-        type: String,
-        match: [/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'رنگ باید به فرمت HEX باشد']
-    },
     // متا دیتا برای سئو
     metaTitle: {
         type: String,

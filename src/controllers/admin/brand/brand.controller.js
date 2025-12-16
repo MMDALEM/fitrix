@@ -1,16 +1,32 @@
 const categoriesModel = require("../../../models/categories.model");
 const controller = require("../../.controller");
 
-
 class brandController extends controller {
   async create(req, res, next) {
     try {
-      const { title, slug, description,image ,logo , country, website,displayOrder ,productCount ,  type } = req.body;
-
-      const category = await categoriesModel.create({
-        name,
+      const {
+        title,
         slug,
         description,
+        image,
+        logo,
+        country,
+        website,
+        displayOrder,
+        productCount,
+        type,
+      } = req.body;
+
+      const category = await categoriesModel.create({
+        title,
+        slug,
+        description,
+        image,
+        logo,
+        country,
+        website,
+        displayOrder,
+        productCount,
         type,
       });
 
@@ -28,7 +44,6 @@ class brandController extends controller {
   //     next(err);
   //   }
   // }
-
 }
 
 module.exports = new brandController();
