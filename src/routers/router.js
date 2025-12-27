@@ -1,9 +1,9 @@
 const router = require("express").Router();
 const { verifyUser, verifyAdmin } = require("../middlewares/auth.middleware");
 const { verifyTokenPublic } = require("../middlewares/authPublic.middleware");
-const { backTokenAuth } = require("../middlewares/backTokenAuth.middleware");
+const { updateExchangeRate } = require("../services/exchangeRate.service");
 const { logout } = require("../controllers/auth/auth.controller");
-const path = require('path')
+
 
 const homeRouter = require("./home/home");
 router.use("/",homeRouter);
@@ -22,6 +22,11 @@ router.use("/dashboard", verifyUser, dashboardRouter);
 
 const  adminRouter  = require("./admin/admin");
 router.use("/admin", adminRouter);
+
+router.post('/update-exchange-rate', async (req, res) => {
+  await updateExchangeRate();
+  res.json({ success: true, message: 'نرخ ارز آپدیت شد' });
+});
 
 router.use("/logout", logout);
 

@@ -11,18 +11,20 @@ exports.createLiara = async (req, res, next) => {
   const fileNameBeforeSave = file.key;
   const ext = file.mimetype;
   const data = {
+    title: req.body.title,
     fileName: fileNameBeforeSave,
     fileSize: fileSize,
     fileNameBeforeSave: fileName,
     fileNameExt: ext,
     des: des,
+    url: `https://${process.env.BASE_UPLOAD_URL}/fitrix/${fileNameBeforeSave}`,
   };
 
   const item = new modelItem(data);
 
   try {
     await item.save();
-    return sendSuccess(res, 200, d);
+    return sendSuccess(res, 200, item);
   } catch (err) {
     next(err);
   }

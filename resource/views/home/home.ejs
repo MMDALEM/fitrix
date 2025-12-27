@@ -144,7 +144,7 @@
                     <div class="swiper-wrapper">
                         <!-- item -->
                         <div class="swiper-slide amazing-card">
-                            <img class="w-28 h-28" src="images/slider/Amazings.svg" alt="">
+                            <img class="w-28 h-28" src="./images/slider/Amazings.svg" alt="">
                             <!-- TIMER -->
                             <div class="flex items-center gap-x-2">
                                 <span class="timer-box" id="seconds">00</span>
@@ -161,6 +161,7 @@
                                 </svg>
                             </a>
                         </div>
+                        <% products.forEach(product => { %>
                         <div class="swiper-slide small-card group">
                             <!-- product header -->
                             <div class="w-full flex items-center justify-between">
@@ -168,190 +169,30 @@
                                     <svg class="size-4 mb-1">
                                         <use href="#rocket"></use>
                                     </svg>
-                                    <p class="text-xs">ارسال امروز</p>
-                                </span>
-                                <span class="text-gray-400 flex items-center justify-end text-sm gap-x-0.5">
-                                    <p> 5.0 </p>
-                                    <svg class="size-4 mb-1">
-                                        <use href="#star"></use>
-                                    </svg>
+                                    <p class="text-xs">ارسال سریع</p>
                                 </span>
                             </div>
                             <!-- product img -->
-                            <a href="product-details.html">
-                                <img class="small-card_img" src="images/products/3.png" alt="">
+                            <a href="/<%= product.slug %>">
+                                <img class="small-card_img" src="<%= product.image %>" alt="<%= product.slug %>">
                             </a>
                             <!--  product footer -->
                             <div class="space-y-2">
-                                <a href="product-details.html" class="small-card_link">
-                                    لپ تاپ 15.6 اینچی ایسوس مدل Vivobook15 X515MA-BR001-Celeron N4020-8GB DDR4
-                                </a>
+                                <a href="/<%= product.slug %>" class="small-card_link"><%= product.title %></a>
                                 <!-- Rate and Price -->
                                 <div class="product-card_price-wrapper">
                                     <!-- Price -->
                                     <div class="small-card_price justify-between">
                                         <span class="pt-1">70%</span>
-                                        <h4 class="flex items-center gap-x-1 text-lg">130,000,000 <p
+                                        <h4 class="flex items-center gap-x-1 text-lg"><%= (product.price).toLocaleString() %> <p
                                                 class="text-xs font-DanaMedium">تومان</p>
                                         </h4>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="swiper-slide small-card group">
-                            <!-- product header -->
-                            <div class="w-full flex items-center justify-between">
-                                <span class="flex items-center gap-x-0.5 text-blue-400">
-                                    <svg class="size-4 mb-1">
-                                        <use href="#rocket"></use>
-                                    </svg>
-                                    <p class="text-xs">ارسال امروز</p>
-                                </span>
-                                <span class="text-gray-400 flex items-center justify-end text-sm gap-x-0.5">
-                                    <p> 5.0 </p>
-                                    <svg class="size-4 mb-1">
-                                        <use href="#star"></use>
-                                    </svg>
-                                </span>
-                            </div>
-                            <!-- product img -->
-                            <a href="product-details.html">
-                                <img class="small-card_img" src="images/products/5.webp" alt="">
-                            </a>
-                            <!--  product footer -->
-                            <div class="space-y-2">
-                                <a href="product-details.html" class="small-card_link">
-                                    لپ تاپ 15.6 اینچی ایسوس مدل Vivobook15 X515MA-BR001-Celeron N4020-8GB DDR4
-                                </a>
-                                <!-- Rate and Price -->
-                                <div class="product-card_price-wrapper">
-                                    <!-- Price -->
-                                    <div class="small-card_price justify-between">
-                                        <span class="pt-1">70%</span>
-                                        <h4 class="flex items-center gap-x-1 text-lg">130,000,000 <p
-                                                class="text-xs font-DanaMedium">تومان</p>
-                                        </h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="swiper-slide small-card group">
-                            <!-- product header -->
-                            <span class="w-full text-gray-400 flex items-center justify-end text-sm gap-x-0.5">
-                                <p> 5.0 </p>
-                                <svg class="size-4 mb-1">
-                                    <use href="#star"></use>
-                                </svg>
-                            </span>
-                            <!-- product img -->
-                            <a href="product-details.html">
-                                <img class="small-card_img" src="images/products/1.png" alt="">
-                            </a>
-                            <!--  product footer -->
-                            <div class="space-y-2">
-                                <a href="product-details.html" class="small-card_link">
-                                    لپ تاپ 15.6 اینچی ایسوس مدل Vivobook15 X515MA-BR001-Celeron N4020-8GB DDR4
-                                </a>
-                                <!-- Rate and Price -->
-                                <div class="product-card_price-wrapper">
-                                    <!-- Price -->
-                                    <div class="small-card_price justify-between">
-                                        <span class="pt-1">70%</span>
-                                        <h4 class="flex items-center gap-x-1 text-lg">130,000,000 <p
-                                                class="text-xs font-DanaMedium">تومان</p>
-                                        </h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="swiper-slide small-card group">
-                            <!-- product header -->
-                            <span class="w-full text-gray-400 flex items-center justify-end text-sm gap-x-0.5">
-                                <p> 5.0 </p>
-                                <svg class="size-4 mb-1">
-                                    <use href="#star"></use>
-                                </svg>
-                            </span>
-                            <!-- product img -->
-                            <a href="product-details.html">
-                                <img class="small-card_img" src="images/products/7.webp" alt="">
-                            </a>
-                            <!--  product footer -->
-                            <div class="space-y-2">
-                                <a href="product-details.html" class="small-card_link">
-                                    لپ تاپ 15.6 اینچی ایسوس مدل Vivobook15 X515MA-BR001-Celeron N4020-8GB DDR4
-                                </a>
-                                <!-- Rate and Price -->
-                                <div class="product-card_price-wrapper">
-                                    <!-- Price -->
-                                    <div class="small-card_price justify-between">
-                                        <span class="pt-1">70%</span>
-                                        <h4 class="flex items-center gap-x-1 text-lg">130,000,000 <p
-                                                class="text-xs font-DanaMedium">تومان</p>
-                                        </h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="swiper-slide small-card group">
-                            <!-- product header -->
-                            <span class="w-full text-gray-400 flex items-center justify-end text-sm gap-x-0.5">
-                                <p> 5.0 </p>
-                                <svg class="size-4 mb-1">
-                                    <use href="#star"></use>
-                                </svg>
-                            </span>
-                            <!-- product img -->
-                            <a href="product-details.html">
-                                <img class="small-card_img" src="images/products/3.png" alt="">
-                            </a>
-                            <!--  product footer -->
-                            <div class="space-y-2">
-                                <a href="product-details.html" class="small-card_link">
-                                    لپ تاپ 15.6 اینچی ایسوس مدل Vivobook15 X515MA-BR001-Celeron N4020-8GB DDR4
-                                </a>
-                                <!-- Rate and Price -->
-                                <div class="product-card_price-wrapper">
-                                    <!-- Price -->
-                                    <div class="small-card_price justify-between">
-                                        <span class="pt-1">70%</span>
-                                        <h4 class="flex items-center gap-x-1 text-lg">130,000,000 <p
-                                                class="text-xs font-DanaMedium">تومان</p>
-                                        </h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="swiper-slide small-card group">
-                            <!-- product header -->
-                            <span class="w-full text-gray-400 flex items-center justify-end text-sm gap-x-0.5">
-                                <p> 5.0 </p>
-                                <svg class="size-4 mb-1">
-                                    <use href="#star"></use>
-                                </svg>
-                            </span>
-                            <!-- product img -->
-                            <a href="product-details.html">
-                                <img class="small-card_img" src="images/products/3.png" alt="">
-                            </a>
-                            <!--  product footer -->
-                            <div class="space-y-2">
-                                <a href="product-details.html" class="small-card_link">
-                                    لپ تاپ 15.6 اینچی ایسوس مدل Vivobook15 X515MA-BR001-Celeron N4020-8GB DDR4
-                                </a>
-                                <!-- Rate and Price -->
-                                <div class="product-card_price-wrapper">
-                                    <!-- Price -->
-                                    <div class="small-card_price justify-between">
-                                        <span class="pt-1">70%</span>
-                                        <h4 class="flex items-center gap-x-1 text-lg">130,000,000 <p
-                                                class="text-xs font-DanaMedium">تومان</p>
-                                        </h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <a href="shop.html" class="swiper-slide amazing-card_last ">
+                        <% }) %>
+                        <a href="/shop" class="swiper-slide amazing-card_last ">
                             <svg class="size-10 ">
                                 <use href="#arrow-left-circle"></use>
                             </svg>
@@ -378,7 +219,7 @@
         <!-- BRAND -->
         <section class="mx-4 lg:container mt-10 lg:mt-20">
             <!-- SECTION TITLE -->
-            <div
+            <div 
                 class="flex flex-col gap-y-4 xs:flex-row items-center justify-between w-full text-center xs:text-start">
                 <div class="flex items-center gap-x-2 sm:gap-x-4">
                     <span class="size-12 hidden xs:flex rounded-lg bg-white shadow-lg dark:bg-gray-800 flex-center">
@@ -406,43 +247,17 @@
                             </svg>
                         </button>
                     </div>
-                    <a href="shop.html"
-                        class="group shadow-xl text-sm md:text-base flex gap-x-1.5 items-center px-2 h-10 md:px-3 text-white bg-blue-600 rounded-xl">
-                        <p>مشاهده همه</p>
-                        <span
-                            class="w-7 h-7 rounded-full bg-blue-500 flex-center md:group-hover:-translate-x-1 transition-transform duration-300">
-                            <svg class="size-5">
-                                <use href="#arrow" />
-                            </svg>
-                        </span>
-                    </a>
                 </div>
             </div>
             <!-- BRAND Slider -->
             <div class="swiper BrandSlider mt-5 w-full">
                 <div class="swiper-wrapper py-5 w-full">
                     <!-- PRODUCT ITEM -->
+                <% brands.forEach(brand => { %>
                     <div class="swiper-slide brand-card group">
-                        <img src="images/brand/1.png" alt="">
+                        <a href="#"><img src="<%= brand.logo %>" alt=""></a>
                     </div>
-                    <div class="swiper-slide brand-card group">
-                        <img src="images/brand/6.webp" alt="">
-                    </div>
-                    <div class="swiper-slide brand-card group">
-                        <img src="images/brand/5.webp" alt="">
-                    </div>
-                    <div class="swiper-slide brand-card group">
-                        <img src="images/brand/4.webp" alt="">
-                    </div>
-                    <div class="swiper-slide brand-card group">
-                        <img src="images/brand/3.webp" alt="">
-                    </div>
-                    <div class="swiper-slide brand-card group">
-                        <img src="images/brand/2.png" alt="">
-                    </div>
-                    <div class="swiper-slide brand-card group">
-                        <img src="images/brand/7.png" alt="">
-                    </div>
+                <% }) %>
                 </div>
             </div>
         </section>
@@ -451,25 +266,17 @@
         <div
             class="container w-full mt-10 lg:mt-20 flex flex-wrap items-center  justify-center md:justify-between gap-6 child:text-sm child:gap-y-1 child:cursor-pointer">
             <!-- item -->
-            <span class="flex-col items-center justify-center hidden md:flex">
-                <img class="w-14 h-14" src="images/svg/1.svg " alt="">
-                <p class="text-gray-500 dark:text-gray-300">امکان تحویل اکسپرس</p>
+            <span class="flex flex-col items-center justify-center">
+                <img class="w-14 h-14" src="images/svg/3.svg" alt="">
+                <p class="text-gray-500 dark:text-gray-300">ضمانت بازگشت کالا</p>
             </span>
             <span class="flex flex-col items-center justify-center">
                 <img class="w-14 h-14" src="images/svg/2.svg" alt="">
                 <p class="text-gray-500 dark:text-gray-300">ضمانت اصل بودن کالا</p>
             </span>
             <span class="flex flex-col items-center justify-center">
-                <img class="w-14 h-14" src="images/svg/3.svg" alt="">
-                <p class="text-gray-500 dark:text-gray-300">ضمانت بازگشت کالا</p>
-            </span>
-            <span class="flex flex-col items-center justify-center">
                 <img class="w-14 h-14" src="images/svg/4.svg" alt="">
                 <p class="text-gray-500 dark:text-gray-300">پشتیبانی 24 ساعته</p>
-            </span>
-            <span class="flex flex-col items-center justify-center">
-                <img class="w-14 h-14" src="images/svg/5.svg" alt="">
-                <p class="text-gray-500 dark:text-gray-300">امکان پرداخت در محل</p>
             </span>
         </div>
     </main> 

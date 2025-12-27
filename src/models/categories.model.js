@@ -6,7 +6,8 @@ const categorySchema = new Schema({
         type: String,
         required: true,
         trim: true,
-        maxlength: 100
+        maxlength: 100,
+        index: true
     },
     slug: {
         type: String,
@@ -14,7 +15,8 @@ const categorySchema = new Schema({
         lowercase: true,
         trim: true,
         maxlength: 120,
-        required: true
+        required: true,
+        index: true
     },
     description: {
         type: String,
@@ -104,12 +106,6 @@ const categorySchema = new Schema({
 }, {
     timestamps: true,
 });
-
-// Index برای جستجوی سریع
-categorySchema.index({ slug: 1, isActive: 1 });
-categorySchema.index({ type: 1, isActive: 1 });
-categorySchema.index({ parent: 1, displayOrder: 1 });
-categorySchema.index({ title: 'text', description: 'text' });
 
 // Virtual برای مسیر کامل دسته‌بندی
 categorySchema.virtual('path', {

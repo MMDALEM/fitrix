@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
-    name: {
+    title: {
         type: String,
         required: true,
         trim: true,
@@ -33,7 +33,6 @@ const ProductSchema = new mongoose.Schema({
     },
     ingredients: {
         type: String,
-        required: true,
         trim: true
     },
     usage: {
@@ -41,7 +40,22 @@ const ProductSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    howToUse: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    originalPrice: {
+        type: Number,
+        required: true,
+        min: 0
+    },
     price: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    number: {
         type: Number,
         required: true,
         min: 0
@@ -67,15 +81,9 @@ const ProductSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
-    images: [{
+    image: {
         type: String,
         required: true
-    }],
-    stock: {
-        type: Number,
-        required: true,
-        min: 0,
-        default: 0
     },
     // تعداد سروینگ (وعده)
     servings: {
@@ -89,21 +97,8 @@ const ProductSchema = new mongoose.Schema({
     },
     // وزن محصول (به گرم)
     weight: {
-        type: Number,
+        type: String,
         min: 0
-    },
-    ratings: {
-        average: {
-            type: Number,
-            default: 0,
-            min: 0,
-            max: 5
-        },
-        count: {
-            type: Number,
-            default: 0,
-            min: 0
-        }
     },
     reviews: [{
         user: {
@@ -133,11 +128,6 @@ const ProductSchema = new mongoose.Schema({
         }
     }],
     featured: {
-        type: Boolean,
-        default: false,
-        index: true
-    },
-    bestseller: {
         type: Boolean,
         default: false,
         index: true

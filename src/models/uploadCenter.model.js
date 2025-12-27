@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 
 const modelSchema = new mongoose.Schema(
   {
+    title: {
+      type: String,
+    },
     fileName: {
       type: String,
     },
@@ -30,7 +33,10 @@ const modelSchema = new mongoose.Schema(
     teachId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Teacher',
-    }
+    },
+    url: {
+      type: String,
+    },
   },
   {
     timestamps: true,

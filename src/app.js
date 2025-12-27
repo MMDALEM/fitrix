@@ -14,6 +14,8 @@ const Helpers = require('./Helpers');
 const flash = require('connect-flash');
 const session = require('express-session');
 const globalData = require('./middlewares/globalData');
+const { updateExchangeRate } = require('./services/exchangeRate.service');
+const { startExchangeRateCron } = require('./jobs/exchangeRate.job');
 
 module.exports = class Application {
   constructor() {
@@ -69,6 +71,11 @@ module.exports = class Application {
   createRoutes() {
     app.use(globalData);
     app.use(AllRouters);
+  }
+  
+  exchangeRate(){
+    updateExchangeRate();
+    startExchangeRateCron();
   }
 
   errorHandler() {

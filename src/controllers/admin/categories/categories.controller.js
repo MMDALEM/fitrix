@@ -5,11 +5,13 @@ const controller = require("../../.controller");
 class categoriesController extends controller {
   async createCategories(req, res, next) {
     try {
-      const { name, slug, description, type } = req.body;
+      const { title, description, type } = req.body;
+
+      const slug = this.slugify(title);
 
       // Create the category
       const category = await categoriesModel.create({
-        name,
+        title,
         slug,
         description,
         type,

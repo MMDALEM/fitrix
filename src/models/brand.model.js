@@ -7,7 +7,8 @@ const brandSchema = new Schema({
         required: true,
         trim: true,
         maxlength: 100,
-        unique: true
+        unique: true,
+        index: true
     },
     slug: {
         type: String,
@@ -15,7 +16,8 @@ const brandSchema = new Schema({
         lowercase: true,
         trim: true,
         maxlength: 120,
-        required: true
+        required: true,
+        index: true
     },
     description: {
         type: String,
@@ -46,7 +48,6 @@ const brandSchema = new Schema({
     website: {
         type: String,
         trim: true,
-        match: [/^https?:\/\/.+/, 'لطفا یک URL معتبر وارد کنید']
     },
     // نمایش در صفحه اصلی
     showInHomePage: {
@@ -111,10 +112,6 @@ const brandSchema = new Schema({
     timestamps: true,
 });
 
-// Index برای جستجوی سریع
-brandSchema.index({ slug: 1, isActive: 1 });
-brandSchema.index({ title: 'text', description: 'text' });
-brandSchema.index({ displayOrder: 1 });
 
 // متد استاتیک برای دریافت برندهای فعال
 brandSchema.statics.getActiveBrands = function() {
@@ -137,7 +134,6 @@ brandSchema.statics.getPopularBrands = function(limit = 10) {
 
 // Middleware قبل از ذخیره
 brandSchema.pre('save', function(next) {
-    // اگر logo وجود نداشت از image استفاده کن
     if (!this.logo && this.image) {
         this.logo = this.image;
     }

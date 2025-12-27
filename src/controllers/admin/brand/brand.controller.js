@@ -1,4 +1,4 @@
-const categoriesModel = require("../../../models/categories.model");
+const brandModel = require("../../../models/brand.model");
 const controller = require("../../.controller");
 
 class brandController extends controller {
@@ -6,7 +6,6 @@ class brandController extends controller {
     try {
       const {
         title,
-        slug,
         description,
         image,
         logo,
@@ -17,7 +16,9 @@ class brandController extends controller {
         type,
       } = req.body;
 
-      const category = await categoriesModel.create({
+      const slug = this.slugify(title);
+
+      const category = await brandModel.create({
         title,
         slug,
         description,
