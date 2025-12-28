@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FitRix</title>
+    <title><%= settings.siteName %></title>
     <link rel="stylesheet" href="/styles/app.css">
     <link rel="stylesheet" href="/styles/swiper-bundle.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.min.css" >
@@ -38,25 +38,7 @@
     <script src="/js/conf.js"></script>
     <script src="/js/jquery-3.2.1.slim.min.js"></script>
     <script src="/js/1.12.9.popper.min.js"></script>
-    <%- script %> <% let sweetalert = req.flash('sweetalert'); if(sweetalert.length) { let data = sweetalert[0]; %>
-    <script>
-        const Toast = Swal.mixin({
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: <%= data.button !== null ? true : false %>,
-          timer: <%= data.button !== null ? 'null' : data.timer %>,
-          timerProgressBar: true,
-          didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-          }
-        })
-        Toast.fire({
-          icon: '<%= data.icon %>',
-          title: '<%= data.title %>'
-        })
-    </script>
-    <% } %>
+    <%- include(viewPath('layout/sweetalert')) %>
 </body>
 
 </html>

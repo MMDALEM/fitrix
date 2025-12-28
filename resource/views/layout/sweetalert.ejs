@@ -1,0 +1,24 @@
+<%- script %>
+<% 
+let sweetalert = flash.sweetalert || []; 
+if (sweetalert.length) { 
+  let data = sweetalert[0]; 
+%>
+<script>
+  const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: <%= data.button ? true : false %>,
+    timer: <%= data.button ? 'null' : (data.timer || 3000) %>,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer)
+      toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+  })
+  Toast.fire({
+    icon: '<%= data.icon %>',
+    title: '<%= data.title %>'
+  })
+</script>
+<% } %>

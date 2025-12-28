@@ -11,11 +11,12 @@ const cookieParser = require('cookie-parser');
 const expressLayouts = require("express-ejs-layouts");
 const path = require('path');
 const Helpers = require('./Helpers');
-const flash = require('connect-flash');
+// const flash = require('connect-flash');
 const session = require('express-session');
-const globalData = require('./middlewares/globalData');
 const { updateExchangeRate } = require('./services/exchangeRate.service');
 const { startExchangeRateCron } = require('./jobs/exchangeRate.job');
+const GlobalData = require("./middlewares/globalData");
+const flash = require('./middlewares/flash.middleware');
 
 module.exports = class Application {
   constructor() {
@@ -36,7 +37,8 @@ module.exports = class Application {
       saveUninitialized: true,
       cookie: { maxAge: 24 * 60 * 60 * 1000 }
     }));
-    app.use(flash());
+    app.use(flash);
+    // app.use(flash());
     app.use((req, res, next) => {
       res.locals.success_msg = req.flash('success_msg');
       res.locals.error_msg = req.flash('error_msg');
@@ -69,7 +71,7 @@ module.exports = class Application {
   }
 
   createRoutes() {
-    app.use(globalData);
+    app.use(GlobalData.init());
     app.use(AllRouters);
   }
   

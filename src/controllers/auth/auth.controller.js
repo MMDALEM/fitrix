@@ -5,7 +5,7 @@ const { generateOtp, jwtSign } = require("../../utils/function");
 class authController extends controller {
   async auth(req, res, next) {
     try {
-        return res.render("auth/auth");
+      return res.render("auth/auth");
     } catch (err) {
       next(err);
     }
@@ -17,7 +17,7 @@ class authController extends controller {
       const { phone } = req.body;
       const code = generateOtp();
       const user = await this.checkExistUser(phone);
-    
+
       const date = Date.now();
       if (user) {
         if (date <= user?.otp?.expiresIn)
@@ -31,38 +31,46 @@ class authController extends controller {
       // await smsTeacherRegister(phone,code);
 
       const cookie_otp = {
-        phone : phone,
-        expiresIn : user?.otp?.expiresIn
-      }
+        phone: phone,
+        expiresIn: user?.otp?.expiresIn,
+      };
 
-      res.cookie('fitrix_otp', cookie_otp, {
-        httpOnly: process.env.NODE_ENV === 'production',
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        domain: process.env.NODE_ENV === 'production' ?  process.env.COOKIE_DOMAIN : "",
-        maxAge: 10 * 60 * 1000
-    });
+      res.cookie("fitrix_otp", JSON.stringify(cookie_otp), {
+        httpOnly: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        domain:
+          process.env.NODE_ENV === "production"
+            ? process.env.COOKIE_DOMAIN
+            : "",
+        maxAge: 10 * 60 * 1000,
+      });
 
-      return this.alertAndReview(req, res, {
-        title: "کد یک بار مصرف برای شماارسال شد ",
-        icon: "success",
-      },`auth/otp`);
+      return this.alertAndReview(
+        req,
+        res,
+        {
+          title: "کد یک بار مصرف برای شماارسال شد ",
+          icon: "success",
+        },
+        `auth/otp`
+      );
     } catch (err) {
-      next(err); 
+      next(err);
     }
   }
 
   async otp(req, res, next) {
     try {
-      if(!req.cookies.fitrix_otp)
+      if (!req.cookies.fitrix_otp)
         return this.alertAndBack(req, res, {
-          title: 'خطا در اعتبارسنجی کاربر',
+          title: "خطا در اعتبارسنجی کاربر",
           icon: "error",
         });
 
-      const { phone , expiresIn } = req.cookies.fitrix_otp;
-      return res.render("auth/otp",{phone , expiresIn});
+      const { phone, expiresIn } = JSON.parse(req.cookies.fitrix_otp);
+      return res.render("auth/otp", { phone, expiresIn });
     } catch (err) {
       next(err);
     }
@@ -70,61 +78,66 @@ class authController extends controller {
 
   async verifyOtp(req, res, next) {
     try {
-
-        if(!req.cookies.fitrix_otp)
-          return this.alertAndBack(req, res, {
-            title: 'خطا در اعتبارسنجی کاربر',
-            icon: "error",
-          });
-
-        const { phone } = req.cookies.fitrix_otp;
-
-        const code = `${req.body.num1}${req.body.num2}${req.body.num3}${req.body.num4}${req.body.num5}`
-        if (!code)
-          return this.alertAndBack(req, res, {
-            title: "کد وارد نشده",
-            icon: "error",
-          });
-
-        const user = await userModel.findOne({ phone });
-        if (!user)
-          return this.alertAndBack(req, res, {
-            title: "کاربر یافت نشد",
-            icon: "error",
-          });
-
-        if (Date.now() > user.otp.expiresIn)
-          return this.alertAndBack(req, res, {
-            title: 'کد منقضی شده است',
-            icon: "error",
-            });
-        if (!user || !user.otp)
-          return this.alertAndBack(req, res, {
-            title: "کاربر یا کد تایید یافت نشد",
-            icon: "error",
-            });
-        if (isNaN(code) || parseInt(code) !== user.otp.code)
-          return this.alertAndBack(req, res, {
-            title: "کد صحیح نیست",
-            icon: "error",
-            });
-
-        const token = await jwtSign(user.id)
-
-        res.cookie('fitrix_token', token, {
-            httpOnly: process.env.NODE_ENV === 'production',
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            domain: process.env.NODE_ENV === 'production' ?  process.env.COOKIE_DOMAIN : "",
-            maxAge: 24 * 60 * 60 * 1000
+      if (!req.cookies.fitrix_otp)
+        return this.alertAndBack(req, res, {
+          title: "خطا در اعتبارسنجی کاربر",
+          icon: "error",
         });
 
-        return this.alertAndReview(req, res, {
+      const { phone, expiresIn } = JSON.parse(req.cookies.fitrix_otp);
+      const code = `${req.body.num1}${req.body.num2}${req.body.num3}${req.body.num4}${req.body.num5}`;
+      if (!code)
+        return this.alertAndBack(req, res, {
+          title: "کد وارد نشده",
+          icon: "error",
+        });
+
+        
+
+      const user = await userModel.findOne({ phone });
+      if (!user)
+        return this.alertAndBack(req, res, {
+          title: "کاربر یافت نشد",
+          icon: "error",
+        });
+
+      if (Date.now() > user.otp.expiresIn)
+        return this.alertAndBack(req, res, {
+          title: "کد منقضی شده است",
+          icon: "error",
+        });
+
+    if (parseInt(code) !== user.otp.code)
+      return this.alertAndBack(req, res, {
+        title: "کد صحیح نیست",
+        icon: "error",
+      });
+
+      const token = await jwtSign(user.id);
+
+      res.cookie("fitrix_token", token, {
+        httpOnly: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        domain:
+          process.env.NODE_ENV === "production"
+            ? process.env.COOKIE_DOMAIN
+            : "",
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+
+      return this.alertAndReview(
+        req,
+        res,
+        {
           title: "اعتبار سنجی با موفقیت انجام شد",
           icon: "success",
-        },'/dashboard');
+        },
+        "/dashboard"
+      );
     } catch (err) {
+      console.log(err);
       next(err);
     }
   }
@@ -147,32 +160,42 @@ class authController extends controller {
   }
 
   async logout(req, res, next) {
-  try {
-      res.clearCookie('fitrix_token', {
-        httpOnly: process.env.NODE_ENV === 'production',
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : ""
+    try {
+      res.clearCookie("fitrix_token", {
+        httpOnly: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        domain:
+          process.env.NODE_ENV === "production"
+            ? process.env.COOKIE_DOMAIN
+            : "",
       });
 
-      res.clearCookie('fitrix_otp', {
-        httpOnly: process.env.NODE_ENV === 'production',
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : ""
+      res.clearCookie("fitrix_otp", {
+        httpOnly: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        domain:
+          process.env.NODE_ENV === "production"
+            ? process.env.COOKIE_DOMAIN
+            : "",
       });
 
-      return this.alertAndReview(req, res, {
-        title: "با موفقیت خارج شدید",
-        icon: "success",
-      }, '/');
+      return this.alertAndReview(
+        req,
+        res,
+        {
+          title: "با موفقیت خارج شدید",
+          icon: "success",
+        },
+        "/"
+      );
     } catch (err) {
       next(err);
     }
   }
-
 }
 
 module.exports = new authController();
