@@ -11,7 +11,6 @@ const cookieParser = require('cookie-parser');
 const expressLayouts = require("express-ejs-layouts");
 const path = require('path');
 const Helpers = require('./Helpers');
-// const flash = require('connect-flash');
 const session = require('express-session');
 const { updateExchangeRate } = require('./services/exchangeRate.service');
 const { startExchangeRateCron } = require('./jobs/exchangeRate.job');
@@ -38,7 +37,6 @@ module.exports = class Application {
       cookie: { maxAge: 24 * 60 * 60 * 1000 }
     }));
     app.use(flash);
-    // app.use(flash());
     app.use((req, res, next) => {
       res.locals.success_msg = req.flash('success_msg');
       res.locals.error_msg = req.flash('error_msg');
