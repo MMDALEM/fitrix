@@ -3009,7 +3009,9 @@ img {
   background-color: rgb(59 130 246 / var(--tw-bg-opacity, 1));
   padding-right: 0.5rem;
   --tw-text-opacity: 1;
-  color: rgb(249 250 251 / var(--tw-text-opacity, 1));
+  /* color: rgb(249 250 251 / var(--tw-text-opacity, 1)); */
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
 }
 
 .megamenu_left {
@@ -3026,9 +3028,9 @@ img {
 }
 
 .megamenu_left-item {
+  display: none;
   visibility: hidden;
   position: absolute;
-  display: flex;
   align-items: flex-start;
   -moz-column-gap: 1.25rem;
        column-gap: 1.25rem;
@@ -3046,8 +3048,9 @@ img {
 }
 
 .megamenu_left-item.active {
-  visibility: visible;
-  opacity: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
 }
 
 .megamenu_left-menu > :not([hidden]) ~ :not([hidden]) {
