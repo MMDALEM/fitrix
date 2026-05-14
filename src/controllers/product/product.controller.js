@@ -3,10 +3,12 @@ const controller = require("../.controller");
 
 class productController extends controller {
 
-  async shopSingle(req, res, next) {
+  async productSingle(req, res, next) {
     try {
       const product = await productModel.findOne({ slug: req.params.slug });
-      return res.render("shop/singleProduct", { product });
+      const products = await productModel.find({ category: product.category }).sort({ createdAt: -1 }).limit(10);
+
+      return res.render("shop/singleProduct", { product , products });
     } catch (err) {
       next(err);
     }

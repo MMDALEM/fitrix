@@ -1,0 +1,114 @@
+    <main class="container relative">
+       
+        <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+            <!-- SIDE MENU -->
+            <%- include(viewPath('layout/menu')) %>
+               <div class="grid grid-cols-12 child:col-span-12 mt-5 lg:mt-0 md:child:col-span-4 gap-4 child:rounded-lg child:bg-white child:dark:bg-gray-800 child:w-full child:flex
+               child:shadow child:p-4">
+                   <div class="flex items-center gap-x-4">
+                        <svg class="size-9 text-blue-500">
+                             <use href="#wallet" />
+                        </svg>
+                        <div class="flex flex-col gap-y-1">
+                            <h2 class="font-DanaDemiBold">محصولات</h2>
+                            <p class="text-gray-500">محصول : <span>0 </span></p>
+                     </div>
+                   </div>
+                   <div class="flex items-center gap-x-4">
+                        <svg class="size-9 text-blue-500">
+                             <use href="#shopping-bag" />
+                        </svg>
+                        <div class="flex flex-col gap-y-1">
+                            <h2 class="font-DanaDemiBold">سفارش‌ها</h2>
+                            <p class="text-gray-500">10 سفارش</p>
+                     </div>
+                   </div>
+                   <div class="flex items-center gap-x-4">
+                        <svg class="size-9 text-blue-500">
+                             <use href="#ticket" />
+                        </svg>
+                        <div class="flex flex-col gap-y-1">
+                            <h2 class="font-DanaDemiBold">کاربران</h2>
+                            <p class="text-gray-500">5 کاربر</p>
+                     </div>
+                   </div>
+               </div>
+               <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white mt-5">
+                <span class="flex items-center gap-x-2">
+                    <img src="./images/svg/status-delivered.svg" class="w-10" alt="">
+                    <h2 class="font-DanaMedium text-lg">سفارش های اخیر :</h2>
+                </span>
+                <div class="relative mt-5 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700  bg-gray-100 dark:bg-gray-900 dark:text-gray-200">
+                              <tr>
+                                    <th scope="col" class="px-6 py-3.5">
+                                            نام محصول
+                                    </th>
+                                     <th scope="col" class="px-6 py-3.5">
+                                            تاریخ
+                                    </th>
+                                    <th scope="col" class="px-6 py-3.5">
+                                            قیمت
+                                    </th>
+                                    <th scope="col" class="px-6 py-3.5">
+                                            وضعیت
+                                    </th>
+                              </tr>
+                        </thead>
+                            <tbody>
+                                <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                                    <th scope="row"
+                                        class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
+                                            <img class="w-10 object-cover" src="" alt="">
+                                          وی
+                                    </th>
+                                    <td class="px-6 py-5">
+                                                1402/11/11
+                                    </td>
+                                    <td class="px-6 py-5">
+                                                62,000,000 تومان
+                                    </td>
+                                    <td class="px-6 py-5 text-red-500 font-DanaDemiBold">
+                                                لغو شده
+                                    </td>
+                                </tr>
+                                <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                                    <th scope="row"
+                                        class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
+                                            <img class="w-10 object-cover" src="" alt="">
+                                          گینر
+                                    </th>
+                                    <td class="px-6 py-5">
+                                                1402/11/11
+                                    </td>
+                                    <td class="px-6 py-5">
+                                                62,000,000 تومان
+                                    </td>
+                                    <td class="px-6 py-5 text-yellow-500 font-DanaDemiBold">
+                                        درانتظار پرداخت
+                                    </td>
+                                </tr>
+                                <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                                    <th scope="row"
+                                        class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
+                                            <img class="w-10 object-cover" src="" alt="">
+                                          کراتین
+                                    </th>
+                                    <td class="px-6 py-5">
+                                                1402/11/11
+                                    </td>
+                                    <td class="px-6 py-5">
+                                                62,000,000 تومان
+                                    </td>
+                                    <td class="px-6 py-5 text-green-500 font-DanaDemiBold">
+                                       پرداخت شده
+                                    </td>
+                                </tr>
+                            </tbody>
+                    </table>
+                </div>
+               </div>
+            </div>
+        </div>
+    </main>

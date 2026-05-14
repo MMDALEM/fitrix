@@ -20,11 +20,15 @@ router.use("/shop", verifyTokenPublic, shopRouter);
 const  dashboardRouter  = require("./dashboard/dashboard");
 router.use("/dashboard", verifyUser, dashboardRouter);
 
+//admin routers
 const  adminRouter  = require("./admin/admin");
 router.use("/admin", adminRouter);
 
-router.post('/update-exchange-rate', async (req, res) => {
-  await updateExchangeRate();
+const  productAdminRouter  = require("./admin/product");
+router.use("/admin/product", productAdminRouter);
+
+router.get('/update-exchange-rate', async (req, res ,next) => {
+  await updateExchangeRate(req, res ,next);
   res.json({ success: true, message: 'نرخ ارز آپدیت شد' });
 });
 

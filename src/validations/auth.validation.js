@@ -27,6 +27,17 @@ const profileSchema = Joi.object({
   }),
 });
 
-module.exports = {
-  authSchema ,profileSchema
-};
+const authAdminSchema = Joi.object({
+  username: Joi.string().min(3).max(50).required().messages({
+    'string.min': 'نام کاربری نمیتواند کمتر از 3 کاراکتر باشد',
+    'string.max': 'نام کاربری نمیتواند بیشتر از 50 کاراکتر باشد',
+    'string.empty': 'نام کاربری نمیتواند خالی بماند',
+  }),
+  password: Joi.string().min(3).max(50).required().messages({
+    'string.min': 'رمز عبور نمیتواند کمتر از 3 کاراکتر باشد',
+    'string.max': 'رمز عبور نمیتواند بیشتر از 50 کاراکتر باشد',
+    'string.empty': 'رمز عبور نمیتواند خالی بماند',
+  }),
+});
+
+module.exports = { authSchema, profileSchema, authAdminSchema };

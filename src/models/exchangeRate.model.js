@@ -6,7 +6,11 @@ const exchangeRateSchema = new mongoose.Schema({
     required: true,
     default: 'AED'
   },
-  rate: {
+  rateInRials: {
+    type: Number,
+    required: true
+  },
+  rateInToman: {
     type: Number,
     required: true
   },

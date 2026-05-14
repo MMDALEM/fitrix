@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" dir="rtl">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= settings.siteName %></title>
+    <link rel="stylesheet" href="/styles/app.css">
+    <link rel="stylesheet" href="/styles/swiper-bundle.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.min.css" >
+    <link rel="icon" type="image/png" href="/images/favicon.png" />
+    <!-- ==========================  DARK MODE SCRIPT ============================= -->
+    <script type="text/javascript">
+        if (
+            localStorage.theme === "dark" ||
+            (!("theme" in localStorage) &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches)
+        ) {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+    </script>
+</head>
+
+<body>
+
+    <%- include(viewPath('layout/svg')) %> <%- body %> 
+    <div class="overlay"></div>
+    <div class="search-overlay"></div>
+    
+    <script src="/scripts/swiper-bundle.min.js"></script>
+    <script src="/scripts/app.js"></script>
+    <script src="/scripts/slider.js" type="module"></script>
+    <script src="/scripts/timer.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.all.min.js"></script>
+    <script src="/js/conf.js"></script>
+    <script src="/js/jquery-3.2.1.slim.min.js"></script>
+    <script src="/js/1.12.9.popper.min.js"></script>
+    <%- include(viewPath('layout/sweetalert')) %>
+</body>
+
+</html>

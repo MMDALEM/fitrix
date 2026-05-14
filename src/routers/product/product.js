@@ -5,8 +5,11 @@ const router = experss.Router();
 const categoriesController = require("../../controllers/product/categories/categories.controller");
 const productController = require("../../controllers/product/product.controller");
 
+
+
+
 //shop single Router 
-router.get("/:slug", productController.shopSingle);
+router.get("/:slug", productController.productSingle);
 
 //homeRouer
 router.get("/categories", categoriesController.allCategories);

@@ -57,7 +57,28 @@ const ProductSchema = new Schema({
         required: true,
         min: 0
     },
-    number: {
+    AED: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    // درصد سود
+    darsad: {
+        highNumber: {
+            type: Number,
+            required: true,
+            min: 0,
+            max: 100,
+        },
+        single: {
+            type: Number,
+            required: true,
+            min: 0,
+            max: 100,
+        },
+    },
+    // موجودی انبار
+    quantity: {
         type: Number,
         required: true,
         min: 0
@@ -79,6 +100,7 @@ const ProductSchema = new Schema({
         type: Date,
         default: null
     },
+    // تاریخ پایان فروش ویژه
     saleEndDate: {
         type: Date,
         default: null
@@ -102,48 +124,25 @@ const ProductSchema = new Schema({
         type: String,
         min: 0
     },
-    reviews: [{
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: true
-        },
-        rating: {
-            type: Number,
-            required: true,
-            min: 1,
-            max: 5
-        },
-        comment: {
-            type: String,
-            trim: true,
-            maxlength: 1000
-        },
-        date: {
-            type: Date,
-            default: Date.now
-        },
-        // آیا خریدار تایید شده است؟
-        isVerifiedPurchase: {
-            type: Boolean,
-            default: false
-        }
-    }],
+    // آیا محصول ویژه است؟
     featured: {
         type: Boolean,
         default: false,
         index: true
     },
+    // تعداد فروش رفته
     soldCount: {
         type: Number,
         default: 0,
         min: 0
     },
+    // تعداد بازدیدها
     viewsCount: {
         type: Number,
         default: 0,
         min: 0
     },
+    // وضعیت فعال بودن محصول
     isActive: {
         type: Boolean,
         default: true,
@@ -154,7 +153,7 @@ const ProductSchema = new Schema({
 });
 
 // Index برای جستجو
-ProductSchema.index({ name: 'text', description: 'text' });
+ProductSchema.index({ title: 'text', description: 'text' })
 
 // Virtual برای محاسبه درصد تخفیف
 ProductSchema.virtual('discountPercentage').get(function() {
@@ -177,22 +176,22 @@ ProductSchema.virtual('finalPrice').get(function() {
 });
 
 // Middleware برای بررسی خودکار وضعیت فروش ویژه
-ProductSchema.pre('save', function(next) {
-    const now = new Date();
+// ProductSchema.pre('save', function(next) {
+//     const now = new Date();
     
-    // اگر تاریخ فروش ویژه گذشته باشد، onSale را false کن
-    if (this.onSale && this.saleEndDate && this.saleEndDate < now) {
-        this.onSale = false;
-    }
+//     // اگر تاریخ فروش ویژه گذشته باشد، onSale را false کن
+//     if (this.onSale && this.saleEndDate && this.saleEndDate < now) {
+//         this.onSale = false;
+//     }
     
-    // اگر قیمت فروش بیشتر یا مساوی قیمت اصلی باشد، تخفیف را حذف کن
-    if (this.salePrice && this.salePrice >= this.price) {
-        this.salePrice = null;
-        this.onSale = false;
-    }
+//     // اگر قیمت فروش بیشتر یا مساوی قیمت اصلی باشد، تخفیف را حذف کن
+//     if (this.salePrice && this.salePrice >= this.price) {
+//         this.salePrice = null;
+//         this.onSale = false;
+//     }
     
-    next();
-});
+//     next();
+// });
 
 ProductSchema.plugin(mongoosepaginate);
 

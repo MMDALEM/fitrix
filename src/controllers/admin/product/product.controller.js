@@ -1,60 +1,91 @@
 const productModel = require("../../../models/product.model");
 const { getExchangeRate } = require("../../../services/exchangeRate.service");
 const controller = require("../../.controller");
-
+const categoriesModel = require("../../../models/categories.model");
+const brandModel = require("../../../models/brand.model");
+const fs = require('fs');
 class productController extends controller {
+  async product(req, res, next) {
+    try {
+
+      const categories = await categoriesModel.find().lean()
+      const brands = await brandModel.find().lean()
+
+      return res.render('admin/product', {
+        categories,
+        brands,
+      })
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async create(req, res, next) {
     try {
-      const { title, number, category, brand, originalPrice, image, ingredients, usage, howToUse, flavor, weight, description, type } = req.body;
+      const { title, quantity, category, brand, originalPrice,ingredients, usage, howToUse, flavor, weight, description, type } = req.body;
+
+        if (!req.file) {
+            const categories = await categoriesModel.find().lean()
+            const brands = await brandModel.find().lean()
+            return res.render('admin/product', {
+                layout: 'admin/layout',
+                pageTitle: 'محصول جدید',
+                currentPage: 'products',
+                categories,
+                brands,
+                error: 'آپلود تصویر محصول الزامی است'
+            })
+        }
 
       const slug = this.slugify(title);
 
-      let price = null;
-      if (originalPrice)
-        price = await this.convertToIRR(originalPrice);
+      const convertToIRR = await this.convertToIRR(originalPrice);
 
-      const product = await productModel.create({
+      const imageUrl = `/uploads/products/${req.file.filename}`;
+
+      await productModel.create({
         title,
         slug,
-        image,
+        image: imageUrl,
         category,
         brand,
         originalPrice,
-        number,
+        quantity,
         description,
         flavor,
         ingredients,
         usage,
         howToUse,
         weight,
-        price,
+        AED : convertToIRR.AED,
+        price : convertToIRR.priceTotal,
         type,
       });
 
-      return res.status(201).json({ success: true, product });
+      return res.redirect('/admin');
     } catch (err) {
-      next(err);
+      console.log(err)
+      if(err.code == 11000) {
+        fs.unlink(req.file.path, () => {})
+      return this.alertAndBack(req, res, {
+        title: "چنین محصولی ای از قبل وجود دارد لطفا نام محصول را تغییر دهید",
+        icon: "error",
+      });
+      }
+      if (req.file)
+        fs.unlink(req.file.path, () => {})
+      throw('خطا در ذخیره محصول')
     }
   }
 
   async convertToIRR(amountInAED) {
-    try {
-      const aedToIrr = await getExchangeRate();
-      
-      if (!aedToIrr) {
-        throw new Error('نرخ ارز موجود نیست');
-      }
-      
-      const priceInIRR = amountInAED * aedToIrr;
-      const finalPrice = Math.ceil((priceInIRR * 1.10) / 10000) * 10000;
-      
-      return finalPrice;
-    } catch (error) {
-      console.error('خطا در تبدیل ارز:', error);
-      throw new Error('خطا در تبدیل ارز');
-    }
+    const aedToIrr = await getExchangeRate();
+    
+    if (!aedToIrr)
+      throw new Error('نرخ ارز موجود نیست');
+    
+    return aedToIrr;
   }
-
 }
 
 module.exports = new productController();

@@ -19,7 +19,7 @@ module.exports = class controller {
     let title = data.title || "",
         icon = data.icon || "info",
         button = data.button || null,
-        timer = data.timer || 4500;
+        timer = data.timer || 5500;
     req.flash("sweetalert", { title, icon, button, timer });
   }
 

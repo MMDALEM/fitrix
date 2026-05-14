@@ -1,31 +1,45 @@
-// services/exchangeRate.service.js
 const ExchangeRate = require('../models/exchangeRate.model');
+const api_key = process.env.AED_API_KEY;
 
-const api_key = process.env.NAVASAN_API_KEY;
-
-async function updateExchangeRate() {
+async function updateExchangeRate(req, res ,next){
   try {
-    const response = await fetch(`https://api.navasan.tech/latest/?api_key=${api_key}`);
-    const data = await response.json();
+
+    const response = await fetch(`https://nerkh-api.ir/api/${api_key}/currency/?filter=AED`)
+    const json = await response.json()
     
-    await ExchangeRate.findOneAndUpdate(
+    const rateInRials = Number(json.data.prices.AED.current)
+    const rateInToman = rateInRials / 10
+
+    const exchangeRate = await ExchangeRate.findOneAndUpdate(
       { currency: 'AED' },
       { 
-        rate: data.aed.value,
+        rateInRials: rateInRials,
+        rateInToman: rateInToman,
         updatedAt: new Date()
-      },
-      { upsert: true, new: true }
+      }
     );
-    
-    console.log('✅ نرخ ارز آپدیت شد:', data.aed.value);
+
+    if(!exchangeRate)
+      await ExchangeRate.create({
+        currency: 'AED',
+        rateInRials: rateInRials,
+        rateInToman: rateInToman,
+      });
+
+    let title = `قیمت درهم بروز شد ریال: ${rateInRials}`,
+        icon = "info",
+        timer = 5500;
+    req.flash("sweetalert", { title, icon, timer });
+    return res.redirect(req.header("Referer") || "/");
+
   } catch (error) {
-    console.error('❌ خطا در آپدیت نرخ ارز:', error);
+    next(new Error('خطا در آپدیت نرخ ارز'));
   }
 }
 
 async function getExchangeRate() {
   const rate = await ExchangeRate.findOne({ currency: 'AED' });
-  return rate?.rate || null;
+  return rate?.rateInToman || null;
 }
 
 module.exports = { updateExchangeRate, getExchangeRate };

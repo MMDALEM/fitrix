@@ -13,6 +13,15 @@ const UserSchema = new mongoose.Schema({
         trim: true,
         maxlength: 50
     },
+    username: {
+        type: String,
+        trim: true,
+        maxlength: 50
+    },
+    password: {
+        type: String,
+        trim: true,
+    },
     email: {
         type: String,
         default: "",
@@ -28,14 +37,6 @@ const UserSchema = new mongoose.Schema({
         unique: true,
         trim: true,
         match: [/^09[0-9]{9}$/, 'شماره موبایل معتبر نیست']
-    },
-    otp: {
-        code: {
-            type: Number
-        },
-        expiresIn: {
-            type: Date
-        }
     },
     roles: {
         type: [String],
@@ -107,23 +108,23 @@ const UserSchema = new mongoose.Schema({
 });
 
 // Virtual برای نام کامل
-UserSchema.virtual('fullName').get(function() {
+UserSchema.virtual('fullName').get(function () {
     return `${this.firstName} ${this.lastName}`.trim() || 'کاربر';
 });
 
 // Virtual برای تعداد محصولات در سبد
-UserSchema.virtual('cartItemsCount').get(function() {
+UserSchema.virtual('cartItemsCount').get(function () {
     if (!this.cart || !this.cart.items) return 0;
     return this.cart.items.reduce((total, item) => total + item.quantity, 0);
 });
 
 // متد برای اضافه کردن محصول به سبد
-UserSchema.methods.addToCart = function(productId, quantity = 1, price) {
+UserSchema.methods.addToCart = function (productId, quantity = 1, price) {
     // پیدا کردن محصول در سبد
     const cartItemIndex = this.cart.items.findIndex(
         item => item.product.toString() === productId.toString()
     );
-    
+
     if (cartItemIndex >= 0) {
         // اگر محصول قبلاً در سبد بود، تعداد را افزایش بده
         this.cart.items[cartItemIndex].quantity += quantity;
@@ -137,13 +138,13 @@ UserSchema.methods.addToCart = function(productId, quantity = 1, price) {
             addedAt: new Date()
         });
     }
-    
+
     this.cart.updatedAt = new Date();
     return this.save();
 };
 
 // متد برای حذف محصول از سبد
-UserSchema.methods.removeFromCart = function(productId) {
+UserSchema.methods.removeFromCart = function (productId) {
     this.cart.items = this.cart.items.filter(
         item => item.product.toString() !== productId.toString()
     );
@@ -152,11 +153,11 @@ UserSchema.methods.removeFromCart = function(productId) {
 };
 
 // متد برای آپدیت تعداد محصول در سبد
-UserSchema.methods.updateCartItemQuantity = function(productId, quantity) {
+UserSchema.methods.updateCartItemQuantity = function (productId, quantity) {
     const cartItem = this.cart.items.find(
         item => item.product.toString() === productId.toString()
     );
-    
+
     if (cartItem) {
         if (quantity <= 0) {
             // اگر تعداد صفر یا منفی شد، محصول را حذف کن
@@ -166,12 +167,12 @@ UserSchema.methods.updateCartItemQuantity = function(productId, quantity) {
         this.cart.updatedAt = new Date();
         return this.save();
     }
-    
+
     return Promise.resolve(this);
 };
 
 // متد برای خالی کردن سبد
-UserSchema.methods.clearCart = function() {
+UserSchema.methods.clearCart = function () {
     this.cart.items = [];
     this.cart.totalPrice = 0;
     this.cart.updatedAt = new Date();
@@ -181,7 +182,7 @@ UserSchema.methods.clearCart = function() {
 // متد برای محاسبه مجموع قیمت سبد
 // UserSchema.methods.calculateCartTotal = async function() {
 //     await this.populate('cart.items.product');
-    
+
 //     let total = 0;
 //     for (const item of this.cart.items) {
 //         if (item.product) {
@@ -190,7 +191,7 @@ UserSchema.methods.clearCart = function() {
 //             total += finalPrice * item.quantity;
 //         }
 //     }
-    
+
 //     this.cart.totalPrice = total;
 //     return total;
 // };
@@ -214,5 +215,6 @@ UserSchema.methods.clearCart = function() {
 
 UserSchema.index({ email: 1, isActive: 1 });
 UserSchema.index({ phone: 1, isActive: 1 });
+UserSchema.index({ username: 1, isActive: 1 });
 
 module.exports = mongoose.model('User', UserSchema);
