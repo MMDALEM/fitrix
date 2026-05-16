@@ -1,7 +1,6 @@
 const categoriesModel = require("../../../models/categories.model");
 const controller = require("../../.controller");
 
-
 class categoriesController extends controller {
   async createCategories(req, res, next) {
     try {
@@ -23,12 +22,13 @@ class categoriesController extends controller {
 
   async createSubCategories(req, res, next) {
     try {
-
       const sub = req.body.subCategories;
-      
+
       const categories = await categoriesModel.findById(sub);
       if (!categories)
-        return res.status(404).json({ success: false, message: "Category not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Category not found" });
 
       const { name, slug, description, type, isActive, image } = req.body;
 
@@ -37,9 +37,9 @@ class categoriesController extends controller {
         slug,
         description,
         type,
-        subCategories : sub,
+        subCategories: sub,
         isActive,
-        image
+        image,
       });
 
       return res.status(201).json({ success: true, category });
@@ -47,16 +47,6 @@ class categoriesController extends controller {
       next(err);
     }
   }
-
-  // async address(req, res, next) {
-  //   try {
-  //     const addresses = await addressModel.find({ user: req.user._id });
-  //     return res.render("dashborad/address", { addresses });
-  //   } catch (err) {
-  //     next(err);
-  //   }
-  // }
-
 }
 
 module.exports = new categoriesController();
