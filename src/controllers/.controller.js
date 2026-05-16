@@ -1,4 +1,4 @@
-const autoBind = require('auto-bind-inheritance');
+const autoBind = require("auto-bind-inheritance");
 
 module.exports = class controller {
   constructor() {
@@ -14,12 +14,12 @@ module.exports = class controller {
     req.flash("formData", req.body);
     return res.redirect(`${url}`);
   }
-  
+
   alert(req, data) {
     let title = data.title || "",
-        icon = data.icon || "info",
-        button = data.button || null,
-        timer = data.timer || 5500;
+      icon = data.icon || "info",
+      button = data.button || null,
+      timer = data.timer || 5500;
     req.flash("sweetalert", { title, icon, button, timer });
   }
 
@@ -37,11 +37,10 @@ module.exports = class controller {
     return text
       .toString()
       .toLowerCase()
-      .replace(/\s+/g, '-')           // Replace spaces with -
-      .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-      .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-      .replace(/^-+/, '')             // Trim - from start of text
-      .replace(/-+$/, '');            // Trim - from end of text
+      .replace(/\s+/g, "-")
+      .replace(/[^\u0600-\u06FF\w\-]+/g, "") // Persian + English
+      .replace(/\-\-+/g, "-")
+      .replace(/^-+/, "")
+      .replace(/-+$/, "");
   }
-
 };

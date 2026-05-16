@@ -28,7 +28,7 @@ class authController extends controller {
 
         await this.updateOtpForUser(phone, code);
       } else await this.register(phone, code);
-      // await smsTeacherRegister(phone,code);
+      // await sms(phone,code);
 
       const cookie_otp = {
         phone: phone,
@@ -54,7 +54,7 @@ class authController extends controller {
           title: "کد یک بار مصرف برای شماارسال شد ",
           icon: "success",
         },
-        `auth/otp`
+        `auth/otp`,
       );
     } catch (err) {
       next(err);
@@ -92,8 +92,6 @@ class authController extends controller {
           icon: "error",
         });
 
-        
-
       const user = await userModel.findOne({ phone });
       if (!user)
         return this.alertAndBack(req, res, {
@@ -107,11 +105,11 @@ class authController extends controller {
           icon: "error",
         });
 
-    if (parseInt(code) !== user.otp.code)
-      return this.alertAndBack(req, res, {
-        title: "کد صحیح نیست",
-        icon: "error",
-      });
+      if (parseInt(code) !== user.otp.code)
+        return this.alertAndBack(req, res, {
+          title: "کد صحیح نیست",
+          icon: "error",
+        });
 
       const token = await jwtSign(user.id);
 
@@ -134,7 +132,7 @@ class authController extends controller {
           title: "اعتبار سنجی با موفقیت انجام شد",
           icon: "success",
         },
-        "/dashboard"
+        "/dashboard",
       );
     } catch (err) {
       console.log(err);
@@ -190,7 +188,7 @@ class authController extends controller {
           title: "با موفقیت خارج شدید",
           icon: "success",
         },
-        "/"
+        "/",
       );
     } catch (err) {
       next(err);

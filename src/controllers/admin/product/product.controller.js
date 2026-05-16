@@ -3,18 +3,17 @@ const { getExchangeRate } = require("../../../services/exchangeRate.service");
 const controller = require("../../.controller");
 const categoriesModel = require("../../../models/categories.model");
 const brandModel = require("../../../models/brand.model");
-const fs = require('fs');
+const fs = require("fs");
 class productController extends controller {
   async product(req, res, next) {
     try {
+      const categories = await categoriesModel.find().lean();
+      const brands = await brandModel.find().lean();
 
-      const categories = await categoriesModel.find().lean()
-      const brands = await brandModel.find().lean()
-
-      return res.render('admin/product', {
+      return res.render("admin/product", {
         categories,
         brands,
-      })
+      });
     } catch (err) {
       next(err);
     }
@@ -22,24 +21,43 @@ class productController extends controller {
 
   async create(req, res, next) {
     try {
-      const { title, quantity, category, brand, originalPrice,ingredients, usage, howToUse, flavor, weight, description, type } = req.body;
+      const {
+        title,
+        quantity,
+        category,
+        brand,
+        originalPrice,
+        ingredients,
+        usage,
+        howToUse,
+        flavor,
+        weight,
+        description,
+        type,
+        servings,
+        highNumber,
+        single,
+        AED,
+      } = req.body;
 
-        if (!req.file) {
-            const categories = await categoriesModel.find().lean()
-            const brands = await brandModel.find().lean()
-            return res.render('admin/product', {
-                layout: 'admin/layout',
-                pageTitle: 'محصول جدید',
-                currentPage: 'products',
-                categories,
-                brands,
-                error: 'آپلود تصویر محصول الزامی است'
-            })
-        }
+      if (!req.file) {
+        const categories = await categoriesModel.find().lean();
+        const brands = await brandModel.find().lean();
+        return res.render("admin/product", {
+          layout: "admin/layout",
+          pageTitle: "محصول جدید",
+          currentPage: "products",
+          categories,
+          brands,
+          error: "آپلود تصویر محصول الزامی است",
+        });
+      }
 
       const slug = this.slugify(title);
 
       const convertToIRR = await this.convertToIRR(originalPrice);
+
+      console.log("قیمت به ریال:", convertToIRR);
 
       const imageUrl = `/uploads/products/${req.file.filename}`;
 
@@ -52,38 +70,41 @@ class productController extends controller {
         originalPrice,
         quantity,
         description,
+        servings,
         flavor,
+        darsad: {
+          highNumber,
+          single,
+        },
         ingredients,
         usage,
         howToUse,
         weight,
-        AED : convertToIRR.AED,
-        price : convertToIRR.priceTotal,
+        AED: quantity,
+        price: convertToIRR,
         type,
       });
 
-      return res.redirect('/admin');
+      return res.redirect("/admin");
     } catch (err) {
-      console.log(err)
-      if(err.code == 11000) {
-        fs.unlink(req.file.path, () => {})
-      return this.alertAndBack(req, res, {
-        title: "چنین محصولی ای از قبل وجود دارد لطفا نام محصول را تغییر دهید",
-        icon: "error",
-      });
+      console.log(err);
+      if (err.code == 11000) {
+        fs.unlink(req.file.path, () => {});
+        return this.alertAndBack(req, res, {
+          title: "چنین محصولی ای از قبل وجود دارد لطفا نام محصول را تغییر دهید",
+          icon: "error",
+        });
       }
-      if (req.file)
-        fs.unlink(req.file.path, () => {})
-      throw('خطا در ذخیره محصول')
+      if (req.file) fs.unlink(req.file.path, () => {});
+      throw "خطا در ذخیره محصول";
     }
   }
 
-  async convertToIRR(amountInAED) {
+  async convertToIRR() {
     const aedToIrr = await getExchangeRate();
-    
-    if (!aedToIrr)
-      throw new Error('نرخ ارز موجود نیست');
-    
+
+    if (!aedToIrr) throw new Error("نرخ ارز موجود نیست");
+
     return aedToIrr;
   }
 }
