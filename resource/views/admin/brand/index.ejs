@@ -5,158 +5,53 @@
 
         <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white mt-5 lg:mt-0 w-full">
             <div class="flex items-center justify-between">
-                <h2 class="font-DanaMedium text-lg">ایجاد محصول جدید</h2>
-            </div>
-
-            <div class="flex items-center gap-x-4 mt-3">
-                <a href="/admin/products" class="flex items-center gap-x-1 text-blue-500">
-                    <svg class="size-5"><use href="#document"></use></svg>
-                    <span class="font-DanaMedium">مشاهده همه محصولات</span>
-                </a>
-            </div>
-
-            <div class="flex items-center gap-x-4 mt-3">
-                <a href="/admin/products/pdf" class="flex items-center gap-x-1 text-red-500">
-                    <svg class="size-5"><use href="#document"></use></svg>
-                    <span class="font-DanaMedium"> دانلود pdf </span>
-                </a>
+                <h2 class="font-DanaMedium text-lg">ایجاد برند جدید</h2>
             </div>
 
             <form class="mt-5 grid grid-cols-12 gap-5 child:col-span-12 child:lg:col-span-6"
-                  action="/admin/product"
+                  action="/admin/brand"
                   method="POST"
                   enctype="multipart/form-data">
 
-                <!-- نام محصول -->
+                <!-- نام برند -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">نام محصول <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">نام برند <lable style="color : red">*</lable></label>
                     <div class="mt-3">
-                        <input name="title" type="text" placeholder="نام محصول را وارد کنید"
+                        <input name="title" type="text" placeholder="نام برند را وارد کنید"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
                     </div>
                 </div>
 
                 <!-- توضیحات -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">توضیحات محصول <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">توضیحات برند <lable style="color : red">*</lable></label>
                     <div class="mt-3">
-                        <input name="description" type="text" placeholder="توضیحات محصول را وارد کنید"
+                        <input name="description" type="text" placeholder="توضیحات برند را وارد کنید"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
                     </div>
                 </div>
 
-                <!-- دسته بندی -->
+                <!-- کشور -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">دسته بندی <lable style="color : red">*</lable></label>
-                    <div class="mt-3 relative">
-                        <select name="category"
-                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
-                            <option value="" disabled selected>دسته بندی محصول را انتخاب کنید</option>
-                            <% categories.forEach(cat => { %>
-                                <option value="<%= cat._id %>"><%= cat.title %></option>
-                            <% }) %>
-                        </select>
-                        <div class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                            <svg class="size-4"><use href="#chevron"></use></svg>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- برند -->
-                <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">برند <lable style="color : red">*</lable></label>
-                    <div class="mt-3 relative">
-                        <select name="brand"
-                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
-                            <option value="" disabled selected>برند محصول را انتخاب کنید</option>
-                            <% brands.forEach(brand => { %>
-                                <option value="<%= brand._id %>"><%= brand.title %></option>
-                            <% }) %>
-                        </select>
-                        <div class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                            <svg class="size-4"><use href="#chevron"></use></svg>
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">درصد عمده <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">کشور برند <lable style="color : red">*</lable></label>
                     <div class="mt-3">
-                        <input name="highNumber" type="number" placeholder="درصد عمده را وارد کنید"
+                        <input name="country" type="text" placeholder=" کشور برند را وارد کنید"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
                     </div>
                 </div>
 
+                <!-- ادرس سایت -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">درصد تکی <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">وب سایت <lable style="color : red">*</lable></label>
                     <div class="mt-3">
-                        <input name="single" type="number" placeholder="درصد تکی را وارد کنید"
+                        <input name="website" type="text" placeholder=" آدرس وب سایت برند را وارد کنید"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
                     </div>
                 </div>
-
-
-
-                <!-- موجودی -->
-                <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">موجودی <lable style="color : red">*</lable></label>
-                    <div class="mt-3">
-                        <input name="quantity" type="number" placeholder="تعداد موجودی را وارد کنید"
-                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
-                    </div>
-                </div>
-
-                <!-- قیمت اصلی -->
-                <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">قیمت اصلی (درهم) <lable style="color : red">*</lable></label>
-                    <div class="mt-3">
-                        <input name="originalPrice" type="number" placeholder="قیمت اصلی را وارد کنید"
-                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
-                    </div>
-                </div>
-
-                <!-- تعداد دفعات مصرف -->
-                <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">تعداد دفعات مصرف</label>
-                    <div class="mt-3">
-                        <input name="servings" type="number" placeholder="تعداد دفعات مصرف را وارد کنید"
-                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
-                    </div>
-                </div>
-
-                <!-- طعم -->
-                <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">طعم</label>
-                    <div class="mt-3">
-                        <input name="flavor" type="text" placeholder="طعم محصول را وارد کنید"
-                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
-                    </div>
-                </div>
-
-                <!-- وزن -->
-                <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">وزن</label>
-                    <div class="mt-3">
-                        <input name="weight" type="text" placeholder="وزن محصول را وارد کنید"
-                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
-                    </div>
-                </div>
-
-                <!-- نحوه استفاده -->
-                <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">نحوه استفاده</label>
-                    <div class="mt-3">
-                        <input name="howToUse" type="text" placeholder="نحوه استفاده را وارد کنید"
-                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
-                    </div>
-                </div>
-
                 <!-- ─── آپلود تصویر ─── -->
                 <div class="col-span-12">
                     <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-3">
-                        تصویر محصول
+                        تصویر برند
                     </label>
 
                     <!-- ناحیه drag & drop -->
@@ -222,7 +117,7 @@
                         <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
-                        ذخیره محصول
+                        ذخیره برند
                     </button>
                 </div>
 
@@ -312,7 +207,7 @@
     document.querySelector('form').addEventListener('submit', e => {
         if (!imageInput.files || !imageInput.files[0]) {
             e.preventDefault()
-            showError('انتخاب تصویر محصول الزامی است')
+            showError('انتخاب تصویر دسته بندی الزامی است')
             document.getElementById('uploadArea').scrollIntoView({ behavior: 'smooth', block: 'center' })
         }
     })

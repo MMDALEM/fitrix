@@ -4,32 +4,37 @@ const { verifyTokenPublic } = require("../middlewares/authPublic.middleware");
 const { updateExchangeRate } = require("../services/exchangeRate.service");
 const { logout } = require("../controllers/auth/auth.controller");
 
-
 const homeRouter = require("./home/home");
-router.use("/",homeRouter);
+router.use("/", homeRouter);
 
-const  productRouter  = require("./product/product");
+const productRouter = require("./product/product");
 router.use("/product", productRouter);
 
-const  authRouter  = require("./auth/auth");
+const authRouter = require("./auth/auth");
 router.use("/auth", authRouter);
 
-const  shopRouter  = require("./shop/shop");
+const shopRouter = require("./shop/shop");
 router.use("/shop", verifyTokenPublic, shopRouter);
 
-const  dashboardRouter  = require("./dashboard/dashboard");
+const dashboardRouter = require("./dashboard/dashboard");
 router.use("/dashboard", verifyUser, dashboardRouter);
 
 //admin routers
-const  adminRouter  = require("./admin/admin");
+const adminRouter = require("./admin/admin");
 router.use("/admin", adminRouter);
 
-const  productAdminRouter  = require("./admin/product");
+const productAdminRouter = require("./admin/product");
 router.use("/admin/product", productAdminRouter);
 
-router.get('/update-exchange-rate', async (req, res ,next) => {
-  await updateExchangeRate(req, res ,next);
-  res.json({ success: true, message: 'نرخ ارز آپدیت شد' });
+const brandAdminRouter = require("./admin/brand");
+router.use("/admin/brand", brandAdminRouter);
+
+const categoryAdminRouter = require("./admin/category");
+router.use("/admin/category", categoryAdminRouter);
+
+router.get("/update-exchange-rate", async (req, res, next) => {
+  await updateExchangeRate(req, res, next);
+  res.json({ success: true, message: "نرخ ارز آپدیت شد" });
 });
 
 router.use("/logout", logout);

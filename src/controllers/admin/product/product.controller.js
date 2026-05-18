@@ -4,6 +4,7 @@ const controller = require("../../.controller");
 const categoriesModel = require("../../../models/categories.model");
 const brandModel = require("../../../models/brand.model");
 const fs = require("fs");
+
 class productController extends controller {
   async product(req, res, next) {
     try {
@@ -37,7 +38,6 @@ class productController extends controller {
         servings,
         highNumber,
         single,
-        AED,
       } = req.body;
 
       if (!req.file) {
@@ -55,16 +55,34 @@ class productController extends controller {
 
       const slug = this.slugify(title);
 
-      const convertToIRR = await this.convertToIRR(originalPrice);
+      const { price, aedRate } = await this.convertToIRR(originalPrice);
 
-      console.log("قیمت به ریال:", convertToIRR);
+      const image = `/uploads/file/${req.file.filename}`;
 
-      const imageUrl = `/uploads/products/${req.file.filename}`;
+      // validation
+      const missing = [];
+
+      if (!title) missing.push("نام محصول");
+      if (!description) missing.push("توضیحات");
+      if (!category) missing.push("دسته‌بندی");
+      if (!brand) missing.push("برند");
+      if (!originalPrice) missing.push("قیمت اصلی (درهم)");
+      if (!quantity) missing.push("موجودی");
+      if (!highNumber) missing.push("درصد سود عمده");
+      if (!single) missing.push("درصد سود تکی");
+
+      if (missing.length > 0) {
+        if (req.file) fs.unlink(req.file.path, () => {});
+        return this.alertAndBack(req, res, {
+          title: `لطفاً موارد زیر را تکمیل کنید:\n${missing.join(" | ")}`,
+          icon: "error",
+        });
+      }
 
       await productModel.create({
         title,
         slug,
-        image: imageUrl,
+        image,
         category,
         brand,
         originalPrice,
@@ -80,14 +98,16 @@ class productController extends controller {
         usage,
         howToUse,
         weight,
-        AED: quantity,
-        price: convertToIRR,
+        price,
+        AED: aedRate,
         type,
       });
 
-      return res.redirect("/admin");
+      return this.alertAndBack(req, res, {
+        title: "محصول با موفقیت ایجاد شد",
+        icon: "success",
+      });
     } catch (err) {
-      console.log(err);
       if (err.code == 11000) {
         fs.unlink(req.file.path, () => {});
         return this.alertAndBack(req, res, {
@@ -96,16 +116,20 @@ class productController extends controller {
         });
       }
       if (req.file) fs.unlink(req.file.path, () => {});
-      throw "خطا در ذخیره محصول";
+      return this.alertAndBack(req, res, {
+        title: "خطا در ذخیره محصول",
+        icon: "error",
+      });
     }
   }
 
-  async convertToIRR() {
-    const aedToIrr = await getExchangeRate();
+  async convertToIRR(originalPrice) {
+    const aedRate = await getExchangeRate();
+    if (!aedRate) throw new Error("نرخ ارز موجود نیست");
 
-    if (!aedToIrr) throw new Error("نرخ ارز موجود نیست");
+    const price = Math.ceil((originalPrice * aedRate) / 10000) * 10000;
 
-    return aedToIrr;
+    return { price, aedRate };
   }
 }
 

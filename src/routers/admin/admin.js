@@ -2,9 +2,7 @@ const experss = require("express");
 const router = experss.Router();
 
 //controllers
-const categoriesController = require("../../controllers/admin/categories/categories.controller");
 // const uploadCenterController = require("../../controllers/admin/uploadCenter.controller");
-const brandController = require("../../controllers/admin/brand/brand.controller");
 const authAdminController = require("../../controllers/admin/auth/auth.controller");
 
 //upload
@@ -36,13 +34,6 @@ router.get("/hashPassword", authAdminController.hashPassword);
 
 // router.get("/logout", authAdminController.logout);
 // router.get("/", adminController.admin);
-
-//categories
-router.post("/categories", categoriesController.createCategories);
-router.post("/subCategories", categoriesController.createSubCategories);
-
-//brand
-router.post("/brand", brandController.create);
 
 // //tag
 // router.get("/tags", tagController.index);

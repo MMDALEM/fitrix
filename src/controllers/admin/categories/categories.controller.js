@@ -1,8 +1,15 @@
 const categoriesModel = require("../../../models/categories.model");
 const controller = require("../../.controller");
 
-
 class categoriesController extends controller {
+  async category(req, res, next) {
+    try {
+      return res.render("admin/category");
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async createCategories(req, res, next) {
     try {
       const { title, description, type } = req.body;
@@ -10,55 +17,58 @@ class categoriesController extends controller {
       const slug = this.slugify(title);
 
       // Create the category
-      const category = await categoriesModel.create({
+      await categoriesModel.create({
         title,
         slug,
         description,
         type,
       });
 
-      return res.status(201).json({ success: true, category });
+      return this.alertAndBack(req, res, {
+        title: "دسته‌بندی با موفقیت ایجاد شد",
+        icon: "success",
+      });
     } catch (err) {
+      if (err.code === 11000) {
+        return this.alertAndBack(req, res, {
+          title: "چنین دسته‌بندی‌ای از قبل وجود دارد",
+          icon: "error",
+        });
+      }
       next(err);
     }
   }
 
   async createSubCategories(req, res, next) {
     try {
-
       const sub = req.body.subCategories;
-      
+
       const categories = await categoriesModel.findById(sub);
       if (!categories)
-        return res.status(404).json({ success: false, message: "Category not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Category not found" });
 
       const { name, slug, description, type, isActive, image } = req.body;
 
-      const category = await categoriesModel.create({
+      await categoriesModel.create({
         name,
         slug,
         description,
         type,
-        subCategories : sub,
+        subCategories: sub,
         isActive,
-        image
+        image,
       });
 
-      return res.status(201).json({ success: true, category });
+      return this.alertAndBack(req, res, {
+        title: "زیر دسته‌بندی با موفقیت ایجاد شد",
+        icon: "success",
+      });
     } catch (err) {
       next(err);
     }
   }
-
-  // async address(req, res, next) {
-  //   try {
-  //     const addresses = await addressModel.find({ user: req.user._id });
-  //     return res.render("dashborad/address", { addresses });
-  //   } catch (err) {
-  //     next(err);
-  //   }
-  // }
-
 }
 
 module.exports = new categoriesController();

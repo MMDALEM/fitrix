@@ -1,50 +1,52 @@
 const brandModel = require("../../../models/brand.model");
 const controller = require("../../.controller");
+const fs = require("fs");
 
 class brandController extends controller {
-  async create(req, res, next) {
+  async brand(req, res, next) {
     try {
-      const {
-        title,
-        description,
-        image,
-        logo,
-        country,
-        website,
-        displayOrder,
-        productCount,
-        type,
-      } = req.body;
-
-      const slug = this.slugify(title);
-
-      const category = await brandModel.create({
-        title,
-        slug,
-        description,
-        image,
-        logo,
-        country,
-        website,
-        displayOrder,
-        productCount,
-        type,
-      });
-
-      return res.status(201).json({ success: true, category });
+      return res.render("admin/brand");
     } catch (err) {
       next(err);
     }
   }
 
-  // async address(req, res, next) {
-  //   try {
-  //     const addresses = await addressModel.find({ user: req.user._id });
-  //     return res.render("dashborad/address", { addresses });
-  //   } catch (err) {
-  //     next(err);
-  //   }
-  // }
+  async create(req, res, next) {
+    try {
+      const { title, description, country, website, displayOrder } = req.body;
+
+      const slug = this.slugify(title);
+      const image = `/uploads/files/brand/${req.file.filename}`;
+
+      console.log(country, website);
+
+      await brandModel.create({
+        title,
+        slug,
+        description,
+        image,
+        country,
+        website,
+        displayOrder,
+      });
+
+      return this.alertAndBack(req, res, {
+        title: "برند با موفقیت ایجاد شد",
+        icon: "success",
+      });
+    } catch (err) {
+      if (req.file) {
+        fs.unlink(req.file.path, () => {});
+      }
+      if (err.code === 11000) {
+        return this.alertAndBack(req, res, {
+          title: "چنین برندی از قبل وجود دارد",
+          icon: "error",
+        });
+      }
+      next(err);
+    }
+  }
 }
 
 module.exports = new brandController();
