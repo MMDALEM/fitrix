@@ -23,7 +23,6 @@ async function updateExchangeRate(req, res, next) {
     req.flash("sweetalert", { title, icon, timer });
     return res.redirect(req.header("Referer") || "/");
   } catch (error) {
-    console.error("خطا در بروزرسانی نرخ ارز:", error);
     next(new Error("خطا در آپدیت نرخ ارز"));
   }
 }

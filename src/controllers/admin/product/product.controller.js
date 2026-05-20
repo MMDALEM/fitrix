@@ -55,9 +55,13 @@ class productController extends controller {
 
       const slug = this.slugify(title);
 
-      const { price, aedRate } = await this.convertToIRR(originalPrice);
+      const { priceSingle, priceHigh, aedRate } = await this.convertToIRR(
+        Number(originalPrice),
+        Number(highNumber),
+        Number(single),
+      );
 
-      const image = `/uploads/file/${req.file.filename}`;
+      const image = `/uploads/files/product/${req.file.filename}`;
 
       // validation
       const missing = [];
@@ -85,20 +89,21 @@ class productController extends controller {
         image,
         category,
         brand,
-        originalPrice,
-        quantity,
+        originalPrice: Number(originalPrice),
+        quantity: Number(quantity),
         description,
         servings,
         flavor,
         darsad: {
-          highNumber,
-          single,
+          highNumber: Number(highNumber),
+          single: Number(single),
         },
         ingredients,
         usage,
         howToUse,
         weight,
-        price,
+        priceSingle,
+        priceHigh,
         AED: aedRate,
         type,
       });
@@ -123,13 +128,18 @@ class productController extends controller {
     }
   }
 
-  async convertToIRR(originalPrice) {
+  async convertToIRR(originalPrice, highNumber, single) {
     const aedRate = await getExchangeRate();
     if (!aedRate) throw new Error("نرخ ارز موجود نیست");
 
-    const price = Math.ceil((originalPrice * aedRate) / 10000) * 10000;
+    const base = originalPrice * aedRate;
 
-    return { price, aedRate };
+    const priceSingle = Math.ceil((base * (1 + single / 100)) / 10000) * 10000;
+
+    const priceHigh =
+      Math.ceil((base * (1 + highNumber / 100)) / 10000) * 10000;
+
+    return { priceSingle, priceHigh, aedRate };
   }
 }
 

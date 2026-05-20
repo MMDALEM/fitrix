@@ -303,9 +303,9 @@
                                 <div class="tooltiptext">علاقه‌مندی</div>
                             </div>
                         </div>
-                        <% if (product.originalPrice && product.originalPrice > product.price) { %>
+                        <% if (product.originalPrice && product.originalPrice > product.priceSingle) { %>
                         <span class="product-card_badge">
-                            <%= Math.round((1 - product.price / product.originalPrice) * 100) %>% تخفیف
+                            <%= Math.round((1 - product.priceSingle / product.originalPrice) * 100) %>% تخفیف
                         </span>
                         <% } %>
                     </div>
@@ -335,10 +335,10 @@
                                 </span>
                             </div>
                             <div class="product-card_price">
-                                <% if (product.originalPrice && product.originalPrice > product.price) { %>
+                                <% if (product.originalPrice && product.originalPrice > product.priceSingle) { %>
                                 <del><%= product.originalPrice.toLocaleString() %> <h6>تومان</h6></del>
                                 <% } %>
-                                <p><%= product.price.toLocaleString() %></p>
+                                <p><%= product.priceSingle.toLocaleString() %></p>
                                 <span>تومان</span>
                             </div>
                         </div>

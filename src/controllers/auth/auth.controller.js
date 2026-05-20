@@ -135,7 +135,6 @@ class authController extends controller {
         "/dashboard",
       );
     } catch (err) {
-      console.log(err);
       next(err);
     }
   }

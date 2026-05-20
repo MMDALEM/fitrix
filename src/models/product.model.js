@@ -55,7 +55,12 @@ const ProductSchema = new Schema(
       required: true,
       min: 0,
     },
-    price: {
+    priceSingle: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    priceHigh: {
       type: Number,
       required: true,
       min: 0,

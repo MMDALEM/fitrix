@@ -486,7 +486,7 @@
             <div class="w-full lg:w-1/4 lg:sticky top-5 flex flex-col gap-y-6">
                 <!-- PRICE -->
                 <div class="flex items-center gap-x-1">
-                    <p class="text-2xl font-DanaDemiBold"><%= (product.price).toLocaleString() %></p>
+                    <p class="text-2xl font-DanaDemiBold"><%= (product.priceSingle).toLocaleString() %></p>
                     <p class="">تومان</p>
                 </div>
                 <button
@@ -503,7 +503,7 @@
                 <button
                     class="w-full flex items-center gap-x-1 justify-between dark:bg-gray-900 dark:text-gray-400  bg-gray-100 transition-all rounded-lg py-2 px-2 xl:px-3 font-DanaMedium text-sm xl:text-base">
                     <p>مجموع خرید :</p>
-                    <p><%= (product.price).toLocaleString() %> تومان</p>
+                    <p><%= (product.priceSingle).toLocaleString() %> تومان</p>
                 </button>
                 <button
                     class="w-full flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-lg shadow py-2">
@@ -630,8 +630,8 @@
                                 </div>
                                 <!-- Price -->
                                 <div class="product-card_price">
-                                    <del><%= (product.price).toLocaleString() %> <h6>تومان</h6></del>
-                                    <p><%= (product.price).toLocaleString() %></p>
+                                    <del><%= (product.priceSingle).toLocaleString() %> <h6>تومان</h6></del>
+                                    <p><%= (product.priceSingle).toLocaleString() %></p>
                                     <span>تومان</span>
                                 </div>
                             </div>

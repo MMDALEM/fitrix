@@ -29,7 +29,7 @@
 
                 <!-- نام محصول -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">نام محصول <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">نام محصول <span class="text-red-500">*</span></label>
                     <div class="mt-3">
                         <input name="title" type="text" placeholder="نام محصول را وارد کنید"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
@@ -38,7 +38,7 @@
 
                 <!-- توضیحات -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">توضیحات محصول <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">توضیحات محصول <span class="text-red-500">*</span></label>
                     <div class="mt-3">
                         <input name="description" type="text" placeholder="توضیحات محصول را وارد کنید"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
@@ -47,7 +47,7 @@
 
                 <!-- دسته بندی -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">دسته بندی <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">دسته بندی <span class="text-red-500">*</span></label>
                     <div class="mt-3 relative">
                         <select name="category"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
@@ -64,7 +64,7 @@
 
                 <!-- برند -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">برند <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">برند <span class="text-red-500">*</span></label>
                     <div class="mt-3 relative">
                         <select name="brand"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
@@ -78,30 +78,26 @@
                         </div>
                     </div>
                 </div>
-
-
-
+                <!-- درصد عمده -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">درصد عمده <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">درصد عمده <span class="text-red-500">*</span></label>
                     <div class="mt-3">
-                        <input name="highNumber" type="number" placeholder="درصد عمده را وارد کنید"
+                        <input name="highNumber" type="number" min="0" max="100" placeholder="درصد عمده را وارد کنید"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
                     </div>
                 </div>
-
+                <!-- درصد تکی -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">درصد تکی <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">درصد تکی <span class="text-red-500">*</span></label>
                     <div class="mt-3">
-                        <input name="single" type="number" placeholder="درصد تکی را وارد کنید"
+                        <input name="single" type="number" min="0" max="100" placeholder="درصد تکی را وارد کنید"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
                     </div>
                 </div>
-
-
 
                 <!-- موجودی -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">موجودی <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">موجودی <span class="text-red-500">*</span></label>
                     <div class="mt-3">
                         <input name="quantity" type="number" placeholder="تعداد موجودی را وارد کنید"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
@@ -110,7 +106,7 @@
 
                 <!-- قیمت اصلی -->
                 <div>
-                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">قیمت اصلی (درهم) <lable style="color : red">*</lable></label>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">قیمت اصلی (درهم) <span class="text-red-500">*</span></label>
                     <div class="mt-3">
                         <input name="originalPrice" type="number" placeholder="قیمت اصلی را وارد کنید"
                             class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">

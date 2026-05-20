@@ -18,8 +18,6 @@ class brandController extends controller {
       const slug = this.slugify(title);
       const image = `/uploads/files/brand/${req.file.filename}`;
 
-      console.log(country, website);
-
       await brandModel.create({
         title,
         slug,
