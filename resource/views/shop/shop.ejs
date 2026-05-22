@@ -310,7 +310,7 @@
                         <% } %>
                     </div>
 
-                    <a href="/product/<%= product.slug %>" class="relative block overflow-hidden">
+                    <a href="/product/<%= product.slug %>" class="object-contain object-center h-full w-32 mx-auto transition-transform duration-300 group-hover:scale-105">
                         <img class="product-card_img" 
                             src="<%= product.image %>"
                             alt="<%= product.title %>">
@@ -335,8 +335,8 @@
                                 </span>
                             </div>
                             <div class="product-card_price">
-                                <% if (product.originalPrice && product.originalPrice > product.priceSingle) { %>
-                                <del><%= product.originalPrice.toLocaleString() %> <h6>تومان</h6></del>
+                                <% if (product.priceSingle && product.originalPrice > product.priceSingle) { %>
+                                <del><%= product.priceSingle.toLocaleString() %> <h6>تومان</h6></del>
                                 <% } %>
                                 <p><%= product.priceSingle.toLocaleString() %></p>
                                 <span>تومان</span>

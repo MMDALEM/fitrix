@@ -32,6 +32,9 @@ router.use("/admin/brand", brandAdminRouter);
 const categoryAdminRouter = require("./admin/category");
 router.use("/admin/category", categoryAdminRouter);
 
+const adminPdfRouter = require("./admin/pdf");
+router.use("/admin/pdf", adminPdfRouter);
+
 router.get("/update-exchange-rate", async (req, res, next) => {
   await updateExchangeRate(req, res, next);
   res.json({ success: true, message: "نرخ ارز آپدیت شد" });

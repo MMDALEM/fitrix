@@ -174,7 +174,7 @@
                             </div>
                             <!-- product img -->
                             <a href="/<%= product.slug %>">
-                                <img class="small-card_img" src="<%= product.image %>" alt="<%= product.slug %>">
+                                <img class="object-contain object-center h-full w-32 mx-auto transition-transform duration-300 group-hover:scale-105" src="<%= product.image %>" alt="<%= product.slug %>">
                             </a>
                             <!--  product footer -->
                             <div class="space-y-2">
@@ -255,7 +255,7 @@
                     <!-- PRODUCT ITEM -->
                 <% brands.forEach(brand => { %>
                     <div class="swiper-slide brand-card group">
-                        <a href="#"><img src="<%= brand.image %>" alt=""></a>
+                        <a href="#"><img src="<%= brand.image %>" class="object-contain object-center h-full w-32 mx-auto transition-transform duration-300 group-hover:scale-105" alt="<%= brand.title %>"></a>
                     </div>
                 <% }) %>
                 </div>

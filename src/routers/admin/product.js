@@ -8,6 +8,8 @@ const upload_multer = require("../../utils/multer");
 //product render
 router.get("/", productController.product);
 
-router.post("/", upload_multer.single('image') , productController.create);
+router.get("/page", productController.productPagePDF);
+
+router.post("/", upload_multer.single("image"), productController.create);
 
 module.exports = router;

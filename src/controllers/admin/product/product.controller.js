@@ -20,6 +20,38 @@ class productController extends controller {
     }
   }
 
+  async productPagePDF(req, res, next) {
+    try {
+      // گرفتن دسته‌بندی‌های فعال به ترتیب نمایش
+      const categories = await categoriesModel
+        .find({ isActive: true })
+        .sort({ level: 1, title: 1 })
+        .lean();
+
+      // گرفتن برندهای فعال
+      const brands = await brandModel
+        .find({ isActive: true })
+        .sort({ displayOrder: 1, title: 1 })
+        .lean();
+
+      // گرفتن همه محصولات با populate دسته‌بندی و برند
+      const products = await productModel
+        .find({})
+        .populate("category", "_id title")
+        .populate("brand", "_id title")
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res.render("admin/pdf", {
+        categories,
+        brands,
+        products,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async create(req, res, next) {
     try {
       const {
