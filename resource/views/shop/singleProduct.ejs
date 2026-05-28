@@ -316,7 +316,7 @@
                         </span>
                         <div class="grid grid-cols-12 child:col-span-3 child:app-border gap-x-4 child:size-16 child:rounded-lg child:cursor-pointer">
                             <div class="p-1 open-sliderModal">
-                                <img src="<%= product.image %>" class="object-cover  rounded-lg">
+                                <img style="object-fit: scale-down;" src="<%= product.image %>" class="object-cover  rounded-lg">
                             </div>
                             <div class="overflow-hidden relative open-sliderModal">
                                     <svg class="absolute size-8 text-gray-100 top-4 left-4 z-10">
@@ -329,7 +329,7 @@
                     <div class="slider-modal">
                         <div class="flex w-full h-fit items-center justify-between">
                             <h1 class="font-DanaMedium text-lg">
-                                تصاویر گوشی موبایل اپل مدل iPhone 16 دو سیم کارت
+                                <%= product.title %>
                             </h1>
                             <svg class="size-6 cursor-pointer close-sliderModal">
                                 <use href="#x-mark"></use>
@@ -339,16 +339,10 @@
                         <div class="swiper ProductDetailsSlider mt-14 px-10 w-96 relative">
                             <div class="swiper-wrapper w-[50%] child:w-full child:rounded-lg child:overflow-hidden">
                               <div class="swiper-slide">
-                                <img src="/images/products/11.png"  alt="">
+                                <img src="<%= product.image %>"  alt="">
                               </div>
                               <div class="swiper-slide">
-                                <img src="/images/products/12.webp"  alt="">
-                              </div>
-                              <div class="swiper-slide">
-                                <img src="/images/products/13.webp"  alt="">
-                              </div>
-                              <div class="swiper-slide">
-                                <img src="/images/products/14.webp"  alt="">
+                                <img src="<%= product.image %>"  alt="">
                               </div>
                             </div>
                         </div>
@@ -367,8 +361,10 @@
                     <!-- INFOS -->
                     <div class="w-full md:w-3/4 flex flex-col gap-y-7">
                         <div class="flex items-center justify-between">
-                            <a href="shop.html" class="font-DanaMedium text-sky-400">اپل / گوشی موبایل اپل</a>
-                            <div class="hidden md:flex items-center gap-x-2">
+                            <div class="flex items-center justify-between">
+                            <a href="/shop/<%= product.category.slug %>" class="font-DanaMedium text-sky-400"><%= product.category.title %></a>&nbsp;&nbsp;/&nbsp;&nbsp;<a href="/shop/<%= product.brand.slug %>" class="font-DanaMedium text-sky-400"><%= product.brand.title %></a>
+                            </div>
+                            <!-- <div class="hidden md:flex items-center gap-x-2">
                                 <div class="tooltip">
                                     <button class="rounded-full p-1.5 app-border app-hover">
                                         <svg class="size-4 md:size-5">
@@ -389,14 +385,14 @@
                                         علاقه مندی
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                         <!-- MOBILE SLIDER -->
                         <div class="flex md:hidden">
                             <div class="swiper MobileProductSlider w-full">
                                 <div class="swiper-wrapper w-full child:w-full child:overflow-hidden child:rounded-lg">
                                   <div class="swiper-slide">
-                                    <img src="<%= product.image %>" alt="">
+                                    <img style="object-fit: scale-down;" src="<%= product.image %>" alt="">
                                   </div>
                                 </div>
                                 <div class="swiper-pagination MobileProductSlider-pagination"></div>
@@ -413,20 +409,11 @@
                         </div>
                         <!-- COLOR -->
                         <div class="flex flex-col gap-y-4">
-                            <h1 class="font-DanaDemiBold text-lg color-title dark:text-gray-200">رنگ : سبز</h1>
+                            <h1 class="font-DanaDemiBold text-lg color-title dark:text-gray-200">طعم : شکلات</h1>
                             <div class="flex items-center gap-x-3 child:rounded-full child:size-9 child:p-1">
-                              <button class="color-select-btn ring-4 ring-blue-400 transition-all duration-300 ease-in-out">
-                                <span class="bg-black w-full h-full rounded-full flex"></span>
-                              </button>
-                              <button class="color-select-btn ring-1 ring-gray-400 transition-all duration-300 ease-in-out">
-                                <span class="bg-white app-border w-full h-full rounded-full flex"></span>
-                              </button>
-                              <button class="color-select-btn ring-1 ring-gray-400 transition-all duration-300 ease-in-out">
-                                <span class="bg-green-400 w-full h-full rounded-full flex"></span>
-                              </button>
-                              <button class="color-select-btn ring-1 ring-gray-400 transition-all duration-300 ease-in-out">
-                                <span class="bg-blue-500 w-full h-full rounded-full flex"></span>
-                              </button>
+                            <!--  <button class="color-select-btn ring-4 ring-blue-400 transition-all duration-300 ease-in-out">
+                                <span class="bg-brown w-full h-full rounded-full flex"></span>
+                              </button>-->
                             </div>
                         </div>  
                         <!-- Features Box  -->
@@ -485,26 +472,35 @@
             <!-- PRICE & ADD TO CART BOX -->
             <div class="w-full lg:w-1/4 lg:sticky top-5 flex flex-col gap-y-6">
                 <!-- PRICE -->
-                <div class="flex items-center gap-x-1">
-                    <p class="text-2xl font-DanaDemiBold"><%= (product.priceSingle).toLocaleString() %></p>
-                    <p class="">تومان</p>
+                <div class="flex items-center gap-x-1 justify-center">
+                    <p class="text-2xl font-DanaDemiBold product-price" data-price="<%= product.priceSingle %>">
+                        <%= (product.priceSingle).toLocaleString() %>
+                    </p>
+                    <p class="font-Dana text-sm text-red-500">تومان</p>
                 </div>
-                <button
-                    class="w-full flex items-center justify-between gap-x-1 rounded-lg border border-gray-200 dark:border-white/20 py-2 px-3">
-                    <svg class="w-6 h-6 increment text-green-600">
-                        <use href="#plus"></use>
-                    </svg>
-                    <input type="number" name="customInput" id="customInput" min="1" max="20" value="1"
-                        class="custom-input mr-4 text-lg bg-transparent">
-                    <svg class="w-6 h-6 decrement text-red-500">
-                        <use href="#minus"></use>
-                    </svg>
-                </button>
-                <button
-                    class="w-full flex items-center gap-x-1 justify-between dark:bg-gray-900 dark:text-gray-400  bg-gray-100 transition-all rounded-lg py-2 px-2 xl:px-3 font-DanaMedium text-sm xl:text-base">
+
+                <div class="w-full flex items-center justify-between gap-x-1 rounded-lg border border-gray-200 dark:border-white/20 py-2 px-3">
+                    <button type="button" class="increment-btn bg-transparent border-0 p-0 cursor-pointer">
+                        <svg class="w-6 h-6 text-green-600 pointer-events-none">
+                            <use href="#plus"></use>
+                        </svg>
+                    </button>
+                    <input type="number" name="customInput" id="customInput" min="0" max="20"
+                                                    value="1" class="custom-input w-4 mr-2 text-sm">
+                    <button type="button" class="decrement-btn bg-transparent border-0 p-0 cursor-pointer">
+                        <svg class="w-6 h-6 text-red-500 pointer-events-none">
+                            <use href="#minus"></use>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="w-full flex items-center gap-x-1 justify-between dark:bg-gray-900 dark:text-gray-400 bg-gray-100 transition-all rounded-lg py-2 px-2 xl:px-3 font-DanaMedium text-sm xl:text-base">
                     <p>مجموع خرید :</p>
-                    <p><%= (product.priceSingle).toLocaleString() %> تومان</p>
-                </button>
+                    <p>
+                        <span class="total-price"><%= (product.priceSingle).toLocaleString() %></span>
+                        <span class="font-Dana text-sm text-red-500">تومان</span>
+                    </p>
+                </div>
                 <button
                     class="w-full flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-lg shadow py-2">
                     افزودن به سبد 
@@ -513,12 +509,12 @@
                     </svg>
                 </button>
 
-                <div class="text-sm  text-gray-400 flex xl:items-center gap-x-1">
-                    <svg class="w-5 h-5">
+                <!-- <div class="text-sm  text-gray-400 flex xl:items-center gap-x-1">
+                    <svg class="w-3 h-3">
                         <use href="#info"></use>
                     </svg>
                     <p>ارسال رایگان برای خریدهای بالای 4 میلیون تومان</p>
-                </div>
+                </div>-->
             </div>
         </section>
 
@@ -601,9 +597,9 @@
                         </div>
                         <!-- product img -->
                         <a href="/product/<%= productss.slug %>">
-                            <img class="product-card_img group-hover:opacity-0 absolute" src="<%= productss.image %>"
+                            <img style="object-fit: scale-down;" class="product-card_img group-hover:opacity-0 absolute" src="<%= productss.image %>"
                                 alt="">
-                            <img class="product-card_img opacity-0 group-hover:opacity-100"
+                            <img style="object-fit: scale-down;" class="product-card_img opacity-0 group-hover:opacity-100"
                                 src="<%= productss.image %>" alt="">
                         </a>
                         <!--  product footer -->
@@ -690,7 +686,52 @@
 
     <div class="overlay"></div>
     <div class="search-overlay"></div>
-    <script src="/swiper/swiper.js"></script>
     <script src="/scripts/productDetails.js"></script>
     <script src="/scripts/app.js"></script>
     <script src="/scripts/slider.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const priceEl = document.querySelector('.product-price');
+        const totalEl = document.querySelector('.total-price');
+        const input = document.querySelector('.custom-input');
+        const plusBtn = document.querySelector('.increment-btn');
+        const minusBtn = document.querySelector('.decrement-btn');
+
+        if (!priceEl || !totalEl || !input || !plusBtn || !minusBtn) {
+            console.error('یکی از المنت‌ها پیدا نشد:', { priceEl, totalEl, input, plusBtn, minusBtn });
+            return;
+        }
+
+        const unitPrice = Number(priceEl.dataset.price);
+        console.log('قیمت واحد:', unitPrice);
+
+        function updateTotal() {
+            let qty = parseInt(input.value, 10);
+            if (isNaN(qty) || qty < 1) qty = 1;
+            if (qty > 9) qty = 9;
+            input.value = qty;
+            const total = unitPrice * qty;
+            totalEl.textContent = total.toLocaleString();
+            console.log('تعداد:', qty, 'مجموع:', total);
+        }
+
+        plusBtn.addEventListener('click', function () {
+            let qty = parseInt(input.value, 10) || 1;
+            if (qty < 9) {
+                input.value = qty + 1;
+                updateTotal();
+            }
+        });
+
+        minusBtn.addEventListener('click', function () {
+            let qty = parseInt(input.value, 10) || 1;
+            if (qty > 1) {
+                input.value = qty - 1;
+                updateTotal();
+            }
+        });
+
+        input.addEventListener('input', updateTotal);
+    });
+</script>

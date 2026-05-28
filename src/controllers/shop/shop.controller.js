@@ -6,18 +6,17 @@ const controller = require("../.controller");
 class shopController extends controller {
   async shop(req, res, next) {
     try {
-      const { 
-        page = 1, 
+      const {
+        page = 1,
         limit = 20,
         category,
         brand,
         search,
         minPrice,
         maxPrice,
-        sort = 'newest',
-        inStock
+        sort = "newest",
+        inStock,
       } = req.query;
-
 
       const filter = {};
 
@@ -39,8 +38,8 @@ class shopController extends controller {
 
       if (search) {
         filter.$or = [
-          { title: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } }
+          { title: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
         ];
       }
 
@@ -50,57 +49,56 @@ class shopController extends controller {
         if (maxPrice) filter.price.$lte = Number(maxPrice);
       }
 
-      if (inStock === 'true') {
+      if (inStock === "true") {
         filter.number = { $gt: 0 };
       }
 
       let sortOption = { createdAt: -1 };
       switch (sort) {
-        case 'popular':
+        case "popular":
           sortOption = { views: -1 };
           break;
-        case 'bestselling':
+        case "bestselling":
           sortOption = { sold: -1 };
           break;
-        case 'cheapest':
+        case "cheapest":
           sortOption = { price: 1 };
           break;
-        case 'expensive':
+        case "expensive":
           sortOption = { price: -1 };
           break;
-        case 'newest':
+        case "newest":
           sortOption = { createdAt: -1 };
           break;
       }
 
-      const products = await productModel.paginate(filter, { 
-        page: Number(page), 
+      const products = await productModel.paginate(filter, {
+        page: Number(page),
         limit: Number(limit),
         sort: sortOption,
-        populate: ['category', 'brand']
+        populate: ["category", "brand"],
       });
-
 
       const categories = await categoriesModel.find({});
       const brands = await brandModel.find({});
 
       const currentFilters = {
-        category: category || '',
-        brand: brand || '',
-        search: search || '',
-        minPrice: minPrice || '',
-        maxPrice: maxPrice || '',
-        sort: sort || 'newest',
-        inStock: inStock || '',
+        category: category || "",
+        brand: brand || "",
+        search: search || "",
+        minPrice: minPrice || "",
+        maxPrice: maxPrice || "",
+        sort: sort || "newest",
+        inStock: inStock || "",
         selectedCategory,
-        selectedBrand
+        selectedBrand,
       };
 
-      return res.render("shop/shop", { 
+      return res.render("shop/shop", {
         products,
         categories,
         brands,
-        currentFilters
+        currentFilters,
       });
     } catch (err) {
       next(err);

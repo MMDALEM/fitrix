@@ -4,9 +4,8 @@
   "description": "shop fitrix",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "dev:node": "node --trace-deprecation server.js",
-    "dev": "npx tailwindcss -i ./src/input.css -o ./public/styles/app.css --watch"
+    "start": "bun --watch server.js",
+    "prod": "bun server.js"
   },
   "keywords": [],
   "author": "MohammadAlamzade",

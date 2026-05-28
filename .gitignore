@@ -13,4 +13,4 @@ yarn-error.log*
 coverage/
 .gitignore
 مکمل
-public/uploads
+./public/uploads
