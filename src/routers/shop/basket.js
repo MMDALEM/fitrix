@@ -2,9 +2,9 @@ const experss = require("express");
 const router = experss.Router();
 
 //controllers
-const shopController = require("../../controllers/shop/shop.controller");
+const basketController = require("../../controllers/shop/basket.controller");
 
 //shop Rouer
-router.get("/", shopController.shop);
+router.get("/", basketController.getBasket);
 
 module.exports = router;

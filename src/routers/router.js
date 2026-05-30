@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const { verifyUser, verifyAdmin } = require("../middlewares/auth.middleware");
 const { verifyTokenPublic } = require("../middlewares/authPublic.middleware");
+const { checkBasketAccess } = require("../middlewares/basket.middleware");
 const { updateExchangeRate } = require("../services/exchangeRate.service");
 const { logout } = require("../controllers/auth/auth.controller");
 
@@ -15,6 +16,9 @@ router.use("/auth", authRouter);
 
 const shopRouter = require("./shop/shop");
 router.use("/shop", verifyTokenPublic, shopRouter);
+
+const basketRouter = require("./shop/basket");
+router.use("/basket", checkBasketAccess, basketRouter);
 
 const dashboardRouter = require("./dashboard/dashboard");
 router.use("/dashboard", verifyUser, dashboardRouter);

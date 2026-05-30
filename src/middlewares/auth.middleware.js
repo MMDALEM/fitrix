@@ -15,7 +15,7 @@ exports.verifyUser = async (req, res, next) => {
     const user = await userModel.findById(payload.id, {
       phone: 1,
       isActive: 1,
-      role: 1,
+      roles: 1,
     });
 
     if (!user || !user.isActive) return res.redirect("/auth");
@@ -38,7 +38,7 @@ exports.verifyAdmin = async (req, res, next) => {
 
     const payload = JWT.verify(
       token,
-      process.env.JWT_ACCESS_TOKEN_SECRET_MANAGER
+      process.env.JWT_ACCESS_TOKEN_SECRET_MANAGER,
     );
 
     const isValid = await verifyCookie(payload.id, res);
@@ -47,11 +47,11 @@ exports.verifyAdmin = async (req, res, next) => {
     const user = await userModel.findById(payload.id, {
       phone: 1,
       isActive: 1,
-      role: 1,
+      roles: 1,
     });
 
     if (!user || !user.isActive) return res.redirect("/auth");
-    if (user.role !== "ADMIN") return res.redirect("/");
+    if (user.roles !== "ADMIN") return res.redirect("/");
 
     req.user = user;
     next();
@@ -70,10 +70,12 @@ exports.isGuest = async (req, res, next) => {
     if (!token) return next();
 
     const payload = JWT.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET_USER);
-    const user = await userModel.findById(payload.id, { role: 1 });
+    const user = await userModel.findById(payload.id, { roles: 1 });
 
     if (user) {
-      return user.role === "ADMIN" ? res.redirect("/admin") : res.redirect("/");
+      return user.roles === "ADMIN"
+        ? res.redirect("/admin")
+        : res.redirect("/");
     }
     next();
   } catch {
