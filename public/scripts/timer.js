@@ -1,53 +1,54 @@
-const secondElem = document.querySelector('#seconds');
-const minuteElem = document.querySelector('#minutes');
-const hourElem = document.querySelector('#hours');
-// Constants
-const THREE_HOURS = 3 * 60 * 60 * 1000;
+const secondElem = document.querySelector("#seconds");
+const minuteElem = document.querySelector("#minutes");
+const hourElem = document.querySelector("#hours");
 
+// اگه element های تایمر تو این صفحه نیستن، اصلاً تایمر رو اجرا نکن
+if (!secondElem || !minuteElem || !hourElem) {
+  // این صفحه تایمر نداره، خروج می‌کنیم
+} else {
+  // Constants
+  const THREE_HOURS = 3 * 60 * 60 * 1000;
 
-// Timer functions
-function updateDisplay(timeRemaining) {
+  // Timer functions
+  function updateDisplay(timeRemaining) {
     const totalSeconds = Math.floor(timeRemaining / 1000);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
 
-    secondElem.textContent = seconds.toString().padStart(2, '0');
-    minuteElem.textContent = minutes.toString().padStart(2, '0');
-    hourElem.textContent = hours.toString().padStart(2, '0');
-}
+    secondElem.textContent = seconds.toString().padStart(2, "0");
+    minuteElem.textContent = minutes.toString().padStart(2, "0");
+    hourElem.textContent = hours.toString().padStart(2, "0");
+  }
 
-function startTimer(duration) {
+  function startTimer(duration) {
     let startTime = Date.now();
     let endTime = startTime + duration;
 
-    const storedEndTime = localStorage.getItem('endTime');
+    const storedEndTime = localStorage.getItem("endTime");
     if (storedEndTime) {
-        endTime = parseInt(storedEndTime, 10);
+      endTime = parseInt(storedEndTime, 10);
     } else {
-        localStorage.setItem('endTime', endTime);
+      localStorage.setItem("endTime", endTime);
     }
 
     function updateTimer() {
-        const currentTime = Date.now();
-        let timeRemaining = endTime - currentTime;
+      const currentTime = Date.now();
+      let timeRemaining = endTime - currentTime;
 
-        if (timeRemaining <= 0) {
-            endTime = currentTime + THREE_HOURS;
-            localStorage.setItem('endTime', endTime);
-            timeRemaining = THREE_HOURS;
-        }
+      if (timeRemaining <= 0) {
+        endTime = currentTime + THREE_HOURS;
+        localStorage.setItem("endTime", endTime);
+        timeRemaining = THREE_HOURS;
+      }
 
-        updateDisplay(timeRemaining);
+      updateDisplay(timeRemaining);
     }
 
     setInterval(updateTimer, 1000);
-    updateTimer();  // Initial call to set the display immediately
+    updateTimer();
+  }
+
+  // Start the timer
+  startTimer(THREE_HOURS);
 }
-
-
-
-
-// Start the timer
-startTimer(THREE_HOURS);
-

@@ -19,11 +19,6 @@
                         <p class="text-gray-400"><%= user?.phone %></p>
                     </span>
                 </div>
-                <span>
-                    <svg class="w-6 h-6 cursor-pointer text-blue-500">
-                        <use href="#edit"></use>
-                    </svg>
-                </span>
             </div> 
             <ul
             class="w-full relative space-y-2 child:duration-300 child:transition-all child:py-3  child:px-2 child:flex child:gap-x-2 text-lg child:cursor-pointer child:rounded-lg">
@@ -40,12 +35,6 @@
                 <a href="dashboard-orders.html">
                     سفارش ها
                 </a>
-            </li>
-            <li class="hover:text-blue-500">
-                <svg class="w-6 h-6 ">
-                    <use href="#heart"></use>
-                </svg>
-                <a href="dashboard-favorite.html">علاقه‌مندی ها</a>
             </li>
             <li class="hover:text-blue-500">
                 <svg class="w-6 h-6 ">
@@ -88,15 +77,16 @@
                     <img src="/images/svg/user.png" class="size-10 ring-2 ring-gray-400/20 rounded-full"
                         alt="AVATAR">
                     <span class="felx flex-col gap-y-2">
-                        <p class="font-DanaMedium text-lg">پارسا وصالی</p>
-                        <p class="text-gray-400">09100000001</p>
+                        <p class="font-DanaMedium text-lg">
+                            <% if(user?.firstName && user?.lastName){ %>
+                                <%= user?.firstName %><%= user?.lastName %>
+                            <% }else{ %>سبد خرید
+                                کاربر گرامی
+                            <% } %>
+                        </p>
+                        <p class="text-gray-400"><%= user?.phone %></p>
                     </span>
                 </div>
-                <span>
-                    <svg class="w-6 h-6 cursor-pointer text-blue-500">
-                        <use href="#edit"></use>
-                    </svg>
-                </span>
                     </div> 
                     <ul
                     class="w-full relative space-y-2 child:duration-300 child:transition-all child:py-3  child:px-2 child:flex child:gap-x-2 text-lg child:cursor-pointer child:rounded-lg">
@@ -104,7 +94,7 @@
                         <svg class="w-6 h-6 ">
                             <use href="#squares"></use>
                         </svg>
-                        <a href="dashboard.html">داشبورد</a>
+                        <a href="/dashboard">داشبورد</a>
                     </li>
                     <li class="hover:text-blue-500">
                         <svg class="w-6 h-6 ">
@@ -116,15 +106,9 @@
                     </li>
                     <li class="hover:text-blue-500">
                         <svg class="w-6 h-6 ">
-                            <use href="#heart"></use>
-                        </svg>
-                        <a href="dashboard-favorite.html">علاقه‌مندی ها</a>
-                    </li>
-                    <li class="hover:text-blue-500">
-                        <svg class="w-6 h-6 ">
                             <use href="#map"></use>
                         </svg>
-                        <a href="dashboard-address.html">آدرس ها</a>
+                        <a href="/dashboard/address">آدرس ها</a>
                     </li>
                     <li class="hover:text-blue-500">
                         <svg class="w-6 h-6 ">

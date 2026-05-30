@@ -272,7 +272,7 @@
         <nav class="flex mt-8" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
                 <li class="inline-flex items-center">
-                    <a href="index.html"
+                    <a href="/"
                         class="inline-flex items-center text-sm gap-x-1  text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
                         <svg class="size-4 mb-0.5">
                             <use href="#home" />
@@ -286,7 +286,7 @@
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="m1 9 4-4-4-4" />
                 </svg>
-                    <a href="shop.html"
+                    <a href="/shop"
                         class="inline-flex items-center text-sm gap-x-1  text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
                         فروشگاه
                     </a>
@@ -406,35 +406,35 @@
                             <p class="text-sm text-gray-300 dark:text-gray-500">
                                 <%= product.description %>
                             </p>
+                            <br>
+                            <br>
+                            <br>
+
                         </div>
-                        <!-- COLOR -->
-                        <div class="flex flex-col gap-y-4">
-                            <h1 class="font-DanaDemiBold text-lg color-title dark:text-gray-200">طعم : شکلات</h1>
-                            <div class="flex items-center gap-x-3 child:rounded-full child:size-9 child:p-1">
-                            <!--  <button class="color-select-btn ring-4 ring-blue-400 transition-all duration-300 ease-in-out">
-                                <span class="bg-brown w-full h-full rounded-full flex"></span>
-                              </button>-->
-                            </div>
-                        </div>  
+
                         <!-- Features Box  -->
                         <div class="w-full flex flex-col gap-y-4">
                             <h1 class="font-DanaDemiBold text-lg dark:text-gray-200">ویژگی‌ها</h1>
                             <div class="grid grid-cols-12 gap-2 child:p-2 child:h-16 child:bg-gray-100 dark:child:bg-gray-900 child:rounded-lg child:flex child:flex-col child:gap-y-1.5">
                                 <div class="col-span-12 md:col-span-6 xl:col-span-4">
-                                    <p class="text-sm text-gray-500">فناوری صفحه‌ نمایش </p>
-                                    <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200">LTPO Super Retina XDR</p>
+                                    <p class="text-sm text-gray-500">نوع مکمل</p>
+                                    <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200"><%= product.category.title %></p>
+                                </div>
+                                <div  class="col-span-12 md:col-span-6 xl:col-span-4" style=" display: flex;flex-direction: row; ">
+                                    <p class="text-sm text-gray-500">برند محصول</p>
+                                    <img style="object-fit: scale-down; height: 7vh !important; width: 6vw !important;" src="<%= product.brand.image %>" alt="brand">
                                 </div>
                                 <div class="col-span-12 md:col-span-6 xl:col-span-4">
-                                    <p class="text-sm text-gray-500">نسخه سیستم عامل </p>
-                                    <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200">iOS 18</p>
+                                    <p class="text-sm text-gray-500">اصالت</p>
+                                    <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200">اورجینال</p>
                                 </div>
                                 <div class="col-span-12 md:col-span-6 xl:col-span-4">
-                                    <p class="text-sm text-gray-500">رزولوشن دوربین اصلی </p>
-                                    <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200">48 مگاپیکسل</p>
+                                    <p class="text-sm text-gray-500">طعم</p>
+                                    <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200"><%= product.flavor %></p>
                                 </div>
                                 <div class="col-span-12 md:col-span-6 xl:col-span-4">
-                                    <p class="text-sm text-gray-500">اندازه</p>
-                                    <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200">6.1</p>
+                                    <p class="text-sm text-gray-500">وزن</p>
+                                    <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200"><%= product.weight %></p>
                                 </div>
                             </div>
                         </div>
@@ -470,25 +470,24 @@
                 </div>
             </div>
             <!-- PRICE & ADD TO CART BOX -->
-            <div class="w-full lg:w-1/4 lg:sticky top-5 flex flex-col gap-y-6">
+            <div class="w-full lg:w-1/4 lg:sticky top-5 flex flex-col gap-y-6 purchase-box">
                 <!-- PRICE -->
                 <div class="flex items-center gap-x-1 justify-center">
                     <p class="text-2xl font-DanaDemiBold product-price" data-price="<%= product.priceSingle %>">
                         <%= (product.priceSingle).toLocaleString() %>
                     </p>
-                    <p class="font-Dana text-sm text-red-500">تومان</p>
+                    <p class="font-Dana text-sm text-500">تومان</p>
                 </div>
 
                 <div class="w-full flex items-center justify-between gap-x-1 rounded-lg border border-gray-200 dark:border-white/20 py-2 px-3">
-                    <button type="button" class="increment-btn bg-transparent border-0 p-0 cursor-pointer">
-                        <svg class="w-6 h-6 text-green-600 pointer-events-none">
+                    <button style="width: 100%" type="button"
+                        class="flex items-center justify-between gap-x-1 rounded-lg  border-gray-200 dark:border-white/20 py-1 px-2">
+                        <svg class="size-4 increment text-green-600 cursor-pointer">
                             <use href="#plus"></use>
                         </svg>
-                    </button>
-                    <input type="number" name="customInput" id="customInput" min="0" max="20"
-                                                    value="1" class="custom-input w-4 mr-2 text-sm">
-                    <button type="button" class="decrement-btn bg-transparent border-0 p-0 cursor-pointer">
-                        <svg class="w-6 h-6 text-red-500 pointer-events-none">
+                        <input type="number" name="customInput" min="1" max="20" value="1"
+                            class="custom-input w-4 mr-2 text-sm bg-transparent text-center outline-none" readonly>
+                        <svg class="size-4 decrement text-red-500 cursor-pointer">
                             <use href="#minus"></use>
                         </svg>
                     </button>
@@ -498,23 +497,17 @@
                     <p>مجموع خرید :</p>
                     <p>
                         <span class="total-price"><%= (product.priceSingle).toLocaleString() %></span>
-                        <span class="font-Dana text-sm text-red-500">تومان</span>
+                        <span class="font-Dana text-sm text-500">تومان</span>
                     </p>
                 </div>
+
                 <button
                     class="w-full flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-lg shadow py-2">
-                    افزودن به سبد 
+                    افزودن به سبد
                     <svg class="w-5 h-5">
                         <use href="#shopping-bag"></use>
                     </svg>
                 </button>
-
-                <!-- <div class="text-sm  text-gray-400 flex xl:items-center gap-x-1">
-                    <svg class="w-3 h-3">
-                        <use href="#info"></use>
-                    </svg>
-                    <p>ارسال رایگان برای خریدهای بالای 4 میلیون تومان</p>
-                </div>-->
             </div>
         </section>
 
@@ -645,33 +638,25 @@
             </div>
             <div class="tab-content tab1 block">
                 <h2 class="font-DanaDemiBold border-b-2 border-blue-500 w-fit p-1 text-lg">معرفی</h2>
-                <p class="mt-4 leading-8">
-                    گوشی موبایل اپل مدل iPhone 16، به عنوان یکی از جدیدترین مدل‌های این برند معتبر، با طراحی مدرن و ویژگی‌های پیشرفته، تجربه‌ای بی‌نظیر از دنیای تکنولوژی را برای کاربران فراهم می‌کند. این گوشی با ظرفیت 128 گیگابایت و رم 8 گیگابایت، عملکردی سریع و روان را ارائه می‌دهد که به راحتی از پس کارهای روزمره و multitasking برمی‌آید. طراحی این دستگاه با دقت و ظرافت بالا انجام شده و بدنه آن از مواد با کیفیت ساخته شده است که حس لوکس بودن را به کاربر منتقل می‌کند. قابلیت پشتیبانی از دو سیم کارت، امکان استفاده هر مفید است. دوربین‌های با کیفیت پارت نامبر CH مربوط به کشور چین است که تفاوت خاصی با دیگر پارت نامبرها ندارند و تنها در مورد استفاده از تماس‌های صوتی و تماس‌های گروهی در نرم افزار فیس تایم شامل محدودیت است. این پارت نامبر از دو سیم‌کارت فیزیکی پشتیبانی می‌کند که یک نکته مثبت محسوب می‌شود. این گوشی، مانند تمامی گوشی‌های عرضه‌شده در دیجی‌کالا، به صورت قانونی و تجاری وارد کشور شده و با رجیستر رسمی، کارت گارانتی معتبر و کد فعال‌سازی به شما تحویل داده می‌شود.
-                    <a href="#" class="flex gap-x-1 items-center text-blue-400">
-                        مشاهده بیشتر  
-                        <svg class="size-4">
-                            <use href="#chevron-left" />
-                        </svg>
-                    </a>
-                </p>
+                <p class="mt-4 leading-8"><%= product.description %></p>
             </div>
             <div class="tab-content tab2 hidden w-full lg:w-[50%]">
                 <h2 class="font-DanaDemiBold border-b-2 border-blue-500 w-fit p-1 text-lg">مشخصات کلی
                 </h2>
                 <div class="p-4 my-5 w-full mx-auto flex justify-center items-center gap-x-20">
                     <ul class="space-y-3 text-gray-500 dark:text-gray-300 lg:w-2/4 child:pt-2">
-                        <li>مدل</li>
-                        <li>نمایشگر</li>
-                        <li>چیپست</li>
-                        <li>دوربین</li>
-                        <li>باتری</li>
+                        <li>مکمل</li>
+                        <li>برند</li>
+                        <li>اصالت</li>
+                        <li>طعم</li>
+                        <li>وزن</li>
                     </ul>
                     <ul class="space-y-3 text-gray-800 dark:text-gray-200 lg:w-2/4 divide-y divide-gray-200 dark:divide-gray-700 font-DanaMedium child:line-clamp-1">
-                        <li class="pt-2">آیفون ۱۶ پرو</li>
-                        <li class="pt-2">6.3 اینچ LTPO OLED، 120Hz</li>
-                        <li class="pt-2">Apple A18 Pro</li>
-                        <li class="pt-2">چهارگانه: 48 + 12 + 12 + TOF 3D</li>
-                        <li class="pt-2">باتری ۳۵۰۰ میلی‌آمپر با شارژ سریع</li>
+                        <li class="pt-2"><%= product.category.title %></li>
+                        <li class="pt-2"><%= product.brand.title %></li>
+                        <li class="pt-2"> اورجینال </li>
+                        <li class="pt-2"><%= product.flavor %></li>
+                        <li class="pt-2"><%= product.weight %></li>
                     </ul>
                 </div>  
                 <a href="#" class="flex gap-x-1 items-center text-blue-400">
@@ -692,46 +677,35 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const priceEl = document.querySelector('.product-price');
-        const totalEl = document.querySelector('.total-price');
-        const input = document.querySelector('.custom-input');
-        const plusBtn = document.querySelector('.increment-btn');
-        const minusBtn = document.querySelector('.decrement-btn');
+        const box = document.querySelector('.purchase-box');
+        if (!box) return;
 
-        if (!priceEl || !totalEl || !input || !plusBtn || !minusBtn) {
-            console.error('یکی از المنت‌ها پیدا نشد:', { priceEl, totalEl, input, plusBtn, minusBtn });
-            return;
-        }
+        const priceEl = box.querySelector('.product-price');
+        const totalEl = box.querySelector('.total-price');
+        const input = box.querySelector('.custom-input');
+
+        if (!priceEl || !totalEl || !input) return;
 
         const unitPrice = Number(priceEl.dataset.price);
-        console.log('قیمت واحد:', unitPrice);
 
-        function updateTotal() {
-            let qty = parseInt(input.value, 10);
-            if (isNaN(qty) || qty < 1) qty = 1;
-            if (qty > 9) qty = 9;
-            input.value = qty;
-            const total = unitPrice * qty;
-            totalEl.textContent = total.toLocaleString();
-            console.log('تعداد:', qty, 'مجموع:', total);
+        function render() {
+            const qty = parseInt(input.value, 10) || 0;
+            totalEl.textContent = (unitPrice * qty).toLocaleString();
         }
 
-        plusBtn.addEventListener('click', function () {
-            let qty = parseInt(input.value, 10) || 1;
-            if (qty < 9) {
-                input.value = qty + 1;
-                updateTotal();
-            }
-        });
+        // به تغییر مقدار input گوش می‌دیم
+        input.addEventListener('input', render);
+        input.addEventListener('change', render);
 
-        minusBtn.addEventListener('click', function () {
-            let qty = parseInt(input.value, 10) || 1;
-            if (qty > 1) {
-                input.value = qty - 1;
-                updateTotal();
+        // به‌روزرسانی هر 200 میلی‌ثانیه (اگه JS قبلی پروژه event فایر نمی‌کنه)
+        let lastValue = input.value;
+        setInterval(function () {
+            if (input.value !== lastValue) {
+                lastValue = input.value;
+                render();
             }
-        });
+        }, 200);
 
-        input.addEventListener('input', updateTotal);
+        render();
     });
 </script>
