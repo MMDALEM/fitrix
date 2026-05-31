@@ -1,0 +1,308 @@
+<main class="container relative">    
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <!-- SIDE MENU -->
+        <%- include(viewPath('layout/menu')) %>
+
+        <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white mt-5 lg:mt-0 w-full">
+            <div class="flex items-center justify-between">
+                <h2 class="font-DanaMedium text-lg">ویرایش محصول</h2>
+            </div>
+
+            <div class="flex items-center gap-x-4 mt-3">
+                <a href="/admin/products" class="flex items-center gap-x-1 text-blue-500">
+                    <svg class="size-5"><use href="#document"></use></svg>
+                    <span class="font-DanaMedium">مشاهده همه محصولات</span>
+                </a>
+            </div>
+
+            <form class="mt-5 grid grid-cols-12 gap-5 child:col-span-12 child:lg:col-span-6"
+                  action="/admin/product/edit/<%= product.id %>"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                <!-- نام محصول -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">نام محصول <span class="text-red-500">*</span></label>
+                    <div class="mt-3">
+                        <input name="title" type="text" placeholder="نام محصول را وارد کنید" value="<%= product.title %>"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                </div>
+
+                <!-- توضیحات -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">توضیحات محصول <span class="text-red-500">*</span></label>
+                    <div class="mt-3">
+                        <input name="description" type="text" placeholder="توضیحات محصول را وارد کنید" value="<%= product.description %>"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                </div>
+
+                <!-- دسته بندی -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">دسته بندی <span class="text-red-500">*</span></label>
+                    <div class="mt-3 relative">
+                        <select name="category"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                            <option value="" disabled>دسته بندی محصول را انتخاب کنید</option>
+                            <% categories.forEach(cat => { %>
+                                <option value="<%= cat._id %>" <%= (product.category && product.category.toString() === cat._id.toString()) ? 'selected' : '' %>><%= cat.title %></option>
+                            <% }) %>
+                        </select>
+                        <div class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                            <svg class="size-4"><use href="#chevron"></use></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- برند -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">برند <span class="text-red-500">*</span></label>
+                    <div class="mt-3 relative">
+                        <select name="brand"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                            <option value="" disabled>برند محصول را انتخاب کنید</option>
+                            <% brands.forEach(brand => { %>
+                                <option value="<%= brand._id %>" <%= (product.brand && product.brand.toString() === brand._id.toString()) ? 'selected' : '' %>><%= brand.title %></option>
+                            <% }) %>
+                        </select>
+                        <div class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                            <svg class="size-4"><use href="#chevron"></use></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- درصد عمده -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">درصد عمده <span class="text-red-500">*</span></label>
+                    <div class="mt-3">
+                        <input name="highNumber" type="number" min="0" max="100" placeholder="درصد عمده را وارد کنید" value="<%= product.darsad ? product.darsad.highNumber : '' %>"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                </div>
+
+                <!-- درصد تکی -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">درصد تکی <span class="text-red-500">*</span></label>
+                    <div class="mt-3">
+                        <input name="single" type="number" min="0" max="100" placeholder="درصد تکی را وارد کنید" value="<%= product.darsad ? product.darsad.single : '' %>"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                </div>
+
+                <!-- موجودی -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">موجودی <span class="text-red-500">*</span></label>
+                    <div class="mt-3">
+                        <input name="quantity" type="number" placeholder="تعداد موجودی را وارد کنید" value="<%= product.quantity %>"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                </div>
+
+                <!-- قیمت اصلی -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">قیمت اصلی (درهم) <span class="text-red-500">*</span></label>
+                    <div class="mt-3">
+                        <input name="originalPrice" type="number" placeholder="قیمت اصلی را وارد کنید" value="<%= product.originalPrice %>"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                </div>
+
+                <!-- تعداد دفعات مصرف -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">تعداد دفعات مصرف</label>
+                    <div class="mt-3">
+                        <input name="servings" type="number" placeholder="تعداد دفعات مصرف را وارد کنید" value="<%= product.servings || '' %>"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                </div>
+
+                <!-- طعم -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">طعم</label>
+                    <div class="mt-3">
+                        <input name="flavor" type="text" placeholder="طعم محصول را وارد کنید" value="<%= product.flavor || '' %>"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                </div>
+
+                <!-- وزن -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">وزن</label>
+                    <div class="mt-3">
+                        <input name="weight" type="text" placeholder="وزن محصول را وارد کنید" value="<%= product.weight || '' %>"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                </div>
+
+                <!-- نحوه استفاده -->
+                <div>
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300">نحوه استفاده</label>
+                    <div class="mt-3">
+                        <input name="howToUse" type="text" placeholder="نحوه استفاده را وارد کنید" value="<%= product.howToUse || '' %>"
+                            class="block w-full p-2.5 text-base outline dark:outline-none outline-1 -outline-offset-1 placeholder:text-gray-400 transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded-md outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                </div>
+
+                <!-- ─── آپلود تصویر ─── -->
+                <div class="col-span-12">
+                    <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-3">
+                        تصویر محصول
+                        <span class="text-xs text-gray-400">(برای تغییر، تصویر جدید انتخاب کنید)</span>
+                    </label>
+
+                    <!-- ناحیه drag & drop -->
+                    <div id="uploadArea"
+                        class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center cursor-pointer transition-all duration-200 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10"
+                        onclick="document.getElementById('imageInput').click()">
+
+                        <!-- حالت پیش‌فرض (مخفی چون عکس فعلی نمایش داده می‌شود) -->
+                        <div id="uploadPlaceholder" class="hidden">
+                            <div class="flex justify-center mb-3">
+                                <div class="w-14 h-14 rounded-full bg-slate-100 dark:bg-gray-700 flex items-center justify-center">
+                                    <svg class="size-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <p class="text-sm font-DanaMedium text-gray-600 dark:text-gray-300">
+                                برای آپلود کلیک کنید یا تصویر را اینجا بکشید
+                            </p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                JPG، PNG، WEBP — حداکثر ۵ مگابایت
+                            </p>
+                        </div>
+
+                        <!-- پیش‌نمایش عکس (پیش‌فرض = عکس فعلی محصول) -->
+                        <div id="uploadPreview">
+                            <img id="previewImg" src="<%= product.image %>" alt="پیش‌نمایش"
+                                class="mx-auto max-h-48 rounded-lg object-contain mb-3">
+                            <p id="previewName" class="text-sm text-gray-500 dark:text-gray-400">تصویر فعلی محصول</p>
+                            <button type="button" id="removeImage"
+                                class="mt-2 text-xs text-red-500 hover:text-red-600 font-DanaMedium"
+                                onclick="removeImg(event)">
+                                حذف تصویر
+                            </button>
+                        </div>
+
+                        <!-- progress bar -->
+                        <div id="uploadProgress" class="hidden mt-4">
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                                <div id="progressBar" class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width:0%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">در حال آپلود...</p>
+                        </div>
+                    </div>
+
+                    <!-- input مخفی -->
+                    <input id="imageInput" name="image" type="file" accept="image/jpeg,image/png,image/webp"
+                        class="hidden" onchange="handleImageSelect(event)">
+
+                    <!-- پیام خطا -->
+                    <p id="imageError" class="hidden mt-2 text-xs text-red-500 font-DanaMedium"></p>
+                </div>
+
+                <!-- دکمه ثبت -->
+                <div class="col-span-12 flex justify-end gap-x-3 pt-2">
+                    <a href="/admin/products" style="width: 6rem; height: 5rem;"
+                        class="px-6 py-2.5 rounded-lg text-sm font-DanaMedium text-white bg-red-600 hover:bg-red-500 transition-all flex items-center gap-x-2">
+                        انصراف
+                    </a>
+                    <button style="width: 10rem; height: 5rem;" type="submit" id="submitBtn"
+                        class="px-6 py-2.5 rounded-lg text-sm font-DanaMedium text-white bg-blue-600 hover:bg-blue-500 transition-all flex items-center gap-x-2">
+                        <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        ذخیره تغییرات
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+    const uploadArea   = document.getElementById('uploadArea')
+    const imageInput   = document.getElementById('imageInput')
+    const placeholder  = document.getElementById('uploadPlaceholder')
+    const preview      = document.getElementById('uploadPreview')
+    const previewImg   = document.getElementById('previewImg')
+    const previewName  = document.getElementById('previewName')
+    const imageError   = document.getElementById('imageError')
+
+    // عکس فعلی محصول (برای بازگرداندن در صورت حذف عکس جدید)
+    const currentImage = "<%= product.image %>"
+
+    // drag & drop
+    uploadArea.addEventListener('dragover', e => {
+        e.preventDefault()
+        uploadArea.classList.add('border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/10')
+    })
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/10')
+    })
+
+    uploadArea.addEventListener('drop', e => {
+        e.preventDefault()
+        uploadArea.classList.remove('border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/10')
+        const file = e.dataTransfer.files[0]
+        if (file) processFile(file)
+    })
+
+    function handleImageSelect(e) {
+        const file = e.target.files[0]
+        if (file) processFile(file)
+    }
+
+    function processFile(file) {
+        imageError.classList.add('hidden')
+
+        // چک سایز
+        if (file.size > 5 * 1024 * 1024) {
+            showError('حجم فایل نباید بیشتر از ۵ مگابایت باشد')
+            return
+        }
+
+        // چک نوع فایل
+        const allowed = ['image/jpeg', 'image/png', 'image/webp']
+        if (!allowed.includes(file.type)) {
+            showError('فقط فایل‌های JPG، PNG و WEBP مجاز هستند')
+            return
+        }
+
+        // نمایش پیش‌نمایش عکس جدید
+        const reader = new FileReader()
+        reader.onload = e => {
+            previewImg.src = e.target.result
+            previewName.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`
+            placeholder.classList.add('hidden')
+            preview.classList.remove('hidden')
+        }
+        reader.readAsDataURL(file)
+
+        // انتقال فایل به input اصلی
+        const dt = new DataTransfer()
+        dt.items.add(file)
+        imageInput.files = dt.files
+    }
+
+    function removeImg(e) {
+        e.stopPropagation()
+        imageInput.value = ''
+        // بازگشت به عکس فعلی محصول (نه پاک کردن کامل)
+        previewImg.src = currentImage
+        previewName.textContent = 'تصویر فعلی محصول'
+    }
+
+    function showError(msg) {
+        imageError.textContent = msg
+        imageError.classList.remove('hidden')
+        imageInput.value = ''
+    }
+
+    // در حالت ویرایش، آپلود عکس اجباری نیست (عکس فعلی حفظ می‌شود)
+    // پس هیچ جلوگیری‌ای از submit نمی‌گذاریم.
+</script>

@@ -6,10 +6,18 @@ const productController = require("../../controllers/admin/product/product.contr
 const upload_multer = require("../../utils/multer");
 
 //product render
-router.get("/", productController.product);
+router.get("/", productController.products);
+
+router.get("/create", productController.createPage);
 
 router.get("/page", productController.productPagePDF);
 
-router.post("/", upload_multer.single("image"), productController.create);
+router.post("/create", upload_multer.single("image"), productController.create);
+
+router.get("/edit/:id", productController.editPage);
+
+router.post("/edit/:id", upload_multer.single("image"), productController.edit);
+
+router.get("/update-prices", productController.updateAllPrices);
 
 module.exports = router;
