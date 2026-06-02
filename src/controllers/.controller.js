@@ -12,7 +12,7 @@ module.exports = class controller {
 
   review(req, res, url) {
     req.flash("formData", req.body);
-    return res.redirect(`${url}`);
+    return res.redirect(`${String(url)}`);
   }
 
   alert(req, data) {

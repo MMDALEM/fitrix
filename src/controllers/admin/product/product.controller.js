@@ -4,41 +4,26 @@ const controller = require("../../.controller");
 const categoriesModel = require("../../../models/categories.model");
 const brandModel = require("../../../models/brand.model");
 const ExchangeRate = require("../../../models/exchangeRate.model");
+const moment = require("moment-jalaali");
 const mongoose = require("mongoose");
 const fs = require("fs");
-
-// گرد کردن قیمت به نزدیک‌ترین مضرب (پیش‌فرض ۱۰۰۰ تومان)
-// اگر گرد کردن نمی‌خواهی، step را ۱ بگذار.
-function roundPrice(value, step = 1000) {
-  return Math.round(value / step) * step;
-}
-
-// محاسبه‌ی قیمت‌های تومانی یک محصول از روی قیمت درهم و نرخ ارز
-function computePrices(product, rateInToman) {
-  const baseToman = product.AED * rateInToman; // قیمت پایه به تومان
-
-  const single = product.darsad?.single ?? 0;
-  const high = product.darsad?.highNumber ?? 0;
-
-  return {
-    // قیمت پایه بدون سود — اگر منظورت چیز دیگری است همین خط را عوض کن
-    originalPrice: roundPrice(baseToman),
-    priceSingle: roundPrice(baseToman * (1 + single / 100)),
-    priceHigh: roundPrice(baseToman * (1 + high / 100)),
-  };
-}
 
 class productController extends controller {
   async products(req, res, next) {
     try {
-      const { page = 1, limit = 20 } = req.query;
+      const { page = 1, limit = 100 } = req.query;
 
-      const products = await productModel.paginate({
+      const productsss = await productModel.paginate({
         page: Number(page),
         limit: Number(limit),
         sort: "createdAt: -1",
         populate: ["category", "brand"],
       });
+
+      const products = await productModel
+        .find({})
+        .populate("category")
+        .populate("brand");
 
       return res.render("admin/product", {
         products,
@@ -88,6 +73,8 @@ class productController extends controller {
         categories,
         brands,
         products,
+        query: req.query,
+        catalogDate: moment().format("jYYYY/jMM/jDD"),
       });
     } catch (err) {
       next(err);
@@ -223,7 +210,6 @@ class productController extends controller {
     try {
       const { id } = req.params;
 
-      // چک معتبر بودن شناسه — جلوگیری از کرش وقتی id خراب است (مثل [object Object])
       if (!mongoose.Types.ObjectId.isValid(id)) {
         if (req.file) fs.unlink(req.file.path, () => {});
         return this.alertAndBack(req, res, {
@@ -250,7 +236,6 @@ class productController extends controller {
         single,
       } = req.body;
 
-      // ولیدیشن اول (قبل از هر محاسبه‌ای)
       const missing = [];
       if (!title) missing.push("نام محصول");
       if (!description) missing.push("توضیحات");
@@ -269,11 +254,8 @@ class productController extends controller {
         });
       }
 
-      // محصول فعلی را می‌خوانیم تا اگر عکس جدید آمد، عکس قدیمی را پاک کنیم
-
-      const objectId = mongoose.Types.ObjectId.createFromHexString(id);
-      const existing = await productModel.findById(objectId);
-      if (!existing) {
+      const product = await productModel.findById(id);
+      if (!product) {
         if (req.file) fs.unlink(req.file.path, () => {});
         return this.alertAndBack(req, res, {
           title: "محصول یافت نشد",
@@ -292,8 +274,8 @@ class productController extends controller {
       const updateData = {
         title,
         slug: this.slugify(title),
-        category: mongoose.Types.ObjectId.createFromHexString(category),
-        brand: mongoose.Types.ObjectId.createFromHexString(brand),
+        category: category,
+        brand: brand,
         originalPrice: Number(originalPrice),
         quantity: Number(quantity),
         description,
@@ -313,26 +295,28 @@ class productController extends controller {
         type,
       };
 
-      // عکس فقط اگر کاربر عکس جدید آپلود کرده باشد عوض می‌شود
       if (req.file) {
-        // حذف عکس قدیمی از دیسک
-        if (existing.image) {
-          const oldPath = `public${existing.image}`;
+        if (product.image) {
+          const oldPath = `public${product.image}`;
           fs.unlink(oldPath, () => {});
         }
         updateData.image = `/uploads/files/product/${req.file.filename}`;
       }
 
-      await productModel.findByIdAndUpdate(objectId, updateData, {
+      await productModel.findByIdAndUpdate(id, updateData, {
         runValidators: true,
       });
 
-      return this.alertAndReview(req, res, "/admin/product", {
-        title: "محصول با موفقیت ویرایش شد",
-        icon: "success",
-      });
+      return this.alertAndReview(
+        req,
+        res,
+        {
+          title: "محصول با موفقیت ویرایش شد",
+          icon: "success",
+        },
+        "/admin/product",
+      );
     } catch (err) {
-      console.error("خطا در ویرایش محصول:", err);
       if (err.code == 11000) {
         if (req.file) fs.unlink(req.file.path, () => {});
         return this.alertAndBack(req, res, {
@@ -362,26 +346,21 @@ class productController extends controller {
     return { priceSingle, priceHigh, aedRate };
   }
 
-  // بروزرسانی قیمت تمام محصولات بر اساس آخرین نرخ درهم
   async updateAllPrices(req, res, next) {
     try {
-      // آخرین نرخ ثبت‌شده‌ی درهم
-      const rate = await ExchangeRate.findOne({ currency: "AED" }).sort({
-        updatedAt: -1,
-      });
-
-      if (!rate || !rate.rateInToman) {
+      // نرخ روز درهم — همان منبعی که هنگام ساخت/ویرایش محصول استفاده می‌شود
+      const aedRate = await getExchangeRate();
+      if (!aedRate) {
         return res.status(400).json({
           success: false,
-          message: "نرخ ارز معتبری برای درهم یافت نشد",
+          message: "نرخ ارز موجود نیست",
         });
       }
 
-      // فقط فیلدهای لازم برای محاسبه را می‌خوانیم تا سبک‌تر باشد
-      const products = await productModel.find(
-        {},
-        "AED darsad originalPrice priceSingle priceHigh",
-      );
+      // درصدهای عمده‌ی ثابت — اگر خواستی عوض کنی فقط همین‌جا تغییر بده
+      const HIGH = [5, 10, 15, 20];
+
+      const products = await productModel.find({}, "originalPrice darsad");
 
       if (products.length === 0) {
         return res.json({
@@ -391,19 +370,50 @@ class productController extends controller {
         });
       }
 
-      const operations = products.map((product) => ({
-        updateOne: {
-          filter: { _id: product._id },
-          update: { $set: computePrices(product, rate.rateInToman) },
-        },
-      }));
+      const operations = products.map((product) => {
+        const originalPrice = product.originalPrice || 0; // درهم خام (دست نمی‌خورد)
+        const single = product.darsad?.single ?? 0; // درصد تکی فعلی محصول
+
+        const base = originalPrice * aedRate; // پایه به تومان
+
+        // اعمال درصد + گرد کردن به بالا به نزدیک‌ترین ۱۰۰۰۰
+        const calc = (percent) =>
+          Math.ceil((base * (1 + percent / 100)) / 10000) * 10000;
+
+        return {
+          updateOne: {
+            filter: { _id: product._id },
+            update: {
+              $set: {
+                priceSingle: calc(single),
+                priceHigh5: calc(HIGH[0]),
+                priceHigh10: calc(HIGH[1]),
+                priceHigh15: calc(HIGH[2]),
+                priceHigh20: calc(HIGH[3]),
+                AED: aedRate, // نرخ لحظه‌ی درهم
+                // اطمینان از وجود درصدهای عمده در darsad
+                "darsad.single": single,
+                "darsad.highNumber5": HIGH[0],
+                "darsad.highNumber10": HIGH[1],
+                "darsad.highNumber15": HIGH[2],
+                "darsad.highNumber20": HIGH[3],
+              },
+              // حذف فیلدهای قدیمی اگر وجود داشتند
+              $unset: {
+                priceHigh: "",
+                "darsad.highNumber": "",
+              },
+            },
+          },
+        };
+      });
 
       const result = await productModel.bulkWrite(operations);
 
       return res.json({
         success: true,
         message: "قیمت همه محصولات بروزرسانی شد",
-        rateInToman: rate.rateInToman,
+        aedRate,
         matched: result.matchedCount,
         modified: result.modifiedCount,
       });

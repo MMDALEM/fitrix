@@ -10,8 +10,6 @@ router.get("/", productController.products);
 
 router.get("/create", productController.createPage);
 
-router.get("/page", productController.productPagePDF);
-
 router.post("/create", upload_multer.single("image"), productController.create);
 
 router.get("/edit/:id", productController.editPage);

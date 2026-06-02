@@ -6,11 +6,7 @@
   <title>کاتالوگ محصولات | فیت ریکس</title>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
@@ -21,12 +17,8 @@
       direction: rtl;
     }
 
-    .container {
-      max-width: 1280px;
-      margin: 0 auto;
-    }
+    .container { max-width: 1280px; margin: 0 auto; }
 
-    /* ===== Header ===== */
     .header {
       background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
       color: white;
@@ -41,48 +33,19 @@
       gap: 12px;
     }
 
-    .brand-block {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
+    .brand-block { display: flex; align-items: center; gap: 12px; }
     .brand-logo {
-      width: 44px;
-      height: 44px;
-      background: white;
-      color: #0284c7;
+      width: 44px; height: 44px;
+      background: white; color: #0284c7;
       border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px;
     }
+    .brand-text h1 { font-size: 20px; font-weight: 800; }
+    .brand-text p { font-size: 12px; opacity: 0.92; margin-top: 2px; }
+    .meta-info { text-align: left; font-size: 11px; opacity: 0.95; line-height: 1.6; }
+    .meta-info strong { font-weight: 600; }
 
-    .brand-text h1 {
-      font-size: 20px;
-      font-weight: 800;
-    }
-
-    .brand-text p {
-      font-size: 12px;
-      opacity: 0.92;
-      margin-top: 2px;
-    }
-
-    .meta-info {
-      text-align: left;
-      font-size: 11px;
-      opacity: 0.95;
-      line-height: 1.6;
-    }
-
-    .meta-info strong {
-      font-weight: 600;
-    }
-
-    /* ===== Toolbar ===== */
     .toolbar {
       background: white;
       padding: 16px 24px;
@@ -96,66 +59,65 @@
     }
 
     .search-input {
-      flex: 1;
-      min-width: 220px;
+      flex: 1; min-width: 220px;
       padding: 10px 16px;
       border: 2px solid #e0f2fe;
       border-radius: 10px;
-      font-family: inherit;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
+      font-family: inherit; font-size: 14px;
+      outline: none; transition: border-color 0.2s;
     }
-    .search-input:focus {
-      border-color: #0ea5e9;
-    }
+    .search-input:focus { border-color: #0ea5e9; }
 
     .filter-select {
       padding: 10px 14px;
       border: 2px solid #e0f2fe;
       border-radius: 10px;
-      font-family: inherit;
-      font-size: 14px;
-      background: white;
-      cursor: pointer;
-      outline: none;
+      font-family: inherit; font-size: 14px;
+      background: white; cursor: pointer; outline: none;
       min-width: 160px;
+    }
+
+    /* ===== انتخاب درصد (لینک‌های EJS) ===== */
+    .price-tier {
+      display: inline-flex;
+      gap: 4px;
+      background: #e0f2fe;
+      padding: 4px;
+      border-radius: 10px;
+    }
+    .price-tier a {
+      text-decoration: none;
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #0284c7;
+      transition: background 0.15s, color 0.15s;
+    }
+    .price-tier a.active {
+      background: #0284c7;
+      color: white;
     }
 
     .btn {
       padding: 10px 20px;
-      border: none;
-      border-radius: 10px;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 600;
+      border: none; border-radius: 10px;
+      font-family: inherit; font-size: 14px; font-weight: 600;
       cursor: pointer;
       transition: transform 0.15s, box-shadow 0.15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      display: inline-flex; align-items: center; gap: 6px;
+      text-decoration: none;
     }
-    .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-    }
-    .btn-primary {
-      background: #0284c7;
-      color: white;
-    }
-    .btn-secondary {
-      background: #e0f2fe;
-      color: #0284c7;
-    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+    .btn-primary { background: #0284c7; color: white; }
+    .btn-secondary { background: #e0f2fe; color: #0284c7; }
 
-    /* ===== Summary Cards ===== */
     .summary {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 10px;
       margin-bottom: 18px;
     }
-
     .summary-card {
       background: white;
       padding: 12px 16px;
@@ -163,18 +125,9 @@
       box-shadow: 0 2px 8px rgba(2, 132, 199, 0.06);
       border-right: 3px solid #0ea5e9;
     }
-    .summary-card .label {
-      font-size: 11px;
-      color: #64748b;
-      margin-bottom: 4px;
-    }
-    .summary-card .value {
-      font-size: 20px;
-      font-weight: 700;
-      color: #0284c7;
-    }
+    .summary-card .label { font-size: 11px; color: #64748b; margin-bottom: 4px; }
+    .summary-card .value { font-size: 20px; font-weight: 700; color: #0284c7; }
 
-    /* ===== Category Section ===== */
     .category-section {
       background-color: #e0f2fe;
       border-radius: 14px;
@@ -183,278 +136,150 @@
       box-shadow: 0 2px 12px rgba(2, 132, 199, 0.06);
       page-break-inside: auto;
     }
-
     .category-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding-bottom: 10px;
-      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 10px;
+      padding-bottom: 10px; margin-bottom: 14px;
       border-bottom: 2px dashed #e0f2fe;
     }
-
     .category-icon {
-      width: 34px;
-      height: 34px;
+      width: 34px; height: 34px;
       background: linear-gradient(135deg, #0ea5e9, #0284c7);
-      color: white;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-      font-weight: 700;
-      flex-shrink: 0;
+      color: white; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; flex-shrink: 0;
     }
-
-    .category-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #0c4a6e;
-    }
-
+    .category-title { font-size: 16px; font-weight: 700; color: #0c4a6e; }
     .category-count {
-      background: #e0f2fe;
-      color: #0284c7;
-      padding: 3px 10px;
-      border-radius: 16px;
-      font-size: 11px;
-      font-weight: 600;
-      margin-right: auto;
+      background: #e0f2fe; color: #0284c7;
+      padding: 3px 10px; border-radius: 16px;
+      font-size: 11px; font-weight: 600; margin-right: auto;
     }
 
-    /* ===== Product Grid ===== */
     .product-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 10px;
     }
-
     .product-card {
       border: 1px solid #e0f2fe;
       border-radius: 10px;
       overflow: hidden;
       background: #fafdff;
       transition: transform 0.2s, box-shadow 0.2s;
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
       page-break-inside: avoid;
     }
-    .product-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(2, 132, 199, 0.12);
-    }
+    .product-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(2, 132, 199, 0.12); }
 
     .product-image-wrap {
-      width: 100%;
-      aspect-ratio: 1;
-      background: #f0f9ff;
-      overflow: hidden;
-      position: relative;
+      width: 100%; aspect-ratio: 1;
+      background: #f0f9ff; overflow: hidden; position: relative;
     }
-    .product-image-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: scale-down;
-    }
+    .product-image-wrap img { width: 100%; height: 100%; object-fit: scale-down; }
     .product-image-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #94a3b8;
-      font-size: 11px;
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      color: #94a3b8; font-size: 11px;
     }
 
     .sale-badge {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      background: #ef4444;
-      color: white;
-      padding: 2px 7px;
-      border-radius: 6px;
-      font-size: 9px;
-      font-weight: 700;
+      position: absolute; top: 6px; right: 6px;
+      background: #ef4444; color: white;
+      padding: 2px 7px; border-radius: 6px;
+      font-size: 9px; font-weight: 700;
     }
     .featured-badge {
-      position: absolute;
-      top: 6px;
-      left: 6px;
-      background: #f59e0b;
-      color: white;
-      padding: 2px 7px;
-      border-radius: 6px;
-      font-size: 9px;
-      font-weight: 700;
+      position: absolute; top: 6px; left: 6px;
+      background: #f59e0b; color: white;
+      padding: 2px 7px; border-radius: 6px;
+      font-size: 9px; font-weight: 700;
     }
 
-    .product-body {
-      padding: 8px 10px 10px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
+    .product-body { padding: 8px 10px 10px; flex: 1; display: flex; flex-direction: column; }
     .product-brand {
-      font-size: 9px;
-      color: #0284c7;
-      font-weight: 600;
-      background: #e0f2fe;
-      padding: 2px 7px;
-      border-radius: 12px;
-      align-self: flex-start;
-      margin-bottom: 5px;
+      font-size: 9px; color: #0284c7; font-weight: 600;
+      background: #e0f2fe; padding: 2px 7px; border-radius: 12px;
+      align-self: flex-start; margin-bottom: 5px;
     }
-
     .product-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 6px;
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      min-height: 32px;
+      font-size: 12px; font-weight: 700; color: #0f172a;
+      margin-bottom: 6px; line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden; min-height: 32px;
     }
-
     .product-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 3px;
-      margin-bottom: 6px;
-      font-size: 9px;
-      color: #64748b;
+      display: flex; flex-wrap: wrap; gap: 3px;
+      margin-bottom: 6px; font-size: 9px; color: #64748b;
     }
-    .product-meta span {
-      background: #f1f5f9;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
+    .product-meta span { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
 
     .product-footer {
-      margin-top: auto;
-      padding-top: 6px;
+      margin-top: auto; padding-top: 6px;
       border-top: 1px dashed #e2e8f0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 4px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 4px;
     }
+    .product-price { font-size: 13px; font-weight: 800; color: #0284c7; }
+    .product-price .currency { font-size: 9px; color: #64748b; font-weight: 500; margin-right: 2px; }
 
-    .product-price {
-      font-size: 13px;
-      font-weight: 800;
-      color: #0284c7;
-    }
-    .product-price .currency {
-      font-size: 9px;
-      color: #64748b;
-      font-weight: 500;
-      margin-right: 2px;
-    }
+    .product-stock { font-size: 9px; padding: 2px 6px; border-radius: 5px; font-weight: 600; }
+    .stock-in { background: #dcfce7; color: #16a34a; }
+    .stock-out { background: #fee2e2; color: #dc2626; }
 
-    .product-stock {
-      font-size: 9px;
-      padding: 2px 6px;
-      border-radius: 5px;
-      font-weight: 600;
-    }
-    .stock-in {
-      background: #dcfce7;
-      color: #16a34a;
-    }
-    .stock-out {
-      background: #fee2e2;
-      color: #dc2626;
-    }
-
-    /* ===== Empty State ===== */
     .empty-state {
-      text-align: center;
-      padding: 80px 20px;
-      background: white;
-      border-radius: 16px;
-      color: #64748b;
+      text-align: center; padding: 80px 20px;
+      background: white; border-radius: 16px; color: #64748b;
     }
 
-    /* ===== Print Styles ===== */
     @media print {
-      body {
-        background: white;
-        padding: 0;
-        margin: 0;
-      }
-      .toolbar {
-        display: none !important;
-      }
+      body { background: white; padding: 0; margin: 0; }
+      .toolbar { display: none !important; }
       .header {
         background: #0284c7 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        box-shadow: none;
-        margin-bottom: 10px;
-        padding: 12px 18px;
-        border-radius: 8px;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        box-shadow: none; margin-bottom: 10px; padding: 12px 18px; border-radius: 8px;
       }
-      .summary {
-        margin-bottom: 10px;
-        gap: 6px;
-      }
-      .summary-card {
-        box-shadow: none;
-        border: 1px solid #e0f2fe;
-        padding: 8px 10px;
-      }
+      .summary { margin-bottom: 10px; gap: 6px; }
+      .summary-card { box-shadow: none; border: 1px solid #e0f2fe; padding: 8px 10px; }
       .summary-card .value { font-size: 16px; }
       .summary-card .label { font-size: 10px; }
-
       .category-section {
-        box-shadow: none;
-        border: 1px solid #e0f2fe;
-        page-break-inside: auto;
-        padding: 12px;
-        margin-bottom: 10px;
+        box-shadow: none; border: 1px solid #e0f2fe;
+        page-break-inside: auto; padding: 12px; margin-bottom: 10px;
       }
-      .category-header {
-        padding-bottom: 8px;
-        margin-bottom: 10px;
-      }
-
-      /* ۴ ستون اجباری در PDF */
-      .product-grid {
-        grid-template-columns: repeat(4, 1fr) !important;
-        gap: 8px;
-      }
-
-      .product-card {
-        page-break-inside: avoid;
-        box-shadow: none;
-        border-radius: 8px;
-      }
-      .product-card:hover {
-        transform: none;
-        box-shadow: none;
-      }
-
-      * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
+      .category-header { padding-bottom: 8px; margin-bottom: 10px; }
+      .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 8px; }
+      .product-card { page-break-inside: avoid; box-shadow: none; border-radius: 8px; }
+      .product-card:hover { transform: none; box-shadow: none; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
 
-    @page {
-      size: A4;
-      margin: 8mm;
-    }
+    @page { size: A4; margin: 8mm; }
   </style>
 </head>
 <body>
   <div class="container">
+
+    <%
+      // درصد انتخاب‌شده از query string (پیش‌فرض: 10)
+      var tier = (typeof query !== 'undefined' && query.tier) ? String(query.tier) : '10';
+      var validTiers = ['single', '5', '10', '15', '20'];
+      if (validTiers.indexOf(tier) === -1) tier = '10';
+
+      // قیمت هر محصول بر اساس درصد انتخاب‌شده
+      function priceByTier(p){
+        switch (tier) {
+          case 'single': return p.priceSingle || 0;
+          case '5':      return p.priceHigh5 || 0;
+          case '15':     return p.priceHigh15 || 0;
+          case '20':     return p.priceHigh20 || 0;
+          default:       return p.priceHigh10 || 0;
+        }
+      }
+
+      // ساخت لینک با حفظ درصد
+      function tierLink(t){ return '?tier=' + t; }
+    %>
 
     <!-- ===== Header ===== -->
     <div class="header">
@@ -472,7 +297,7 @@
       </div>-->
     </div>
 
-    <!-- ===== Toolbar (hidden in print) ===== -->
+    <!-- ===== Toolbar ===== -->
     <div class="toolbar">
       <input type="text" class="search-input" id="searchInput" placeholder="🔍 جستجو در نام محصول..." />
       <select class="filter-select" id="brandFilter">
@@ -481,6 +306,16 @@
           <option value="<%= b._id %>"><%= b.title %></option>
         <% }) %>
       </select>
+
+      <!-- انتخاب درصد — لینک‌های EJS -->
+      <div class="price-tier">
+        <a href="<%= tierLink('single') %>" class="<%= tier === 'single' ? 'active' : '' %>">تکی</a>
+        <a href="<%= tierLink('5') %>" class="<%= tier === '5' ? 'active' : '' %>">۵٪</a>
+        <a href="<%= tierLink('10') %>" class="<%= tier === '10' ? 'active' : '' %>">۱۰٪</a>
+        <a href="<%= tierLink('15') %>" class="<%= tier === '15' ? 'active' : '' %>">۱۵٪</a>
+        <a href="<%= tierLink('20') %>" class="<%= tier === '20' ? 'active' : '' %>">۲۰٪</a>
+      </div>
+
       <button class="btn btn-secondary" onclick="resetFilters()">پاک کردن فیلتر</button>
       <button class="btn btn-primary" onclick="window.print()">📄 ذخیره به PDF / چاپ</button>
     </div>
@@ -500,14 +335,12 @@
         <div class="value"><%= brands.length %></div>
       </div>
       <div class="summary-card">
-        <div class="label">محصولات فروش ویژه</div>
-        <div class="value"><%= products.filter(function(p){return p.onSale}).length %></div>
+        <div class="label">تاریخ کاتالوگ</div>
+        <div class="value" ><%= catalogDate %></div>
       </div>
     </div>
 
-    <!-- ===== Categories with Products ===== -->
     <%
-      // گروه‌بندی محصولات بر اساس دسته‌بندی
       function getCategoryProducts(catId){
         return products.filter(function(p){
           if(!p.category) return false;
@@ -515,13 +348,11 @@
           return pid === catId.toString();
         });
       }
-
       function getBrandById(brandId){
         if(!brandId) return null;
         var bid = brandId._id ? brandId._id.toString() : brandId.toString();
         return brands.find(function(b){ return b._id.toString() === bid; });
       }
-
       var hasAnyProduct = false;
     %>
 
@@ -571,7 +402,7 @@
 
                   <div class="product-footer">
                     <div class="product-price">
-                      <%= Number(p.priceHigh).toLocaleString('fa-IR') %>
+                      <%= Number(priceByTier(p)).toLocaleString('fa-IR') %>
                       <span class="currency">تومان</span>
                     </div>
                     <% if(p.quantity > 0){ %>
@@ -588,7 +419,6 @@
       <% } %>
     <% }) %>
 
-    <!-- محصولات بدون دسته‌بندی -->
     <%
       var orphanProducts = products.filter(function(p){
         if(!p.category) return true;
@@ -624,7 +454,7 @@
                 <div class="product-title"><%= p.title %></div>
                 <div class="product-footer">
                   <div class="product-price">
-                    <%= Number(p.priceHigh).toLocaleString('fa-IR') %>
+                    <%= Number(priceByTier(p)).toLocaleString('fa-IR') %>
                     <span class="currency">تومان</span>
                   </div>
                   <% if(p.quantity > 0){ %>
@@ -650,11 +480,9 @@
   </div>
 
   <script>
-    // تاریخ امروز به شمسی
-    document.getElementById('gen-date').textContent =
-      new Date().toLocaleDateString('fa-IR');
+    var genDate = document.getElementById('gen-date');
+    if (genDate) genDate.textContent = new Date().toLocaleDateString('fa-IR');
 
-    // جستجو + فیلتر برند
     var searchInput = document.getElementById('searchInput');
     var brandFilter = document.getElementById('brandFilter');
 
@@ -669,7 +497,6 @@
         card.style.display = (matchTitle && matchBrand) ? '' : 'none';
       });
 
-      // مخفی کردن دسته‌بندی‌های خالی بعد از فیلتر
       document.querySelectorAll('.category-section').forEach(function(sec){
         var visible = sec.querySelectorAll('.product-card:not([style*="display: none"])').length;
         sec.style.display = visible > 0 ? '' : 'none';
