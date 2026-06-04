@@ -33,20 +33,6 @@ class productController extends controller {
     }
   }
 
-  async createPage(req, res, next) {
-    try {
-      const categories = await categoriesModel.find().lean();
-      const brands = await brandModel.find().lean();
-
-      return res.render("admin/product/create", {
-        categories,
-        brands,
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
-
   async productPagePDF(req, res, next) {
     try {
       // گرفتن دسته‌بندی‌های فعال به ترتیب نمایش
@@ -81,6 +67,20 @@ class productController extends controller {
     }
   }
 
+  async createPage(req, res, next) {
+    try {
+      const categories = await categoriesModel.find().lean();
+      const brands = await brandModel.find().lean();
+
+      return res.render("admin/product/create", {
+        categories,
+        brands,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async create(req, res, next) {
     try {
       const {
@@ -97,8 +97,7 @@ class productController extends controller {
         description,
         type,
         servings,
-        highNumber,
-        single,
+        single, // فقط درصد تکی از فرم می‌آید
       } = req.body;
 
       if (!req.file) {
@@ -114,26 +113,14 @@ class productController extends controller {
         });
       }
 
-      const slug = this.slugify(title);
-
-      const { priceSingle, priceHigh, aedRate } = await this.convertToIRR(
-        Number(originalPrice),
-        Number(highNumber),
-        Number(single),
-      );
-
-      const image = `/uploads/files/product/${req.file.filename}`;
-
       // validation
       const missing = [];
-
       if (!title) missing.push("نام محصول");
       if (!description) missing.push("توضیحات");
       if (!category) missing.push("دسته‌بندی");
       if (!brand) missing.push("برند");
       if (!originalPrice) missing.push("قیمت اصلی (درهم)");
       if (!quantity) missing.push("موجودی");
-      if (!highNumber) missing.push("درصد سود عمده");
       if (!single) missing.push("درصد سود تکی");
 
       if (missing.length > 0) {
@@ -143,6 +130,19 @@ class productController extends controller {
           icon: "error",
         });
       }
+
+      const slug = this.slugify(title);
+
+      const {
+        priceSingle,
+        priceHigh5,
+        priceHigh10,
+        priceHigh15,
+        priceHigh20,
+        aedRate,
+      } = await this.convertToIRR(Number(originalPrice), Number(single));
+
+      const image = `/uploads/files/product/${req.file.filename}`;
 
       await productModel.create({
         title,
@@ -156,15 +156,18 @@ class productController extends controller {
         servings,
         flavor,
         darsad: {
-          highNumber: Number(highNumber),
           single: Number(single),
+          // عمده‌ها (highNumber5/10/15/20) از دیفالت مدل پر می‌شوند
         },
         ingredients,
         usage,
         howToUse,
         weight,
         priceSingle,
-        priceHigh,
+        priceHigh5,
+        priceHigh10,
+        priceHigh15,
+        priceHigh20,
         AED: aedRate,
         type,
       });
@@ -232,7 +235,6 @@ class productController extends controller {
         description,
         type,
         servings,
-        highNumber,
         single,
       } = req.body;
 
@@ -243,7 +245,6 @@ class productController extends controller {
       if (!brand) missing.push("برند");
       if (!originalPrice) missing.push("قیمت اصلی (درهم)");
       if (!quantity) missing.push("موجودی");
-      if (!highNumber) missing.push("درصد سود عمده");
       if (!single) missing.push("درصد سود تکی");
 
       if (missing.length > 0) {
@@ -254,7 +255,8 @@ class productController extends controller {
         });
       }
 
-      const product = await productModel.findById(id);
+      const objectId = mongoose.Types.ObjectId.createFromHexString(id);
+      const product = await productModel.findById(objectId);
       if (!product) {
         if (req.file) fs.unlink(req.file.path, () => {});
         return this.alertAndBack(req, res, {
@@ -264,33 +266,41 @@ class productController extends controller {
       }
 
       // محاسبه‌ی قیمت‌ها از روی درهم خام (همان منطق ساخت محصول)
-      const { priceSingle, priceHigh, aedRate } = await this.convertToIRR(
-        Number(originalPrice),
-        Number(highNumber),
-        Number(single),
-      );
+      const {
+        priceSingle,
+        priceHigh5,
+        priceHigh10,
+        priceHigh15,
+        priceHigh20,
+        aedRate,
+      } = await this.convertToIRR(Number(originalPrice), Number(single));
 
-      // فیلدهای قابل آپدیت
       const updateData = {
         title,
         slug: this.slugify(title),
-        category: category,
-        brand: brand,
+        category,
+        brand,
         originalPrice: Number(originalPrice),
         quantity: Number(quantity),
         description,
         servings,
         flavor,
         darsad: {
-          highNumber: Number(highNumber),
           single: Number(single),
+          highNumber5: 5,
+          highNumber10: 10,
+          highNumber15: 15,
+          highNumber20: 20,
         },
         ingredients,
         usage,
         howToUse,
         weight,
         priceSingle,
-        priceHigh,
+        priceHigh5,
+        priceHigh10,
+        priceHigh15,
+        priceHigh20,
         AED: aedRate,
         type,
       };
@@ -303,7 +313,7 @@ class productController extends controller {
         updateData.image = `/uploads/files/product/${req.file.filename}`;
       }
 
-      await productModel.findByIdAndUpdate(id, updateData, {
+      await productModel.findByIdAndUpdate(objectId, updateData, {
         runValidators: true,
       });
 
@@ -332,18 +342,24 @@ class productController extends controller {
     }
   }
 
-  async convertToIRR(originalPrice, highNumber, single) {
+  async convertToIRR(originalPrice, single) {
     const aedRate = await getExchangeRate();
     if (!aedRate) throw new Error("نرخ ارز موجود نیست");
 
     const base = originalPrice * aedRate;
 
-    const priceSingle = Math.ceil((base * (1 + single / 100)) / 10000) * 10000;
+    // اعمال درصد + گرد کردن به بالا به نزدیک‌ترین ۱۰۰۰۰
+    const calc = (percent) =>
+      Math.ceil((base * (1 + percent / 100)) / 10000) * 10000;
 
-    const priceHigh =
-      Math.ceil((base * (1 + highNumber / 100)) / 10000) * 10000;
-
-    return { priceSingle, priceHigh, aedRate };
+    return {
+      priceSingle: calc(single),
+      priceHigh5: calc(5),
+      priceHigh10: calc(10),
+      priceHigh15: calc(15),
+      priceHigh20: calc(20),
+      aedRate,
+    };
   }
 
   async updateAllPrices(req, res, next) {

@@ -132,7 +132,7 @@ class authController extends controller {
           title: "اعتبار سنجی با موفقیت انجام شد",
           icon: "success",
         },
-        "/dashboard",
+        "/",
       );
     } catch (err) {
       next(err);

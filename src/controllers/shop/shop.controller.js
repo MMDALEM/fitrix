@@ -8,7 +8,7 @@ class shopController extends controller {
     try {
       const {
         page = 1,
-        limit = 20,
+        limit = 18,
         category,
         brand,
         search,

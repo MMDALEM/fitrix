@@ -272,147 +272,89 @@
         <nav class="flex mt-8" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
                 <li class="inline-flex items-center">
-                    <a href="/"
-                        class="inline-flex items-center text-sm gap-x-1  text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
-                        <svg class="size-4 mb-0.5">
-                            <use href="#home" />
-                        </svg>
+                    <a href="/" class="inline-flex items-center text-sm gap-x-1 text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
+                        <svg class="size-4 mb-0.5"><use href="#home" /></svg>
                         صفحه اصلی
                     </a>
                 </li>
                 <li class="inline-flex items-center">
-                    <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="m1 9 4-4-4-4" />
-                </svg>
-                    <a href="/shop"
-                        class="inline-flex items-center text-sm gap-x-1  text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
+                    <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
+                    </svg>
+                    <a href="/shop" class="inline-flex items-center text-sm gap-x-1 text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
                         فروشگاه
                     </a>
                 </li>
                 <li aria-current="page">
                     <div class="flex items-center">
-                        <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m1 9 4-4-4-4" />
+                        <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
                         </svg>
-                        <span class="ms-1 text-sm  text-gray-500 md:ms-2 dark:text-gray-400">جزییات محصول</span>
+                        <span class="ms-1 text-sm text-gray-500 md:ms-2 dark:text-gray-400">جزییات محصول</span>
                     </div>
                 </li>
             </ol>
         </nav>
+
         <!-- PRODUCT DETAILS SECTION -->
-        <section
-            class="mt-5 flex flex-col lg:flex-row items-start gap-4 child:rounded-lg child:bg-white child:dark:bg-gray-800 child:shadow child:p-4">
-            <!-- IMAGE & INFO BOX Container -->
+        <section class="mt-5 flex flex-col lg:flex-row items-start gap-4 child:rounded-lg child:bg-white child:dark:bg-gray-800 child:shadow child:p-4">
             <div class="w-full lg:w-3/4">
                 <div class="flex flex-col md:flex-row justify-start gap-x-8 xl:gap-x-2 items-start">
-                    <!-- IMAGE SLIDER -->
+                    <!-- IMAGE -->
                     <div class="w-2/4 hidden md:flex flex-col justify-center items-center gap-y-4">
                         <span class="open-sliderModal">
-                            <img src="<%= product.image %>" class="cursor-pointer object-cover" alt="">
+                            <img src="<%= product.image %>" class="cursor-pointer object-cover" alt="<%= product.title %>">
                         </span>
                         <div class="grid grid-cols-12 child:col-span-3 child:app-border gap-x-4 child:size-16 child:rounded-lg child:cursor-pointer">
                             <div class="p-1 open-sliderModal">
-                                <img style="object-fit: scale-down;" src="<%= product.image %>" class="object-cover  rounded-lg">
+                                <img style="object-fit: scale-down;" src="<%= product.image %>" class="object-cover rounded-lg">
                             </div>
-                            <div class="overflow-hidden relative open-sliderModal">
-                                    <svg class="absolute size-8 text-gray-100 top-4 left-4 z-10">
-                                        <use href="#ellipsis"></use>
-                                    </svg>
-                                <img src="<%= product.image %>" class="object-cover rounded-lg blur-sm">
-                            </div>
-                        </div>                        
+                        </div>
                     </div>
                     <div class="slider-modal">
                         <div class="flex w-full h-fit items-center justify-between">
-                            <h1 class="font-DanaMedium text-lg">
-                                <%= product.title %>
-                            </h1>
-                            <svg class="size-6 cursor-pointer close-sliderModal">
-                                <use href="#x-mark"></use>
-                            </svg>
+                            <h1 class="font-DanaMedium text-lg"><%= product.title %></h1>
+                            <svg class="size-6 cursor-pointer close-sliderModal"><use href="#x-mark"></use></svg>
                         </div>
-                        
                         <div class="swiper ProductDetailsSlider mt-14 px-10 w-96 relative">
                             <div class="swiper-wrapper w-[50%] child:w-full child:rounded-lg child:overflow-hidden">
-                              <div class="swiper-slide">
-                                <img src="<%= product.image %>"  alt="">
-                              </div>
-                              <div class="swiper-slide">
-                                <img src="<%= product.image %>"  alt="">
-                              </div>
+                                <div class="swiper-slide"><img src="<%= product.image %>" alt=""></div>
                             </div>
                         </div>
                         <button class="slider-navigate_btn absolute right-40 top-[17rem] border dark:border-gray-700 border-gray-200 button-prev-ProductDetailsSlider z-20">
-                            <svg class="size-6 -rotate-90">
-                                <use href="#chevron" />
-                            </svg>
+                            <svg class="size-6 -rotate-90"><use href="#chevron" /></svg>
                         </button>
-                        <button
-                            class="slider-navigate_btn absolute left-40 top-[17rem] border dark:border-gray-700 border-gray-200 button-next-ProductDetailsSlider z-10">
-                            <svg class="size-6 rotate-90">
-                                <use href="#chevron" />
-                            </svg>
+                        <button class="slider-navigate_btn absolute left-40 top-[17rem] border dark:border-gray-700 border-gray-200 button-next-ProductDetailsSlider z-10">
+                            <svg class="size-6 rotate-90"><use href="#chevron" /></svg>
                         </button>
                     </div>
+
                     <!-- INFOS -->
                     <div class="w-full md:w-3/4 flex flex-col gap-y-7">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center justify-between">
-                            <a href="/shop/<%= product.category.slug %>" class="font-DanaMedium text-sky-400"><%= product.category.title %></a>&nbsp;&nbsp;/&nbsp;&nbsp;<a href="/shop/<%= product.brand.slug %>" class="font-DanaMedium text-sky-400"><%= product.brand.title %></a>
+                                <a href="/shop/<%= product.category.slug %>" class="font-DanaMedium text-sky-400"><%= product.category.title %></a>
+                                &nbsp;&nbsp;/&nbsp;&nbsp;
+                                <a href="/shop/<%= product.brand.slug %>" class="font-DanaMedium text-sky-400"><%= product.brand.title %></a>
                             </div>
-                            <!-- <div class="hidden md:flex items-center gap-x-2">
-                                <div class="tooltip">
-                                    <button class="rounded-full p-1.5 app-border app-hover">
-                                        <svg class="size-4 md:size-5">
-                                            <use href="#share"></use>
-                                        </svg>
-                                    </button>
-                                    <div class="tooltiptext">
-                                        اشتراک‌گذازی
-                                    </div>
-                                </div>
-                                <div class="tooltip">
-                                    <button class="rounded-full p-1.5 app-border app-hover">
-                                        <svg class="size-4 md:size-5">
-                                            <use href="#heart"></use>
-                                        </svg>
-                                    </button>
-                                    <div class="tooltiptext">
-                                        علاقه مندی
-                                    </div>
-                                </div>
-                            </div> -->
                         </div>
-                        <!-- MOBILE SLIDER -->
+
+                        <!-- MOBILE IMG -->
                         <div class="flex md:hidden">
                             <div class="swiper MobileProductSlider w-full">
                                 <div class="swiper-wrapper w-full child:w-full child:overflow-hidden child:rounded-lg">
-                                  <div class="swiper-slide">
-                                    <img style="object-fit: scale-down;" src="<%= product.image %>" alt="">
-                                  </div>
+                                    <div class="swiper-slide"><img style="object-fit: scale-down;" src="<%= product.image %>" alt=""></div>
                                 </div>
                                 <div class="swiper-pagination MobileProductSlider-pagination"></div>
                             </div>
                         </div>
-                       
-                        <div class="flex flex-col gap-y-3">
-                            <p class="text-lg font-DanaDemiBold dark:text-gray-300">
-                                <%= product.title %>
-                            </p>
-                            <p class="text-sm text-gray-300 dark:text-gray-500">
-                                <%= product.description %>
-                            </p>
-                            <br>
-                            <br>
-                            <br>
 
+                        <div class="flex flex-col gap-y-3">
+                            <p class="text-lg font-DanaDemiBold dark:text-gray-300"><%= product.title %></p>
+                            <p class="text-sm text-gray-300 dark:text-gray-500"><%= product.description %></p>
                         </div>
 
-                        <!-- Features Box  -->
+                        <!-- Features -->
                         <div class="w-full flex flex-col gap-y-4">
                             <h1 class="font-DanaDemiBold text-lg dark:text-gray-200">ویژگی‌ها</h1>
                             <div class="grid grid-cols-12 gap-2 child:p-2 child:h-16 child:bg-gray-100 dark:child:bg-gray-900 child:rounded-lg child:flex child:flex-col child:gap-y-1.5">
@@ -420,107 +362,86 @@
                                     <p class="text-sm text-gray-500">نوع مکمل</p>
                                     <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200"><%= product.category.title %></p>
                                 </div>
-                                <div  class="col-span-12 md:col-span-6 xl:col-span-4" style=" display: flex;flex-direction: row; ">
+                                <div class="col-span-12 md:col-span-6 xl:col-span-4" style="display:flex;flex-direction:row;">
                                     <p class="text-sm text-gray-500">برند محصول</p>
-                                    <img style="object-fit: scale-down; height: 7vh !important; width: 6vw !important;" src="<%= product.brand.image %>" alt="brand">
+                                    <img style="object-fit:scale-down;height:7vh !important;width:6vw !important;" src="<%= product.brand.image %>" alt="brand">
                                 </div>
                                 <div class="col-span-12 md:col-span-6 xl:col-span-4">
                                     <p class="text-sm text-gray-500">اصالت</p>
                                     <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200">اورجینال</p>
                                 </div>
+                                <% if (product.flavor) { %>
                                 <div class="col-span-12 md:col-span-6 xl:col-span-4">
                                     <p class="text-sm text-gray-500">طعم</p>
                                     <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200"><%= product.flavor %></p>
                                 </div>
+                                <% } %>
+                                <% if (product.weight) { %>
                                 <div class="col-span-12 md:col-span-6 xl:col-span-4">
                                     <p class="text-sm text-gray-500">وزن</p>
                                     <p class="line-clamp-1 font-DanaDemiBold text-sm text-slate-800 dark:text-slate-200"><%= product.weight %></p>
                                 </div>
+                                <% } %>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="mt-10 lg:mr-2 grid grid-cols-12 child:col-span-6 xl:child:col-span-3 gap-x-1 gap-y-2 lg:gap-4 child:border child:text-gray-400 child:dark:border-white/20 child:border-gray-200 child:rounded-lg child:h-12  child:p-2 child:flex child:items-center child:gap-x-1 lg:child:gap-x-2 child:text-sm lg:text-base">
-                    <span>
-                        <svg class="w-4 h-4 lg:w-6 lg:h-6">
-                            <use href="#arrow-path-rounded-square"></use>
-                        </svg>
-                        <p>ضمانت بازگشت کالا</p>
-                    </span>
-                    <span>
-                        <svg class="w-4 h-4 lg:w-6 lg:h-6">
-                            <use href="#check-badge"></use>
-                        </svg>
-                        <p>
-                            تضمین اصالت کالا
-                        </p>
-                    </span>
-                    <span>
-                        <svg class="w-4 h-4 lg:w-6 lg:h-6">
-                            <use href="#calender-day"></use>
-                        </svg>
-                        <p>پشتیبانی کل هفته</p>
-                    </span>
-                    <span>
-                        <svg class="w-4 h-4 lg:w-6 lg:h-6">
-                            <use href="#truke"></use>
-                        </svg>
-                        <p>ارسال به سراسر ایران </p>
-                    </span>
+
+                <div class="mt-10 lg:mr-2 grid grid-cols-12 child:col-span-6 xl:child:col-span-3 gap-x-1 gap-y-2 lg:gap-4 child:border child:text-gray-400 child:dark:border-white/20 child:border-gray-200 child:rounded-lg child:h-12 child:p-2 child:flex child:items-center child:gap-x-1 lg:child:gap-x-2 child:text-sm lg:text-base">
+                    <span><svg class="w-4 h-4 lg:w-6 lg:h-6"><use href="#arrow-path-rounded-square"></use></svg><p>ضمانت بازگشت کالا</p></span>
+                    <span><svg class="w-4 h-4 lg:w-6 lg:h-6"><use href="#check-badge"></use></svg><p>تضمین اصالت کالا</p></span>
+                    <span><svg class="w-4 h-4 lg:w-6 lg:h-6"><use href="#calender-day"></use></svg><p>پشتیبانی کل هفته</p></span>
+                    <span><svg class="w-4 h-4 lg:w-6 lg:h-6"><use href="#truke"></use></svg><p>ارسال به سراسر ایران</p></span>
                 </div>
             </div>
+
             <!-- PRICE & ADD TO CART BOX -->
             <div class="w-full lg:w-1/4 lg:sticky top-5 flex flex-col gap-y-6 purchase-box">
-                <!-- PRICE -->
                 <div class="flex items-center gap-x-1 justify-center">
                     <p class="text-2xl font-DanaDemiBold product-price" data-price="<%= product.priceSingle %>">
-                        <%= (product.priceSingle).toLocaleString() %>
+                        <%= (product.priceSingle).toLocaleString('fa-IR') %>
                     </p>
                     <p class="font-Dana text-sm text-500">تومان</p>
                 </div>
 
                 <div class="w-full flex items-center justify-between gap-x-1 rounded-lg border border-gray-200 dark:border-white/20 py-2 px-3">
-                    <button style="width: 100%" type="button"
-                        class="flex items-center justify-between gap-x-1 rounded-lg  border-gray-200 dark:border-white/20 py-1 px-2">
-                        <svg class="size-4 increment text-green-600 cursor-pointer">
-                            <use href="#plus"></use>
-                        </svg>
-                        <input type="number" name="customInput" min="1" max="20" value="1"
+                    <button style="width:100%" type="button" class="flex items-center justify-between gap-x-1 rounded-lg border-gray-200 dark:border-white/20 py-1 px-2">
+                        <svg class="size-4 increment text-green-600 cursor-pointer"><use href="#plus"></use></svg>
+                        <input type="number" name="customInput" min="1" max="<%= product.quantity %>" value="1"
                             class="custom-input w-4 mr-2 text-sm bg-transparent text-center outline-none" readonly>
-                        <svg class="size-4 decrement text-red-500 cursor-pointer">
-                            <use href="#minus"></use>
-                        </svg>
+                        <svg class="size-4 decrement text-red-500 cursor-pointer"><use href="#minus"></use></svg>
                     </button>
                 </div>
 
                 <div class="w-full flex items-center gap-x-1 justify-between dark:bg-gray-900 dark:text-gray-400 bg-gray-100 transition-all rounded-lg py-2 px-2 xl:px-3 font-DanaMedium text-sm xl:text-base">
                     <p>مجموع خرید :</p>
                     <p>
-                        <span class="total-price"><%= (product.priceSingle).toLocaleString() %></span>
+                        <span class="total-price"><%= (product.priceSingle).toLocaleString('fa-IR') %></span>
                         <span class="font-Dana text-sm text-500">تومان</span>
                     </p>
                 </div>
 
-                <button
-                    class="w-full flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-lg shadow py-2">
-                    افزودن به سبد
-                    <svg class="w-5 h-5">
-                        <use href="#shopping-bag"></use>
-                    </svg>
-                </button>
+                <% if (product.quantity > 0) { %>
+                    <button id="addToCartBtn" data-product-id="<%= product._id %>"
+                        class="w-full flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-lg shadow py-2">
+                        افزودن به سبد
+                        <svg class="w-5 h-5"><use href="#shopping-bag"></use></svg>
+                    </button>
+                <% } else { %>
+                    <button disabled
+                        class="w-full flex items-center gap-x-1 justify-center bg-gray-400 text-white rounded-lg shadow py-2 cursor-not-allowed">
+                        ناموجود
+                    </button>
+                <% } %>
             </div>
         </section>
 
-         <!-- Best-selling products -->
+        <!-- Related products -->
         <section class="mx-4 mt-10 lg:mt-20">
-            <!-- SECTION TITLE -->
-            <div
-                class="flex flex-col gap-y-4 xs:flex-row items-center justify-between w-full text-center xs:text-start">
+            <div class="flex flex-col gap-y-4 xs:flex-row items-center justify-between w-full text-center xs:text-start">
                 <div class="flex items-center gap-x-2 sm:gap-x-4">
                     <span class="size-12 hidden xs:flex rounded-lg bg-white shadow-lg dark:bg-gray-800 flex-center">
-                        <svg class="size-7 text-gray-700 dark:text-gray-100">
-                            <use href="#plus"></use>
-                        </svg>
+                        <svg class="size-7 text-gray-700 dark:text-gray-100"><use href="#plus"></use></svg>
                     </span>
                     <div class="space-y-1 md:space-y-1">
                         <h3 class="text-xl md:text-2xl font-MorabbaMedium text-gray-800 dark:text-gray-50">محصولات
@@ -529,98 +450,59 @@
                         <p class="text-sm text-gray-500 dark:text-gray-300">پیشنهاد محصولات مشابه</p>
                     </div>
                 </div>
-                <div class="w-full xs:w-auto flex justify-between xs:justify-end  items-center gap-x-2">
+                <div class="w-full xs:w-auto flex justify-between xs:justify-end items-center gap-x-2">
                     <div class="flex items-center gap-x-2">
-                        <button class="slider-navigate_btn BestSelling-prev-slide">
-                            <svg class="size-6 -rotate-90">
-                                <use href="#chevron" />
-                            </svg>
-                        </button>
-                        <button class="slider-navigate_btn BestSelling-next-slide">
-                            <svg class="size-6 rotate-90">
-                                <use href="#chevron" />
-                            </svg>
-                        </button>
+                        <button class="slider-navigate_btn BestSelling-prev-slide"><svg class="size-6 -rotate-90"><use href="#chevron" /></svg></button>
+                        <button class="slider-navigate_btn BestSelling-next-slide"><svg class="size-6 rotate-90"><use href="#chevron" /></svg></button>
                     </div>
-                    <a href="/shop"
-                        class="group shadow-xl text-sm md:text-base flex gap-x-1.5 items-center px-2 h-10 md:px-3 text-white bg-blue-600 rounded-xl">
+                    <a href="/shop" class="group shadow-xl text-sm md:text-base flex gap-x-1.5 items-center px-2 h-10 md:px-3 text-white bg-blue-600 rounded-xl">
                         <p>مشاهده همه</p>
-                        <span
-                            class="w-7 h-7 rounded-full bg-blue-500 flex-center md:group-hover:-translate-x-1 transition-transform duration-300">
-                            <svg class="size-5">
-                                <use href="#arrow" />
-                            </svg>
+                        <span class="w-7 h-7 rounded-full bg-blue-500 flex-center md:group-hover:-translate-x-1 transition-transform duration-300">
+                            <svg class="size-5"><use href="#arrow" /></svg>
                         </span>
                     </a>
                 </div>
-
             </div>
-            <!-- Latest products Slider -->
+
             <div class="swiper BestSelling mt-5 w-full">
                 <div class="swiper-wrapper py-5">
-                    <!-- PRODUCT ITEM -->
-                    <% products.forEach(productss=>{ %>
+                    <% products.forEach(function (productss) { %>
                     <div class="swiper-slide product-card group">
-                        <!-- product header -->
                         <div class="product-card_header">
                             <div class="flex items-center gap-x-2">
                                 <div class="tooltip">
                                     <button class="rounded-full p-1.5 app-border app-hover">
-                                        <svg class="size-4">
-                                            <use href="#shopping-cart"></use>
-                                        </svg>
+                                        <svg class="size-4"><use href="#shopping-cart"></use></svg>
                                     </button>
-                                    <div class="tooltiptext">
-                                        سبد خرید
-                                    </div>
+                                    <div class="tooltiptext">سبد خرید</div>
                                 </div>
                                 <div class="tooltip">
                                     <button class="rounded-full p-1.5 app-border app-hover">
-                                        <svg class="size-4">
-                                            <use href="#heart"></use>
-                                        </svg>
+                                        <svg class="size-4"><use href="#heart"></use></svg>
                                     </button>
-                                    <div class="tooltiptext">
-                                        علاقه مندی
-                                    </div>
+                                    <div class="tooltiptext">علاقه مندی</div>
                                 </div>
                             </div>
-                            <!-- badge offer -->
-                            <span class="product-card_badge">70% تخفیف‌</س>
                         </div>
-                        <!-- product img -->
                         <a href="/product/<%= productss.slug %>">
-                            <img style="object-fit: scale-down;" class="product-card_img group-hover:opacity-0 absolute" src="<%= productss.image %>"
-                                alt="">
-                            <img style="object-fit: scale-down;" class="product-card_img opacity-0 group-hover:opacity-100"
-                                src="<%= productss.image %>" alt="">
+                            <img style="object-fit:scale-down;" class="product-card_img group-hover:opacity-0 absolute" src="<%= productss.image %>" alt="">
+                            <img style="object-fit:scale-down;" class="product-card_img opacity-0 group-hover:opacity-100" src="<%= productss.image %>" alt="">
                         </a>
-                        <!--  product footer -->
                         <div class="space-y-2">
-                            <a href="/product/<%= productss.slug %>" class="product-card_link">
-                               <%= productss.title %>
-                            </a>
-                            <!-- Rate and Price -->
+                            <a href="/product/<%= productss.slug %>" class="product-card_link"><%= productss.title %></a>
                             <div class="product-card_price-wrapper">
-                                <!-- RATE -->
                                 <div class="product-card_rate">
                                     <span class="flex items-center gap-x-0.5">
-                                        <svg class="size-4 text-blue-500 mb-0.5">
-                                            <use href="#rocket"></use>
-                                        </svg>
+                                        <svg class="size-4 text-blue-500 mb-0.5"><use href="#rocket"></use></svg>
                                         <p class="text-xs">ارسال امروز</p>
                                     </span>
                                     <span class="text-gray-400 flex items-center text-sm gap-x-0.5">
                                         <p> 5.0 </p>
-                                        <svg class="size-4 mb-1">
-                                            <use href="#star"></use>
-                                        </svg>
+                                        <svg class="size-4 mb-1"><use href="#star"></use></svg>
                                     </span>
                                 </div>
-                                <!-- Price -->
                                 <div class="product-card_price">
-                                    <del><%= (product.priceSingle).toLocaleString() %> <h6>تومان</h6></del>
-                                    <p><%= (product.priceSingle).toLocaleString() %></p>
+                                    <p><%= (productss.priceSingle).toLocaleString('fa-IR') %></p>
                                     <span>تومان</span>
                                 </div>
                             </div>
@@ -631,25 +513,21 @@
             </div>
         </section>
 
+        <!-- Tabs -->
         <section class="relative mt-10 flex flex-col items-start gap-4 rounded-lg bg-white dark:bg-gray-800 shadow p-4">
-            <div class="w-full py-3 flex items-center gap-x-6 child:font-DanaMedium tab-buttons z-10 border-b  border-gray-600/20 dark:border-b-gray-200/20">
-              <button class="tab-btn text-blue-500" data-target="tab1" >معرفی محصول</button>
-              <button class="tab-btn text-gray-500 dark:text-gray-300" data-target="tab2">مشخصات</button>
+            <div class="w-full py-3 flex items-center gap-x-6 child:font-DanaMedium tab-buttons z-10 border-b border-gray-600/20 dark:border-b-gray-200/20">
+                <button class="tab-btn text-blue-500" data-target="tab1">معرفی محصول</button>
+                <button class="tab-btn text-gray-500 dark:text-gray-300" data-target="tab2">مشخصات</button>
             </div>
             <div class="tab-content tab1 block">
                 <h2 class="font-DanaDemiBold border-b-2 border-blue-500 w-fit p-1 text-lg">معرفی</h2>
                 <p class="mt-4 leading-8"><%= product.description %></p>
             </div>
             <div class="tab-content tab2 hidden w-full lg:w-[50%]">
-                <h2 class="font-DanaDemiBold border-b-2 border-blue-500 w-fit p-1 text-lg">مشخصات کلی
-                </h2>
+                <h2 class="font-DanaDemiBold border-b-2 border-blue-500 w-fit p-1 text-lg">مشخصات کلی</h2>
                 <div class="p-4 my-5 w-full mx-auto flex justify-center items-center gap-x-20">
                     <ul class="space-y-3 text-gray-500 dark:text-gray-300 lg:w-2/4 child:pt-2">
-                        <li>مکمل</li>
-                        <li>برند</li>
-                        <li>اصالت</li>
-                        <li>طعم</li>
-                        <li>وزن</li>
+                        <li>مکمل</li><li>برند</li><li>اصالت</li><li>طعم</li><li>وزن</li>
                     </ul>
                     <ul class="space-y-3 text-gray-800 dark:text-gray-200 lg:w-2/4 divide-y divide-gray-200 dark:divide-gray-700 font-DanaMedium child:line-clamp-1">
                         <li class="pt-2"><%= product.category.title %></li>
@@ -658,13 +536,7 @@
                         <li class="pt-2"><%= product.flavor %></li>
                         <li class="pt-2"><%= product.weight %></li>
                     </ul>
-                </div>  
-                <a href="#" class="flex gap-x-1 items-center text-blue-400">
-                    مشاهده بیشتر  
-                    <svg class="size-4">
-                        <use href="#chevron-left" />
-                    </svg>
-                </a>
+                </div>
             </div>
         </section>
     </main>
@@ -683,6 +555,7 @@
         const priceEl = box.querySelector('.product-price');
         const totalEl = box.querySelector('.total-price');
         const input = box.querySelector('.custom-input');
+        const addBtn = document.getElementById('addToCartBtn');
 
         if (!priceEl || !totalEl || !input) return;
 
@@ -690,14 +563,12 @@
 
         function render() {
             const qty = parseInt(input.value, 10) || 0;
-            totalEl.textContent = (unitPrice * qty).toLocaleString();
+            totalEl.textContent = (unitPrice * qty).toLocaleString('fa-IR');
         }
 
-        // به تغییر مقدار input گوش می‌دیم
         input.addEventListener('input', render);
         input.addEventListener('change', render);
 
-        // به‌روزرسانی هر 200 میلی‌ثانیه (اگه JS قبلی پروژه event فایر نمی‌کنه)
         let lastValue = input.value;
         setInterval(function () {
             if (input.value !== lastValue) {
@@ -707,5 +578,41 @@
         }, 200);
 
         render();
+
+        // ===== افزودن به سبد =====
+        if (addBtn) {
+            addBtn.addEventListener('click', async function () {
+                const productId = addBtn.dataset.productId;
+                const quantity = parseInt(input.value, 10) || 1;
+
+                addBtn.disabled = true;
+                try {
+                    const res = await fetch('/basket/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productId, quantity }),
+                    });
+
+                    if (res.redirected) { window.location.href = res.url; return; }
+
+                    const data = await res.json();
+                    if (data && data.success) {
+                        if (typeof window.updateCartCount === 'function') {
+                            window.updateCartCount(data.totalItems);
+                        }
+                        if (window.Swal) {
+                            Swal.mixin({ title: 'به سبد اضافه شد', icon: 'success', timer: 1500, showConfirmButton: false });
+                        }
+                    } else {
+                        if (window.Swal) Swal.mixin({ title: (data && data.message) || 'خطا', icon: 'error' });
+                        else alert((data && data.message) || 'خطا');
+                    }
+                } catch (e) {
+                    alert('خطا در ارتباط با سرور');
+                } finally {
+                    addBtn.disabled = false;
+                }
+            });
+        }
     });
 </script>

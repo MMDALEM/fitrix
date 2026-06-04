@@ -143,14 +143,10 @@ BasketSchema.statics.getOrCreate = async function (userId) {
 };
 
 // بازمحاسبه‌ی مجموع و به‌روزرسانی زمان فعالیت پیش از هر ذخیره
-BasketSchema.pre("save", function (next) {
-  this.calculateTotal();
-  this.lastActivity = new Date();
-  next();
-});
-
-// در صورت نیاز به پاکسازی خودکار سبدهای رهاشده، این TTL را فعال کنید
-// (مثلاً حذف سبد بعد از ۳۰ روز بی‌فعالیتی):
-// BasketSchema.index({ lastActivity: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 30 });
+// BasketSchema.pre("save", function (next) {
+//   this.calculateTotal();
+//   this.lastActivity = new Date();
+//   next();
+// });
 
 module.exports = mongoose.model("Basket", BasketSchema);

@@ -5,38 +5,38 @@ const { checkBasketAccess } = require("../middlewares/basket.middleware");
 const { updateExchangeRate } = require("../services/exchangeRate.service");
 const { logout } = require("../controllers/auth/auth.controller");
 
-const homeRouter = require("./home/home");
+const homeRouter = require("./home/home.route");
 router.use("/", homeRouter);
 
-const productRouter = require("./product/product");
+const productRouter = require("./product/product.route");
 router.use("/product", productRouter);
 
-const authRouter = require("./auth/auth");
+const authRouter = require("./auth/auth.route");
 router.use("/auth", authRouter);
 
-const shopRouter = require("./shop/shop");
+const shopRouter = require("./shop/shop.route");
 router.use("/shop", verifyTokenPublic, shopRouter);
 
-const basketRouter = require("./shop/basket");
+const basketRouter = require("./shop/basket.route");
 router.use("/basket", checkBasketAccess, basketRouter);
 
-const dashboardRouter = require("./dashboard/dashboard");
+const dashboardRouter = require("./dashboard/dashboard.route");
 router.use("/dashboard", verifyUser, dashboardRouter);
 
 //admin routers
-const adminRouter = require("./admin/admin");
+const adminRouter = require("./admin/admin.route");
 router.use("/admin", adminRouter);
 
-const productAdminRouter = require("./admin/product");
+const productAdminRouter = require("./admin/product.route");
 router.use("/admin/product", productAdminRouter);
 
-const brandAdminRouter = require("./admin/brand");
+const brandAdminRouter = require("./admin/brand.route");
 router.use("/admin/brand", brandAdminRouter);
 
-const categoryAdminRouter = require("./admin/category");
+const categoryAdminRouter = require("./admin/category.route");
 router.use("/admin/category", categoryAdminRouter);
 
-const adminPdfRouter = require("./admin/pdf");
+const adminPdfRouter = require("./admin/pdf.route");
 router.use("/admin/pdf", adminPdfRouter);
 
 router.get("/update-exchange-rate", async (req, res, next) => {
