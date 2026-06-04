@@ -6,6 +6,8 @@
     let _total = 0;
     _items.forEach(function (it) { _total += (it.product.priceSingle || 0) * it.quantity; });
 %>
+
+<!-- Header -->
 <header class="header">
     <!-- Desktop -->
     <div class="container mt-5 hidden flex-col gap-y-6 lg:flex">
@@ -32,15 +34,14 @@
                     </div>
                 </div>
             </div>
-
+            <!-- Logo -->
             <a href="/" class="flex flex-col text-center ml-20">
                 <span class="font-MorabbaMedium text-4xl flex items-center">
                     <span class="text-blue-500">فیت ریکس</span> شاپ
                 </span>
                 <p class="font-DanaMedium text-gray-400"> لوازم ورزشی </p>
             </a>
-
-            <!-- Action -->
+            <!--  Action -->
             <div class="flex items-center gap-x-3">
                 <% if (typeof user !== 'undefined' && user) { %>
                     <button class="group relative flex-center py-2 px-4 app-border rounded-full app-hover delay-75">
@@ -77,6 +78,7 @@
                     <svg class="hidden dark:inline size-6"><use href="#sun" /></svg>
                 </button>
 
+
                 <!-- Shopping cart button -->
                 <button class="flex-center p-2 bg-blue-600 text-gray-100 rounded-full open-cart relative">
                     <svg class="size-6"><use href="#shopping-bag" /></svg>
@@ -106,7 +108,7 @@
                                 <% var p = item.product; %>
                                 <div class="grid grid-cols-12 gap-x-2 w-full py-4">
                                     <div class="col-span-4 w-24 h-20">
-                                        <img src="<%= p.image %>" class="rounded-lg" alt="<%= p.title %>">
+                                        <img  src="<%= p.image %>" class="rounded-lg " style="object-fit: scale-down; width: 15vw; height: 15vh;" class="object-contain object-center h-full w-32 mx-auto transition-transform duration-300 group-hover:scale-105" alt="<%= p.title %>">
                                     </div>
                                     <div class="col-span-8 flex flex-col justify-between">
                                         <a href="/product/<%= p.slug %>" class="font-DanaMedium line-clamp-2 hover:text-blue-500"><%= p.title %></a>
@@ -136,7 +138,6 @@
                 </div>
             </div>
         </div>
-
         <!-- NAVBAR -->
         <div class="relative flex-between h-16 bg-gray-900 dark:bg-gray-800 rounded-full text-gray-200 px-10">
             <ul class="flex items-center gap-x-8">
@@ -179,27 +180,32 @@
             </div>
         </div>
     </div>
-
     <!-- Mobile -->
     <div class="flex justify-center lg:hidden">
-        <nav class="absolute top-0 inset-x-0 w-full h-16 px-4 shadow-sm dark:bg-gray-800 flex items-center justify-between">
+        <!-- Top Navbar -->
+        <nav
+            class="absolute top-0 inset-x-0 w-full h-16 px-4 shadow-sm dark:bg-gray-800 flex items-center justify-between">
+            <!-- Menu -->
             <button class="open-menu-mobile flex-center p-2 app-border rounded-full">
-                <svg class="size-6"><use href="#bars" /></svg>
+                <svg class=" size-6">
+                    <use href="#bars" />
+                </svg>
             </button>
             <div class="mobile-menu z-50 flex flex-col">
+                <!--  MENU MOBILE header -->
                 <div class="flex w-full items-center justify-between border-b-normal pb-4">
-                    <div class="col-span-4 w-26 h-15">
-                        <a href="/" class="flex flex-col text-center ml-5">
-                            <span class="font-MorabbaMedium text-2xl flex items-center">
-                                <span class="text-blue-500">فیت ریکس</span> شاپ
-                            </span>
-                            <p class="font-DanaMedium text-gray-400"> لوازم ورزشی </p>
-                        </a>
-                    </div>
+                    <a href="/" class="flex flex-col text-center ml-5">
+                        <span class="font-MorabbaMedium text-2xl flex items-center">
+                            <span class="text-blue-500">فیت ریکس</span> شاپ
+                        </span>
+                    </a>
                     <button class="close-menu-mobile">
-                        <svg class="size-5 text-gray-500 dark:text-gray-200"><use href="#x-mark" /></svg>
+                        <svg class="size-5 text-gray-500 dark:text-gray-200">
+                            <use href="#x-mark" />
+                        </svg>
                     </button>
                 </div>
+                <!-- MENU MOBILE CATEGORY & ACTION  -->
                 <ul class="flex flex-col gap-y-2 text-gray-800 dark:text-gray-100 mt-4">
                     <% if (typeof user !== 'undefined' && user) { %>
                         <button class="group relative flex-center py-2 px-4 app-border rounded-full app-hover delay-75">
@@ -257,6 +263,7 @@
                     </li>
                 </ul>
             </div>
+            <!-- Logo -->
             <div class="col-span-4 w-26 h-15">
                 <a href="/" class="flex flex-col text-center ml-5">
                     <span class="font-MorabbaMedium text-2xl flex items-center">
@@ -265,27 +272,94 @@
                     <p class="font-DanaMedium text-gray-400"> لوازم ورزشی </p>
                 </a>
             </div>
-            <button class="toggle-theme flex-center p-2 app-border rounded-full">
-                <svg class="inline-block dark:hidden size-6"><use href="#moon" /></svg>
-                <svg class="hidden dark:inline size-6"><use href="#sun" /></svg>
-            </button>
-        </nav>
+            <!-- Toggle theme -->
 
+            <div class="flex items-center gap-x-2">
+                <a href="/basket" style="background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));" class="relative flex-center p-2 app-border rounded-full">
+                    <svg class="size-6"><use href="#shopping-bag" /></svg>
+                    <span id="headerCartBadge" class="absolute -top-1 -right-1 flex h-4 w-4 <%= _count > 0 ? '' : 'hidden' %>">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                        <span id="headerCartCount" class="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-xs pt-1 flex-center text-white"><%= _count.toLocaleString('fa-IR') %></span>
+                    </span>
+                </a>
+                <button class="toggle-theme flex-center p-2 app-border rounded-full">
+                    <svg class="inline-block dark:hidden size-5"><use href="#moon" /></svg>
+                    <svg class="hidden dark:inline size-5"><use href="#sun" /></svg>
+                </button>
+            </div>
+        </nav>
+        <!-- Search baer -->
+        <button class="open-mobile_search-modal">
+            <svg class=" size-6">
+                <use href="#search" />
+            </svg>
+            <p>جستجو در <span class="font-MorabbaMedium">فیت‌ریکس شاپ</span></p>
+        </button>
+        <!-- Search Moadal -->
+        <div class="mobile_search-modal">
+            <!-- TOP -->
+            <div class="w-full flex items-center gap-x-2">
+                <button
+                    class="w-full flex items-center gap-x-1 bg-gray-200 dark:bg-gray-800 text-gray-500 py-2 px-4 rounded-3xl">
+                    <svg class="size-6">
+                        <use href="#search" />
+                    </svg>
+                    <input type="text" placeholder="جستجو در همه محصولات">
+                </button>
+                <svg class="size-6 close-mobile_search-modal">
+                    <use href="#x-mark" />
+                </svg>
+            </div>
+            <div class="w-full space-y-4">
+                <!-- Trend -->
+                <div class="pt-4">
+                    <span class="flex items-center gap-x-1 text-sm text-gray-500 dark:text-gray-200">
+                        <svg class="size-4">
+                            <use href="#fire" />
+                        </svg>
+                        <p>جستجو های پرطرفدار :</p>
+                    </span>
+                    <ul class="w-full flex items-center gap-1.5 mt-3 child:search-modal-list-item">
+                        <li>
+                            <a href="#">#وی</a>
+                        </li>
+                        <li>
+                            <a href="#">#کراتین</a>
+                        </li>
+                        <li>
+                            <a href="#">#گینر</a>
+                        </li>
+                        <li>
+                            <a href="#">#گلوتامین</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- bottom Navbar-->
         <ul class="bottom-navbar">
             <li class="dark:text-sky-400 text-blue-500 font-DanaMedium">
-                <svg class="size-5"><use href="#home" /></svg>
+                <svg class="size-5">
+                    <use href="#home" />
+                </svg>
                 <a href="/">خانه</a>
             </li>
             <li>
-                <svg class="size-5"><use href="#squares" /></svg>
+                <svg class="size-5">
+                    <use href="#squares" />
+                </svg>
                 <a href="/shop">فروشگاه</a>
             </li>
             <li>
-                <svg class="size-5"><use href="#shopping-bag" /></svg>
+                <svg class="size-5">
+                    <use href="#shopping-bag" />
+                </svg>
                 <a href="/basket">سبد خرید</a>
             </li>
             <li>
-                <svg class="size-5"><use href="#user" /></svg>
+                <svg class="size-5">
+                    <use href="#user" />
+                </svg>
                 <a href="/dashboard">حساب من</a>
             </li>
         </ul>
@@ -293,19 +367,18 @@
 </header>
 
 <script>
-// آپدیت زنده‌ی عدد سبد در هدر (بعد از افزودن به سبد صدا زده می‌شود)
-window.updateCartCount = function (count) {
-    const badge = document.getElementById("headerCartBadge");
-    const countEl = document.getElementById("headerCartCount");
-    const label = document.querySelector(".cart-count-label");
-    const n = Number(count) || 0;
-    const fa = n.toLocaleString("fa-IR");
+    window.updateCartCount = function (count) {
+        const badge = document.getElementById("headerCartBadge");
+        const countEl = document.getElementById("headerCartCount");
+        const label = document.querySelector(".cart-count-label");
+        const n = Number(count) || 0;
+        const fa = n.toLocaleString("fa-IR");
 
-    if (countEl) countEl.textContent = fa;
-    if (label) label.textContent = "(" + fa + " مورد)";
-    if (badge) {
-        if (n > 0) badge.classList.remove("hidden");
-        else badge.classList.add("hidden");
-    }
-};
+        if (countEl) countEl.textContent = fa;
+        if (label) label.textContent = "(" + fa + " مورد)";
+        if (badge) {
+            if (n > 0) badge.classList.remove("hidden");
+            else badge.classList.add("hidden");
+        }
+    };
 </script>

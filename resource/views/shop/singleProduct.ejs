@@ -595,18 +595,28 @@
 
                     if (res.redirected) { window.location.href = res.url; return; }
 
-                    const data = await res.json();
-                    if (data && data.success) {
-                        if (typeof window.updateCartCount === 'function') {
-                            window.updateCartCount(data.totalItems);
-                        }
-                        if (window.Swal) {
-                            Swal.mixin({ title: 'به سبد اضافه شد', icon: 'success', timer: 1500, showConfirmButton: false });
-                        }
+                const data = await res.json();
+                if (data && data.success) {
+                    if (window.Swal) {
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2200,
+                            timerProgressBar: true,
+                            didClose: () => location.reload()   // بعد از بسته شدن پیام، رفرش
+                        });
+                        Toast.fire({ title: 'به سبد خرید اضافه شد', icon: 'success' });
                     } else {
-                        if (window.Swal) Swal.mixin({ title: (data && data.message) || 'خطا', icon: 'error' });
-                        else alert((data && data.message) || 'خطا');
+                        location.reload();   // اگر Swal نبود، مستقیم رفرش
                     }
+                } else {
+                    if (window.Swal) {
+                        Swal.fire({ title: (data && data.message) || 'خطا', icon: 'error' });
+                    } else {
+                        alert((data && data.message) || 'خطا');
+                    }
+                }
                 } catch (e) {
                     alert('خطا در ارتباط با سرور');
                 } finally {

@@ -2,6 +2,7 @@ const JWT = require("jsonwebtoken");
 const userModel = require("../models/user.model");
 const categoriesModel = require("../models/categories.model");
 const basketModel = require("../models/basket.model");
+const addressModel = require("../models/address.model");
 
 class GlobalData {
   static async auth(req, res, next) {
@@ -17,6 +18,7 @@ class GlobalData {
         token,
         process.env.JWT_ACCESS_TOKEN_SECRET_USER,
       );
+
       const user = await userModel.findById(payload.id, {
         phone: 1,
         isActive: 1,
@@ -25,9 +27,12 @@ class GlobalData {
         avatar: 1,
       });
 
+      const addresses = await addressModel.find({ user: user._id });
+
       if (user && user.isActive) {
         req.user = user;
         res.locals.user = user;
+        res.locals.addresses = addresses;
       } else {
         req.user = null;
         res.locals.user = null;

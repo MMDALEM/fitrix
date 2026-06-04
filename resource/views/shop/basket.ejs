@@ -55,11 +55,7 @@
                     <span class="flex items-center gap-x-2">
                         <h2 class="font-DanaMedium text-xl">سبد خرید</h2>
                         <p class="text-gray-400">(<span id="totalCountLabel"><%= totalCount %></span> کالا)</p>
-                    </span>
-                    <span class="flex items-center gap-x-1 text-red-600 dark:text-white cursor-pointer" id="clearBasketBtn">
-                        <p class="mt-1 font-DanaMedium">حذف همه</p>
-                        <svg class="w-5 h-5"><use href="#trash"></use></svg>
-                    </span>
+                    </span>              
                 </div>
 
                 <!-- PRODUCT ITEMS -->
@@ -124,6 +120,7 @@
                         <p class="font-DanaMedium text-gray-700 dark:text-gray-200">
                             <span id="discount"><%= Number(discount).toLocaleString('fa-IR') %></span> تومان
                         </p>
+                        
                     </li>
                     <li class="border-t-2 border-dashed border-gray-400 pt-4">
                         <p>مبلغ نهایی :</p>
@@ -131,34 +128,59 @@
                     </li>
                 </ul>
 
+                <!-- ===== انتخاب آدرس ===== -->
+                <div class="flex flex-col gap-y-2 pt-2 border-t-2 border-dashed border-gray-400 dark:border-gray-500">
+                
+                    <div class="flex items-center justify-between">
+                        <p class="font-DanaMedium text-sm">انتخاب آدرس :</p>
+                        <a href="/dashboard/address" class="text-xs text-blue-500 font-DanaMedium">+ افزودن آدرس</a>
+                    </div>
+
+                    <% if (user && addresses && addresses.length) {  %>
+                        <% addresses.forEach(function (addr, i) { %>
+                            <label class="flex items-start gap-x-2 cursor-pointer">
+                                <input type="radio" name="address" value="<%= addr._id %>" class="accent-blue-500 mt-1" <%= i === 0 ? 'checked' : '' %>>
+                                <span class="flex flex-col">
+                                    <span class="font-DanaMedium text-sm"><%= addr.title || ('آدرس ' + (i + 1)) %></span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400"><%= addr.fullAddress %></span>
+                                </span>
+                            </label>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="text-xs text-gray-400">هنوز آدرسی ثبت نکرده‌اید. <a href="/dashboard/addresses" class="text-blue-500">افزودن آدرس</a></p>
+                    <% } %>
+                </div>
+
                 <!-- ===== انتخاب درگاه پرداخت ===== -->
-                <div class="flex flex-col gap-y-2 pt-2 border-t-2 border-dashed border-gray-300 dark:border-gray-600">
+                <div class="flex flex-col gap-y-2 pt-2 border-t-2 border-dashed border-gray-400 dark:border-gray-500">
                     <p class="font-DanaMedium text-sm">انتخاب درگاه پرداخت :</p>
 
                     <!-- زرین‌پال -->
-                    <label class="gateway-option flex items-center justify-between gap-x-2 p-3 rounded-lg border-2 border-gray-200 dark:border-white/20 cursor-pointer transition-all has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-900/10">
+                    <label class="gateway-option flex items-center justify-between  gap-x-2 p-3 rounded-lg border-2 border-gray-200 dark:border-white/20 cursor-pointer transition-all duration-200">
                         <span class="flex items-center gap-x-2">
-                            <input type="radio" name="gateway" value="zarinpal" class="accent-blue-500" checked>
+                            <input type="radio" name="gateway" value="zarinpal" class="sr-only" checked>
+                            <span class="shrink-0 w-9 h-9 rounded-lg bg-white border border-gray-100 dark:border-gray-700 flex items-center justify-center overflow-hidden">
+                            <img src="/images/payment/zarinpal.svg" class="w-6 h-8 object-contain" alt="زرین‌پال">
+                            
+                            </span>
                             <span class="font-DanaMedium text-sm">درگاه زرین‌پال</span>
                         </span>
-                        <span class="text-xs text-gray-400">پرداخت کامل</span>
+                        <span class="text-xs">پرداخت کامل</span>
                     </label>
 
                     <!-- دیجی‌پی -->
-                    <label class="gateway-option flex items-center justify-between gap-x-2 p-3 rounded-lg border-2 border-gray-200 dark:border-white/20 cursor-pointer transition-all has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50 dark:has-[:checked]:bg-purple-900/10">
+                    <label class="gateway-option flex items-center justify-between gap-x-2 p-3 rounded-lg border-2 border-gray-200 dark:border-white/20 cursor-pointer transition-all duration-200">
                         <span class="flex items-center gap-x-2">
-                            <input type="radio" name="gateway" value="digipay" class="accent-purple-500">
+                            <input type="radio" name="gateway" value="digipay" class="sr-only">
+                            <span class="shrink-0 w-9 h-9 rounded-lg bg-white border border-gray-100 dark:border-gray-700 flex items-center justify-center overflow-hidden">
+                            <img src="/images/payment/digipay.svg" class="w-10 h-10 object-contain" alt="دیجی‌پی">
+                            </span>
                             <span class="font-DanaMedium text-sm">دیجی‌پی</span>
                         </span>
                         <span class="text-xs text-purple-500 font-DanaMedium">۴ قسط</span>
                     </label>
                 </div>
 
-                <!-- دکمه بروزرسانی -->
-                <button id="updateBasketBtn" type="button" style="background-color: orange" disabled
-                    class="w-full flex items-center gap-x-1 justify-center text-white hover:opacity-90 transition-all rounded-lg shadow py-2 disabled:opacity-40 disabled:cursor-not-allowed">
-                    بروزرسانی سبد
-                </button>
 
                 <!-- دکمه تکمیل سفارش -->
                 <button id="checkoutBtn" type="button"
@@ -176,7 +198,6 @@
         const itemsContainer = document.getElementById("basketItems");
         if (!itemsContainer) return;
 
-        // Toast برای پیام‌های زودگذر (بدون دکمه)
         const Toast = window.Swal ? Swal.mixin({
             toast: true,
             position: "top-end",
@@ -185,53 +206,51 @@
             timerProgressBar: true,
         }) : null;
 
-        // پیام کمکی: اگر Swal بود Toast، وگرنه alert
         function notify(title, icon) {
             if (Toast) Toast.fire({ title: title, icon: icon || "info" });
             else alert(title);
         }
 
-        const updateBtn   = document.getElementById("updateBasketBtn");
         const clearBtn    = document.getElementById("clearBasketBtn");
         const checkoutBtn = document.getElementById("checkoutBtn");
-        const itemsTotalEl = document.getElementById("itemsTotal");
-        const finalPriceEl = document.getElementById("finalPrice");
-        const totalCountLabel = document.getElementById("totalCountLabel");
-        const priceBoxCount = document.getElementById("priceBoxCount");
 
-        const faFmt = (n) => Number(n || 0).toLocaleString("fa-IR");
-
-        function isDirty() {
-            return [...document.querySelectorAll(".cart-row")].some(function (row) {
-                return Number(row.querySelector(".qty-input").value) !== Number(row.dataset.originalQty);
-            });
+        // ارسال تعداد جدید یک محصول به سرور و سپس رفرش
+        async function sendQty(productId, quantity, row, prevValue) {
+            try {
+                const res = await fetch("/basket/update", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ items: [{ productId, quantity }] }),
+                });
+                if (res.redirected) { window.location.href = res.url; return; }
+                const data = await res.json();
+                if (data && data.success) {
+                    if (typeof window.updateCartCount === "function") window.updateCartCount(data.totalItems);
+                    location.reload();
+                } else {
+                    // اگر سرور قبول نکرد، مقدار قبلی را برگردان
+                    if (row && prevValue != null) row.querySelector(".qty-input").value = prevValue;
+                    notify((data && data.message) || "خطا", "error");
+                }
+            } catch (_) {
+                if (row && prevValue != null) row.querySelector(".qty-input").value = prevValue;
+                notify("خطا در ارتباط با سرور", "error");
+            }
         }
 
-        function recalc() {
-            let total = 0, count = 0;
-            document.querySelectorAll(".cart-row").forEach(function (row) {
-                const qty = Number(row.querySelector(".qty-input").value) || 0;
-                const unit = Number(row.dataset.unitPrice) || 0;
-                row.querySelector(".row-total").textContent = faFmt(unit * qty);
-                total += unit * qty;
-                count += qty;
-            });
-            itemsTotalEl.textContent = faFmt(total);
-            finalPriceEl.textContent = faFmt(total);
-            if (totalCountLabel) totalCountLabel.textContent = faFmt(count);
-            if (priceBoxCount) priceBoxCount.textContent = faFmt(count);
-            updateBtn.disabled = !isDirty();
-        }
-
-        // افزایش / کاهش (محلی)
+        // افزایش / کاهش — خودکار به سرور می‌فرستد و رفرش می‌کند
         itemsContainer.addEventListener("click", function (e) {
             const incBtn = e.target.closest(".increment");
             const decBtn = e.target.closest(".decrement");
             if (!incBtn && !decBtn) return;
+
             const row = e.target.closest(".cart-row");
             const input = row.querySelector(".qty-input");
             const stock = Number(row.dataset.stock);
+            const productId = row.dataset.productId;
             let q = Number(input.value);
+            const prev = q;
+
             if (incBtn) {
                 if (q + 1 > stock) {
                     notify("بیش از موجودی انبار نیست", "warning");
@@ -243,7 +262,7 @@
                 q--;
             }
             input.value = q;
-            recalc();
+            sendQty(productId, q, row, prev);
         });
 
         // حذف یک آیتم
@@ -263,75 +282,8 @@
             } catch (_) { notify("خطا در ارتباط با سرور", "error"); }
         });
 
-        // حذف همه
-        if (clearBtn) {
-            clearBtn.addEventListener("click", async function () {
-                // تأیید: اینجا Swal معمولی (نه Toast) چون به دکمه نیاز داریم
-                let ok;
-                if (window.Swal) {
-                    const result = await Swal.fire({
-                        title: "همه‌ی محصولات حذف شوند؟",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: "بله",
-                        cancelButtonText: "خیر",
-                    });
-                    ok = result.isConfirmed;
-                } else {
-                    ok = confirm("همه‌ی محصولات حذف شوند؟");
-                }
-                if (!ok) return;
-
-                try {
-                    const res = await fetch("/basket/clear", { method: "DELETE" });
-                    if (res.redirected) { window.location.href = res.url; return; }
-                    const data = await res.json();
-                    if (data && data.success) {
-                        if (typeof window.updateCartCount === "function") window.updateCartCount(0);
-                        location.reload();
-                    }
-                } catch (_) { notify("خطا در ارتباط با سرور", "error"); }
-            });
-        }
-
-        // بروزرسانی سبد (دسته‌ای)
-        updateBtn.addEventListener("click", async function () {
-            const items = [...document.querySelectorAll(".cart-row")].map(function (row) {
-                return { productId: row.dataset.productId, quantity: Number(row.querySelector(".qty-input").value) };
-            });
-            updateBtn.disabled = true;
-            try {
-                const res = await fetch("/basket/update", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ items }),
-                });
-                if (res.redirected) { window.location.href = res.url; return; }
-                const data = await res.json();
-                if (data && data.success) {
-                    if (typeof window.updateCartCount === "function") window.updateCartCount(data.totalItems);
-                    notify("سبد خرید بروزرسانی شد", "success");
-                    document.querySelectorAll(".cart-row").forEach(function (row) {
-                        row.dataset.originalQty = row.querySelector(".qty-input").value;
-                    });
-                    recalc();
-                } else {
-                    notify((data && data.message) || "خطا", "error");
-                    updateBtn.disabled = false;
-                }
-            } catch (_) {
-                notify("خطا در ارتباط با سرور", "error");
-                updateBtn.disabled = false;
-            }
-        });
-
         // تکمیل سفارش و رفتن به درگاه
         checkoutBtn.addEventListener("click", async function () {
-            if (isDirty()) {
-                notify("اول سبد را بروزرسانی کنید", "info");
-                return;
-            }
-
             const gateway = document.querySelector('input[name="gateway"]:checked');
             const gatewayValue = gateway ? gateway.value : "zarinpal";
 
@@ -356,4 +308,26 @@
             }
         });
     })();
+    // انتخاب درگاه — رنگی و بزرگ‌تر شدن گزینه‌ی فعال
+const gatewayLabels = document.querySelectorAll(".gateway-option");
+function refreshGateways() {
+    gatewayLabels.forEach(function (label) {
+        const radio = label.querySelector('input[type="radio"]');
+        if (radio.checked) {
+            label.classList.add("border-blue-500", "bg-blue-50", "dark:bg-blue-900/10", "scale-105", "shadow-md");
+            label.classList.remove("border-gray-200", "dark:border-white/20");
+        } else {
+            label.classList.remove("border-blue-500", "bg-blue-50", "dark:bg-blue-900/10", "scale-105", "shadow-md");
+            label.classList.add("border-gray-200", "dark:border-white/20");
+        }
+    });
+}
+gatewayLabels.forEach(function (label) {
+    label.addEventListener("click", function () {
+        const radio = label.querySelector('input[type="radio"]');
+        radio.checked = true;
+        refreshGateways();
+    });
+});
+refreshGateways(); // اجرای اولیه برای گزینه‌ی پیش‌فرض
 </script>
