@@ -9,6 +9,10 @@ const authAdminController = require("../../controllers/admin/auth/auth.controlle
 // const { upload_public } = require("../../utils/upload");
 const adminController = require("../../controllers/admin/admin.controller");
 
+// AED
+router.get("/update-aed", adminController.updated_AED);
+router.get("/update-prices", adminController.updateAllPrices);
+
 //master page
 router.use((req, res, next) => {
   res.locals.layout = "admin/master";

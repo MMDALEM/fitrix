@@ -36,7 +36,8 @@
     "randomstring": "^1.3.1",
     "sweetalert2": "^11.26.24",
     "swiper": "^12.1.4",
-    "tailwind-scrollbar": "^4.0.2"
+    "tailwind-scrollbar": "^4.0.2",
+    "zarinpal-node-sdk": "^2.2.0"
   },
   "devDependencies": {
     "tailwindcss": "^4.3.0"

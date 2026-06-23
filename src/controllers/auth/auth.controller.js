@@ -1,6 +1,6 @@
 const controller = require("../.controller");
 const userModel = require("../../models/user.model");
-const { generateOtp, jwtSign } = require("../../utils/function");
+const { generateOtp, jwtSign, sendCode } = require("../../utils/function");
 
 class authController extends controller {
   async auth(req, res, next) {
@@ -20,15 +20,15 @@ class authController extends controller {
 
       const date = Date.now();
       if (user) {
-        if (date <= user?.otp?.expiresIn)
-          return this.alertAndBack(req, res, {
-            title: "کد تایید به تازگی برای شماارسال شده، لطفا صبر کنید",
-            icon: "error",
-          });
+        // if (date <= user?.otp?.expiresIn)
+        //   return this.alertAndBack(req, res, {
+        //     title: "کد تایید به تازگی برای شماارسال شده، لطفا صبر کنید",
+        //     icon: "error",
+        //   });
 
         await this.updateOtpForUser(phone, code);
       } else await this.register(phone, code);
-      // await sms(phone,code);
+      // await sendCode(phone, code + "");
 
       const cookie_otp = {
         phone: phone,

@@ -3,9 +3,9 @@ const basketModel = require("../../models/basket.model");
 const productModel = require("../../models/product.model");
 const orderModel = require("../../models/order.model");
 const controller = require("../.controller");
+const { ZarinPal } = require("zarinpal-node-sdk");
 
 class paymentController extends controller {
-  // ساخت پرداخت: سفارش را می‌سازد و کاربر را به درگاه می‌فرستد
   async createPayment(req, res, next) {
     try {
       const userId = req.user._id;
@@ -61,8 +61,6 @@ class paymentController extends controller {
       const order = await orderModel.create({
         user: userId,
         items: orderItems,
-        // ⚠️ shippingAddress الزامی است — اینجا باید آدرس کاربر را بگذاری
-        // shippingAddress: req.user.defaultAddress یا از body
         itemsPrice,
         shippingPrice,
         totalPrice,
@@ -96,115 +94,9 @@ class paymentController extends controller {
     }
   }
 
-  // ───────────────────────────────────────────────
-  // PLACEHOLDER زرین‌پال
-  // مستندات: https://docs.zarinpal.com
-  // بعداً: درخواست PaymentRequest بزن، authority را در order ذخیره کن،
-  // و startpay URL را برگردان.
-  // ───────────────────────────────────────────────
-  async requestZarinpal(order, req) {
-    // const merchantId = process.env.ZARINPAL_MERCHANT_ID;
-    // const callbackUrl = `${req.protocol}://${req.get("host")}/payment/verify/zarinpal`;
-    // const response = await fetch("https://payment.zarinpal.com/pg/v4/payment/request.json", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     merchant_id: merchantId,
-    //     amount: order.totalPrice,        // تومان یا ریال — طبق مستندات تنظیم کن
-    //     callback_url: callbackUrl,
-    //     description: `سفارش ${order.orderNumber}`,
-    //   }),
-    // });
-    // const data = await response.json();
-    // const authority = data?.data?.authority;
-    // order.transactionId = authority;  // ذخیره برای verify
-    // await order.save();
-    // return `https://payment.zarinpal.com/pg/StartPay/${authority}`;
-
-    // فعلاً placeholder:
-    console.log("ZARINPAL placeholder for order", order.orderNumber);
-    return `/payment/verify/zarinpal?orderId=${order._id}&mock=1`;
-  }
-
-  // ───────────────────────────────────────────────
-  // PLACEHOLDER دیجی‌پی (۴ قسط)
-  // مستندات: https://docs.mydigipay.com
-  // بعداً: توکن بگیر، تیکت پرداخت بساز، و redirectUrl را برگردان.
-  // ───────────────────────────────────────────────
-  async requestDigipay(order, req) {
-    // const token = await getDigipayToken();  // OAuth
-    // const callbackUrl = `${req.protocol}://${req.get("host")}/payment/verify/digipay`;
-    // const response = await fetch("https://api.mydigipay.com/digipay/api/businesses/ticket?type=11", {
-    //   method: "POST",
-    //   headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     amount: order.totalPrice,
-    //     cellNumber: req.user.phone,
-    //     callbackUrl,
-    //     providerId: order.orderNumber,
-    //   }),
-    // });
-    // const data = await response.json();
-    // order.transactionId = data?.ticket;
-    // await order.save();
-    // return data?.redirectUrl;
-
-    // فعلاً placeholder:
-    console.log("DIGIPAY placeholder for order", order.orderNumber);
-    return `/payment/verify/digipay?orderId=${order._id}&mock=1`;
-  }
-
-  // ───────────────────────────────────────────────
-  // بازگشت از درگاه (verify) — مشترک، بعداً منطق هر درگاه را جدا کن
-  // ───────────────────────────────────────────────
-  async verifyPayment(req, res, next) {
+  async authPayment(req, res, next) {
     try {
-      const { gateway } = req.params;
-      const { orderId } = req.query;
-
-      const order = await orderModel.findById(orderId);
-      if (!order) {
-        return res.render("shop/payment-result", {
-          success: false,
-          message: "سفارش یافت نشد",
-        });
-      }
-
-      // ───────────────────────────────────────────────
-      // اینجا باید پرداخت را با درگاه verify کنی.
-      // اگر موفق بود:
-      // ───────────────────────────────────────────────
-      // const verified = await verifyWithGateway(gateway, order);
-      const verified = req.query.mock === "1"; // فعلاً mock
-
-      if (verified) {
-        await order.markAsPaid(order.transactionId);
-
-        // کسر موجودی محصولات
-        for (const item of order.items) {
-          await productModel.findByIdAndUpdate(item.product, {
-            $inc: { quantity: -item.quantity, soldCount: item.quantity },
-          });
-        }
-
-        // خالی کردن سبد
-        const basket = await basketModel.findOne({ user: order.user });
-        if (basket) await basket.clear();
-
-        return res.render("shop/payment-result", {
-          success: true,
-          order,
-        });
-      } else {
-        order.status = "payment_failed";
-        order.statusLabel = "پرداخت ناموفق";
-        await order.save();
-        return res.render("shop/payment-result", {
-          success: false,
-          order,
-          message: "پرداخت ناموفق بود",
-        });
-      }
+      
     } catch (err) {
       next(err);
     }

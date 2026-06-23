@@ -16,6 +16,6 @@ router.get("/edit/:id", productController.editPage);
 
 router.post("/edit/:id", upload_multer.single("image"), productController.edit);
 
-router.get("/update-prices", productController.updateAllPrices);
+
 
 module.exports = router;

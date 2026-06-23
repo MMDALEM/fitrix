@@ -11,7 +11,7 @@
                         </svg>
                         <div class="flex flex-col gap-y-1">
                             <h2 class="font-DanaDemiBold">محصولات</h2>
-                            <p class="text-gray-500">محصول : <span>0 </span></p>
+                            <p class="text-gray-500">محصول : <span><%= products.length %> </span></p>
                      </div>
                    </div>
                    <div class="flex items-center gap-x-4">
@@ -20,7 +20,7 @@
                         </svg>
                         <div class="flex flex-col gap-y-1">
                             <h2 class="font-DanaDemiBold">سفارش‌ها</h2>
-                            <p class="text-gray-500">10 سفارش</p>
+                            <p class="text-gray-500"><%= orders %> سفارش</p>
                      </div>
                    </div>
                    <div class="flex items-center gap-x-4">
@@ -29,7 +29,31 @@
                         </svg>
                         <div class="flex flex-col gap-y-1">
                             <h2 class="font-DanaDemiBold">کاربران</h2>
-                            <p class="text-gray-500">5 کاربر</p>
+                            <p class="text-gray-500"><%= users %> کاربر</p>
+                     </div>
+                   </div>
+               </div>
+               <br>
+               <div class="grid grid-cols-12 child:col-span-12 mt-5 lg:mt-0 md:child:col-span-4 gap-4 child:rounded-lg child:bg-white child:dark:bg-gray-800 child:w-full child:flex
+               child:shadow child:p-4">
+                   <div class="flex items-center gap-x-4">
+                        <svg class="size-9 text-blue-500">
+                             <use href="#wallet" />
+                        </svg>
+                        <div class="flex flex-col gap-y-1">
+                            <h2 class="font-DanaDemiBold">قیمت بروز درهم</h2>
+                            <p class="text-gray-500">اخرین اپدیت : <span><%= (ExchangeRates.rateInRials).toLocaleString('fa-IR') %></span></p>
+                            <a href="/admin/update-aed" style="border-radius: 0.25rem; background-color: #3b82f6; color: white; padding: 0.5rem 1rem;" class="text-blue-500 hover:text-blue-700">برای اپدیت کلیک کنید</a>
+                     </div>
+                   </div>
+                    <div class="flex items-center gap-x-4">
+                        <svg class="size-9 text-blue-500">
+                             <use href="#wallet" />
+                        </svg>
+                        <div class="flex flex-col gap-y-1">
+                            <h2 class="font-DanaDemiBold">بروز رسانی قیمت همه محصولات</h2>
+                            <p class="text-gray-500">اخرین اپدیت با درهم : <span><%= (products[0].AED).toLocaleString('fa-IR') %></span></p>
+                            <a href="/admin/update-prices" style="border-radius: 0.25rem; background-color: #3b82f6; color: white; padding: 0.5rem 1rem;" class="text-blue-500 hover:text-blue-700">برای اپدیت کلیک کنید</a>
                      </div>
                    </div>
                </div>

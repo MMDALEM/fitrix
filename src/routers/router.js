@@ -2,7 +2,6 @@ const router = require("express").Router();
 const { verifyUser, verifyAdmin } = require("../middlewares/auth.middleware");
 const { verifyTokenPublic } = require("../middlewares/authPublic.middleware");
 const { checkBasketAccess } = require("../middlewares/basket.middleware");
-const { updateExchangeRate } = require("../services/exchangeRate.service");
 const { logout } = require("../controllers/auth/auth.controller");
 
 const homeRouter = require("./home/home.route");
@@ -38,11 +37,6 @@ router.use("/admin/category", categoryAdminRouter);
 
 const adminPdfRouter = require("./admin/pdf.route");
 router.use("/admin/pdf", adminPdfRouter);
-
-router.get("/update-exchange-rate", async (req, res, next) => {
-  await updateExchangeRate(req, res, next);
-  res.json({ success: true, message: "نرخ ارز آپدیت شد" });
-});
 
 router.use("/logout", logout);
 

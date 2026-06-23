@@ -1,23 +1,23 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const exchangeRateSchema = new mongoose.Schema({
   currency: {
     type: String,
     required: true,
-    default: 'AED'
+    default: "AED",
   },
   rateInRials: {
     type: Number,
-    required: true
+    required: true,
   },
   rateInToman: {
     type: Number,
-    required: true
+    required: true,
   },
   updatedAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model('ExchangeRate', exchangeRateSchema);
+module.exports = mongoose.model("ExchangeRate", exchangeRateSchema);
