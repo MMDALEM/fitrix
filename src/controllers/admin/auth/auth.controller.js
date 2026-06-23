@@ -34,6 +34,15 @@ class authAdminController extends controller {
           icon: "error",
         });
 
+      // فقط کاربران دارای نقش ادمین اجازه‌ی ورود به پنل را دارند
+      const roles = Array.isArray(user.roles) ? user.roles : [user.roles];
+      if (!roles.includes("ADMIN") && !roles.includes("SUPER_ADMIN")) {
+        return this.alertAndBack(req, res, {
+          title: "شما دسترسی به پنل مدیریت ندارید",
+          icon: "error",
+        });
+      }
+
       const token = await jwtSign(user._id);
 
 

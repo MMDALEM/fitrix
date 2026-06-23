@@ -10,8 +10,17 @@ class productController extends controller {
         .populate("brand")
         .exec();
 
+      if (!product) {
+        return next(); // به هندلر ۴۰۴ سپرده می‌شود
+      }
+
+      // شمارش بازدید (بدون انتظار برای نتیجه)
+      productModel
+        .updateOne({ _id: product._id }, { $inc: { viewsCount: 1 } })
+        .catch(() => {});
+
       const products = await productModel
-        .find({ category: product.category })
+        .find({ category: product.category?._id, _id: { $ne: product._id } })
         .sort({ createdAt: -1 })
         .limit(10);
 

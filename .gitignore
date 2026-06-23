@@ -14,3 +14,5 @@ coverage/
 .gitignore
 مکمل
 ./public/uploads
+
+./node_modules.zip

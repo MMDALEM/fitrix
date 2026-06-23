@@ -44,28 +44,28 @@ class shopController extends controller {
       }
 
       if (minPrice || maxPrice) {
-        filter.price = {};
-        if (minPrice) filter.price.$gte = Number(minPrice);
-        if (maxPrice) filter.price.$lte = Number(maxPrice);
+        filter.priceSingle = {};
+        if (minPrice) filter.priceSingle.$gte = Number(minPrice);
+        if (maxPrice) filter.priceSingle.$lte = Number(maxPrice);
       }
 
       if (inStock === "true") {
-        filter.number = { $gt: 0 };
+        filter.quantity = { $gt: 0 };
       }
 
       let sortOption = { createdAt: -1 };
       switch (sort) {
         case "popular":
-          sortOption = { views: -1 };
+          sortOption = { viewsCount: -1 };
           break;
         case "bestselling":
-          sortOption = { sold: -1 };
+          sortOption = { soldCount: -1 };
           break;
         case "cheapest":
-          sortOption = { price: 1 };
+          sortOption = { priceSingle: 1 };
           break;
         case "expensive":
-          sortOption = { price: -1 };
+          sortOption = { priceSingle: -1 };
           break;
         case "newest":
           sortOption = { createdAt: -1 };

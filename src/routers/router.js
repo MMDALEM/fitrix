@@ -19,24 +19,29 @@ router.use("/shop", verifyTokenPublic, shopRouter);
 const basketRouter = require("./shop/basket.route");
 router.use("/basket", checkBasketAccess, basketRouter);
 
+const paymentRouter = require("./payment/shop.route");
+router.use("/", paymentRouter);
+
 const dashboardRouter = require("./dashboard/dashboard.route");
 router.use("/dashboard", verifyUser, dashboardRouter);
 
 //admin routers
+// نکته: صفحه‌ی ورود ادمین (/admin/auth) داخل adminRouter باز می‌ماند؛
+// بقیه‌ی روت‌های adminRouter داخل خودش با verifyAdmin محافظت می‌شوند.
 const adminRouter = require("./admin/admin.route");
 router.use("/admin", adminRouter);
 
 const productAdminRouter = require("./admin/product.route");
-router.use("/admin/product", productAdminRouter);
+router.use("/admin/product", verifyAdmin, productAdminRouter);
 
 const brandAdminRouter = require("./admin/brand.route");
-router.use("/admin/brand", brandAdminRouter);
+router.use("/admin/brand", verifyAdmin, brandAdminRouter);
 
 const categoryAdminRouter = require("./admin/category.route");
-router.use("/admin/category", categoryAdminRouter);
+router.use("/admin/category", verifyAdmin, categoryAdminRouter);
 
 const adminPdfRouter = require("./admin/pdf.route");
-router.use("/admin/pdf", adminPdfRouter);
+router.use("/admin/pdf", verifyAdmin, adminPdfRouter);
 
 router.use("/logout", logout);
 

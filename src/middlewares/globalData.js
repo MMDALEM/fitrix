@@ -22,7 +22,7 @@ class GlobalData {
       const user = await userModel.findById(payload.id, {
         phone: 1,
         isActive: 1,
-        role: 1,
+        roles: 1,
         name: 1,
         avatar: 1,
       });

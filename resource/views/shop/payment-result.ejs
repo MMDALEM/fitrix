@@ -1,0 +1,30 @@
+<main class="container">
+    <section class="flex flex-col items-center justify-center text-center bg-white dark:bg-gray-800 shadow rounded-lg p-10 mt-10 gap-y-4">
+        <% if (success) { %>
+            <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <svg class="w-12 h-12 text-green-600"><use href="#check-badge"></use></svg>
+            </div>
+            <h2 class="font-DanaMedium text-xl text-green-600">پرداخت با موفقیت انجام شد</h2>
+            <% if (typeof order !== "undefined" && order) { %>
+                <ul class="text-sm text-gray-500 dark:text-gray-400 space-y-2 mt-2">
+                    <li>شماره سفارش: <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= order.orderNumber %></span></li>
+                    <li>مبلغ پرداختی: <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= Number(order.totalPrice).toLocaleString("fa-IR") %></span> تومان</li>
+                </ul>
+            <% } %>
+            <a href="/dashboard" class="mt-4 flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-lg shadow py-2 px-6">
+                مشاهده سفارش‌ها
+                <svg class="w-5 h-5"><use href="#chevron-left"></use></svg>
+            </a>
+        <% } else { %>
+            <div class="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <svg class="w-12 h-12 text-red-500"><use href="#x-mark"></use></svg>
+            </div>
+            <h2 class="font-DanaMedium text-xl text-red-500">پرداخت ناموفق</h2>
+            <p class="text-gray-400 text-sm"><%= typeof message !== "undefined" && message ? message : "متاسفانه پرداخت شما انجام نشد." %></p>
+            <a href="/basket" class="mt-4 flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-lg shadow py-2 px-6">
+                بازگشت به سبد خرید
+                <svg class="w-5 h-5"><use href="#chevron-left"></use></svg>
+            </a>
+        <% } %>
+    </section>
+</main>

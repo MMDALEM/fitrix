@@ -9,10 +9,10 @@ const shopController = require("../../controllers/shop/shop.controller");
 //shop Rouer
 router.get("/shop", shopController.shop);
 
+//homeRouer (باید قبل از /:slug باشد وگرنه با اسلاگ تطبیق داده می‌شود)
+router.get("/categories", categoriesController.allCategories);
+
 //shop single Router
 router.get("/:slug", productController.productSingle);
-
-//homeRouer
-router.get("/categories", categoriesController.allCategories);
 
 module.exports = router;

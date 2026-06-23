@@ -262,7 +262,11 @@
         });
         let totalCount = validItems.reduce(function (sum, it) { return sum + it.quantity; }, 0);
         let discount = 0;
-        let finalPrice = itemsTotal - discount;
+        // نرخ مالیات بر ارزش افزوده (۱۰٪)
+        let TAX_RATE = 0.1;
+        let taxableAmount = Math.max(itemsTotal - discount, 0);
+        let taxPrice = Math.round(taxableAmount * TAX_RATE);
+        let finalPrice = Math.max(itemsTotal - discount + taxPrice, 0);
     %>
 
     <% if (validItems.length === 0) { %>
@@ -347,8 +351,8 @@
             </div>
 
             <!-- PRICE BOX -->
-            <div class="w-full lg:w-1/4 lg:sticky top-5 flex flex-col gap-y-4">
-                <ul class="child:flex child:items-center child:justify-between space-y-8">
+            <form id="checkoutForm" class="w-full lg:w-1/4 lg:sticky top-5 flex flex-col gap-y-4">
+                <ul class="child:flex child:items-center child:justify-between space-y-6">
                     <li>
                         <p>قیمت کالاها (<span id="priceBoxCount"><%= totalCount %></span>)</p>
                         <p class="flex gap-x-1 text-gray-600 dark:text-gray-300">
@@ -358,16 +362,36 @@
                     </li>
                     <li>
                         <p>تخفیف</p>
-                        <p class="font-DanaMedium text-gray-700 dark:text-gray-200">
+                        <p class="font-DanaMedium text-green-600 dark:text-green-400">
                             <span id="discount"><%= Number(discount).toLocaleString('fa-IR') %></span> تومان
                         </p>
-                        
+                    </li>
+                    <li>
+                        <p>مالیات بر ارزش افزوده (۱۰٪)</p>
+                        <p class="font-DanaMedium text-gray-700 dark:text-gray-200">
+                            <span id="taxPrice"><%= Number(taxPrice).toLocaleString('fa-IR') %></span> تومان
+                        </p>
                     </li>
                     <li class="border-t-2 border-dashed border-gray-400 pt-4">
                         <p>مبلغ نهایی :</p>
                         <p><span id="finalPrice"><%= Number(finalPrice).toLocaleString('fa-IR') %></span> تومان</p>
                     </li>
                 </ul>
+
+                <!-- ===== فرم کد تخفیف ===== -->
+                <div class="flex flex-col gap-y-2 pt-2 border-t-2 border-dashed border-gray-400 dark:border-gray-500">
+                    <p class="font-DanaMedium text-sm">کد تخفیف :</p>
+                    <div class="flex items-stretch gap-x-2">
+                        <input type="text" id="discountCode" name="discountCode" autocomplete="off"
+                            placeholder="کد تخفیف را وارد کنید"
+                            class="flex-1 min-w-0 text-sm bg-transparent rounded-lg border-2 border-gray-200 dark:border-white/20 py-2 px-3 outline-none focus:border-blue-500">
+                        <button type="button" id="applyDiscountBtn"
+                            class="shrink-0 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all rounded-lg px-4 text-sm font-DanaMedium">
+                            اعمال
+                        </button>
+                    </div>
+                    <p id="discountMsg" class="text-xs hidden"></p>
+                </div>
 
                 <!-- ===== انتخاب آدرس ===== -->
                 <div class="flex flex-col gap-y-2 pt-2 border-t-2 border-dashed border-gray-400 dark:border-gray-500">
@@ -429,7 +453,7 @@
                     تایید و پرداخت
                     <svg class="w-5 h-5"><use href="#shopping-bag"></use></svg>
                 </button>
-            </div>
+            </form>
         </section>
     <% } %>
 </main>
@@ -454,6 +478,52 @@
 
         const clearBtn    = document.getElementById("clearBasketBtn");
         const checkoutBtn = document.getElementById("checkoutBtn");
+
+        const faNum = (n) => Number(n || 0).toLocaleString("fa-IR");
+
+        // به‌روزرسانی مبالغ نمایش‌داده‌شده در جعبه‌ی قیمت
+        function renderTotals(t) {
+            if (!t) return;
+            if (t.itemsPrice != null) document.getElementById("itemsTotal").textContent = faNum(t.itemsPrice);
+            if (t.discountAmount != null) document.getElementById("discount").textContent = faNum(t.discountAmount);
+            if (t.taxPrice != null) document.getElementById("taxPrice").textContent = faNum(t.taxPrice);
+            if (t.finalPrice != null) document.getElementById("finalPrice").textContent = faNum(t.finalPrice);
+        }
+
+        // ===== اعمال کد تخفیف =====
+        const applyDiscountBtn = document.getElementById("applyDiscountBtn");
+        const discountInput    = document.getElementById("discountCode");
+        const discountMsg      = document.getElementById("discountMsg");
+
+        function showDiscountMsg(text, ok) {
+            if (!discountMsg) return;
+            discountMsg.textContent = text || "";
+            discountMsg.classList.remove("hidden", "text-green-600", "text-red-500");
+            discountMsg.classList.add(ok ? "text-green-600" : "text-red-500");
+        }
+
+        if (applyDiscountBtn) {
+            applyDiscountBtn.addEventListener("click", async function () {
+                const code = (discountInput.value || "").trim();
+                if (!code) { showDiscountMsg("کد تخفیف را وارد کنید", false); return; }
+                applyDiscountBtn.disabled = true;
+                try {
+                    const res = await fetch("/payment/discount", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ discountCode: code }),
+                    });
+                    if (res.redirected) { window.location.href = res.url; return; }
+                    const data = await res.json();
+                    renderTotals(data);
+                    showDiscountMsg(data.message || (data.success ? "کد تخفیف اعمال شد" : "کد تخفیف نامعتبر است"), !!data.success);
+                } catch (_) {
+                    showDiscountMsg("خطا در ارتباط با سرور", false);
+                } finally {
+                    applyDiscountBtn.disabled = false;
+                }
+            });
+        }
 
         // ارسال تعداد جدید یک محصول به سرور و سپس رفرش
         async function sendQty(productId, quantity, row, prevValue) {
@@ -528,12 +598,27 @@
             const gateway = document.querySelector('input[name="gateway"]:checked');
             const gatewayValue = gateway ? gateway.value : "zarinpal";
 
+            // آدرس انتخاب‌شده
+            const address = document.querySelector('input[name="address"]:checked');
+            if (!address) {
+                notify("لطفاً یک آدرس ارسال انتخاب کنید", "warning");
+                return;
+            }
+            const addressId = address.value;
+
+            // کد تخفیف (اختیاری)
+            const discountCode = (discountInput && discountInput.value || "").trim();
+
             checkoutBtn.disabled = true;
             try {
                 const res = await fetch("/payment/create", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ gateway: gatewayValue }),
+                    body: JSON.stringify({
+                        gateway: gatewayValue,
+                        addressId: addressId,
+                        discountCode: discountCode,
+                    }),
                 });
                 if (res.redirected) { window.location.href = res.url; return; }
                 const data = await res.json();

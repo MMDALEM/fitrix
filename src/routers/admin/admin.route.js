@@ -4,14 +4,15 @@ const router = experss.Router();
 //controllers
 // const uploadCenterController = require("../../controllers/admin/uploadCenter.controller");
 const authAdminController = require("../../controllers/admin/auth/auth.controller");
+const { verifyAdmin } = require("../../middlewares/auth.middleware");
 
 //upload
 // const { upload_public } = require("../../utils/upload");
 const adminController = require("../../controllers/admin/admin.controller");
 
-// AED
-router.get("/update-aed", adminController.updated_AED);
-router.get("/update-prices", adminController.updateAllPrices);
+// AED (محافظت‌شده)
+router.get("/update-aed", verifyAdmin, adminController.updated_AED);
+router.get("/update-prices", verifyAdmin, adminController.updateAllPrices);
 
 //master page
 router.use((req, res, next) => {
@@ -27,11 +28,10 @@ router.use((req, res, next) => {
  * ################################################################### *
  */
 
-//home
-router.get("/", adminController.admin);
+//home (داشبورد ادمین — محافظت‌شده)
+router.get("/", verifyAdmin, adminController.admin);
 
-//auth
-
+//auth (باز — صفحه‌ی ورود ادمین)
 router.get("/auth", authAdminController.auth);
 router.post("/auth", authAdminController.verifyAuth);
 router.get("/hashPassword", authAdminController.hashPassword);
