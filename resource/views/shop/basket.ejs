@@ -352,7 +352,7 @@
 
             <!-- PRICE BOX -->
             <form id="checkoutForm" class="w-full lg:w-1/4 lg:sticky top-5 flex flex-col gap-y-4">
-                <ul class="child:flex child:items-center child:justify-between space-y-6">
+                <ul class="child:flex child:items-center child:justify-between space-y-6 ">
                     <li>
                         <p>قیمت کالاها (<span id="priceBoxCount"><%= totalCount %></span>)</p>
                         <p class="flex gap-x-1 text-gray-600 dark:text-gray-300">
@@ -366,12 +366,12 @@
                             <span id="discount"><%= Number(discount).toLocaleString('fa-IR') %></span> تومان
                         </p>
                     </li>
-                    <li>
+                    <li class="pb-4" >
                         <p>مالیات بر ارزش افزوده (۱۰٪)</p>
                         <p class="font-DanaMedium text-gray-700 dark:text-gray-200">
                             <span id="taxPrice"><%= Number(taxPrice).toLocaleString('fa-IR') %></span> تومان
                         </p>
-                    </li>
+                    </li >
                     <li class="border-t-2 border-dashed border-gray-400 pt-4">
                         <p>مبلغ نهایی :</p>
                         <p><span id="finalPrice"><%= Number(finalPrice).toLocaleString('fa-IR') %></span> تومان</p>

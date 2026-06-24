@@ -78,7 +78,7 @@ class GlobalData {
 
       if (req.user) {
         const basket = await basketModel
-          .findOne({ user: req.user._id })
+          .findOne({ user: req.user._id, status: "active" })
           .populate("items.product", PRODUCT_SELECT)
           .lean();
 

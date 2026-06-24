@@ -1,11 +1,19 @@
 const addressModel = require("../../models/address.model");
+const basketModel = require("../../models/basket.model");
 const controller = require("../.controller");
 
 class dashboradController extends controller {
   async dashborad(req, res, next) {
     try {
       const addresses = await addressModel.find({ user: req.user._id });
-      return res.render("dashborad/dashborad", { addresses });
+
+      // سفارش‌های کاربر = سبدهای پرداخت‌شده (به ترتیب جدیدترین)
+      const orders = await basketModel
+        .find({ user: req.user._id, status: "paid" })
+        .populate("items.product", "title image slug")
+        .sort({ paidAt: -1 });
+
+      return res.render("dashborad/dashborad", { addresses, orders });
     } catch (err) {
       next(err);
     }

@@ -148,7 +148,7 @@
                     </svg>
                     <div class="flex flex-col gap-y-1">
                         <h2 class="font-DanaDemiBold">سفارش‌ها</h2>
-                        <p class="text-gray-500">10 سفارش</p>
+                        <p class="text-gray-500"><%= (typeof orders !== 'undefined' ? orders.length : 0).toLocaleString('fa-IR') %> سفارش</p>
                  </div>
                </div>
                <div class="flex items-center gap-x-4">
@@ -185,54 +185,43 @@
                           </tr>
                     </thead>
                         <tbody>
-                            <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-                                <th scope="row"
-                                    class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
-                                        <img class="w-10 object-cover" src="images/products/11.png" alt="">
-                                       گوشی موبایل اپل مدل iPhone 16
-                                </th>
-                                <td class="px-6 py-5">
-                                            1402/11/11
-                                </td>
-                                <td class="px-6 py-5">
-                                            62,000,000 تومان
-                                </td>
-                                <td class="px-6 py-5 text-red-500 font-DanaDemiBold">
-                                            لغو شده
-                                </td>
-                            </tr>
-                            <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-                                <th scope="row"
-                                    class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
-                                        <img class="w-10 object-cover" src="images/products/8.webp" alt="">
-                                       گوشی موبایل اپل مدل iPhone 16
-                                </th>
-                                <td class="px-6 py-5">
-                                            1402/11/11
-                                </td>
-                                <td class="px-6 py-5">
-                                            62,000,000 تومان
-                                </td>
-                                <td class="px-6 py-5 text-yellow-500 font-DanaDemiBold">
-                                    درانتظار پرداخت
-                                </td>
-                            </tr>
-                            <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-                                <th scope="row"
-                                    class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
-                                        <img class="w-10 object-cover" src="images/products/3.png" alt="">
-                                       گوشی موبایل اپل مدل iPhone 16
-                                </th>
-                                <td class="px-6 py-5">
-                                            1402/11/11
-                                </td>
-                                <td class="px-6 py-5">
-                                            62,000,000 تومان
-                                </td>
-                                <td class="px-6 py-5 text-green-500 font-DanaDemiBold">
-                                   پرداخت شده
-                                </td>
-                            </tr>
+                            <% if (typeof orders !== 'undefined' && orders.length) { %>
+                                <% orders.forEach(function (order) { %>
+                                    <% var firstItem = (order.items || []).find(function (it) { return it.product; }); %>
+                                    <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                                        <th scope="row"
+                                            class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
+                                            <% if (firstItem) { %>
+                                                <img class="w-10 object-cover rounded" src="<%= firstItem.product.image %>" alt="<%= firstItem.product.title %>">
+                                                <span class="flex flex-col gap-y-1">
+                                                    <span class="line-clamp-1"><%= firstItem.product.title %></span>
+                                                    <% if (order.items.length > 1) { %>
+                                                        <span class="text-xs text-gray-400">و <%= order.items.length - 1 %> قلم دیگر</span>
+                                                    <% } %>
+                                                    <span class="text-xs text-gray-400">کد سفارش: <%= order.orderNumber || '-' %></span>
+                                                </span>
+                                            <% } else { %>
+                                                <span class="text-gray-400">—</span>
+                                            <% } %>
+                                        </th>
+                                        <td class="px-6 py-5">
+                                            <%= order.paidAt ? date(order.paidAt).format('jYYYY/jMM/jDD') : '-' %>
+                                        </td>
+                                        <td class="px-6 py-5 whitespace-nowrap">
+                                            <%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString('fa-IR') %> تومان
+                                        </td>
+                                        <td class="px-6 py-5 text-green-500 font-DanaDemiBold">
+                                            <%= order.statusLabel || 'پرداخت شده' %>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr class="bg-white dark:bg-gray-800">
+                                    <td colspan="4" class="px-6 py-8 text-center text-gray-400">
+                                        هنوز سفارشی ثبت نکرده‌اید.
+                                    </td>
+                                </tr>
+                            <% } %>
                         </tbody>
                 </table>
             </div>

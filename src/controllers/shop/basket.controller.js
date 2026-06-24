@@ -98,7 +98,7 @@ class basketController extends controller {
           .json({ success: false, message: "تعداد نامعتبر است" });
       }
 
-      const basket = await basketModel.findOne({ user: userId });
+      const basket = await basketModel.findOne({ user: userId, status: "active" });
       if (!basket) {
         return res
           .status(404)
@@ -150,7 +150,7 @@ class basketController extends controller {
           .json({ success: false, message: "شناسه محصول معتبر نیست" });
       }
 
-      const basket = await basketModel.findOne({ user: userId });
+      const basket = await basketModel.findOne({ user: userId, status: "active" });
       if (!basket) {
         return res
           .status(404)
@@ -177,7 +177,7 @@ class basketController extends controller {
     try {
       const userId = req.user._id;
 
-      const basket = await basketModel.findOne({ user: userId });
+      const basket = await basketModel.findOne({ user: userId, status: "active" });
       if (!basket) {
         return res
           .status(404)
@@ -201,7 +201,7 @@ class basketController extends controller {
   async getBasketCount(req, res, next) {
     try {
       const userId = req.user._id;
-      const basket = await basketModel.findOne({ user: userId });
+      const basket = await basketModel.findOne({ user: userId, status: "active" });
       const totalItems = basket
         ? basket.items.reduce((s, i) => s + i.quantity, 0)
         : 0;
@@ -222,7 +222,7 @@ class basketController extends controller {
           .json({ success: false, message: "داده‌ی نامعتبر" });
       }
 
-      const basket = await basketModel.findOne({ user: userId });
+      const basket = await basketModel.findOne({ user: userId, status: "active" });
       if (!basket) {
         return res
           .status(404)

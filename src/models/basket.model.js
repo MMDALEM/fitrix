@@ -33,21 +33,64 @@ const BasketItemSchema = new Schema(
 
 const BasketSchema = new Schema(
   {
-    // هر کاربر فقط یک سبد فعال دارد
+    // هر کاربر در هر لحظه فقط یک سبد «active» دارد؛ سبدهای «paid»
+    // به‌عنوان تاریخچه‌ی سفارش‌ها باقی می‌مانند، پس user دیگر unique نیست.
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true,
       index: true,
     },
     items: [BasketItemSchema],
-    // مجموع قیمت سبد — در pre('save') به‌صورت خودکار بازمحاسبه می‌شود
+    // وضعیت سبد:
+    //  active           = سبد جاری کاربر (در حال خرید)
+    //  pending_payment  = در انتظار بازگشت از درگاه
+    //  paid             = پرداخت‌شده (به‌عنوان سفارش باقی می‌ماند)
+    //  cancelled        = لغو/ناموفق
+    status: {
+      type: String,
+      enum: ["active", "pending_payment", "paid", "cancelled"],
+      default: "active",
+      index: true,
+    },
+    statusLabel: {
+      type: String,
+      default: "سبد خرید",
+    },
+    // مجموع قیمت اقلام (قبل از مالیات/تخفیف)
     totalPrice: {
       type: Number,
       default: 0,
       min: 0,
     },
+    // ───── اطلاعات سفارش (هنگام نهایی‌سازی/پرداخت پر می‌شوند) ─────
+    orderNumber: { type: String, default: null, index: true },
+    shippingAddress: {
+      type: Schema.Types.ObjectId,
+      ref: "Address",
+      default: null,
+    },
+    shippingDetails: {
+      receiver: String,
+      phone: String,
+      address: String,
+      postalCode: String,
+    },
+    paymentMethod: { type: String, default: null }, // zarinpal | digipay
+    paymentMethodLabel: { type: String, default: null },
+    taxPrice: { type: Number, default: 0, min: 0 },
+    discountCode: {
+      type: Schema.Types.ObjectId,
+      ref: "Discount",
+      default: null,
+    },
+    discountCodeString: { type: String, default: null },
+    discountAmount: { type: Number, default: 0, min: 0 },
+    // مبلغ نهایی قابل پرداخت (اقلام - تخفیف + مالیات)
+    finalPrice: { type: Number, default: 0, min: 0 },
+    transactionId: { type: String, default: null },
+    isPaid: { type: Boolean, default: false, index: true },
+    paidAt: { type: Date, default: null },
     // آخرین فعالیت روی سبد (برای گزارش سبدهای رهاشده یا پاکسازی)
     lastActivity: {
       type: Date,
@@ -133,13 +176,41 @@ BasketSchema.methods.clear = function () {
   return this.save();
 };
 
-// گرفتن سبد کاربر یا ساختن سبد جدید اگر وجود نداشت
+// گرفتن سبدِ «فعالِ» کاربر یا ساختن یک سبد فعال جدید اگر وجود نداشت
 BasketSchema.statics.getOrCreate = async function (userId) {
-  return this.findOneAndUpdate(
-    { user: userId },
-    { $setOnInsert: { user: userId, items: [] } },
-    { upsert: true, setDefaultsOnInsert: true },
-  );
+  let basket = await this.findOne({ user: userId, status: "active" });
+  if (!basket) {
+    basket = await this.create({ user: userId, status: "active", items: [] });
+  }
+  return basket;
+};
+
+// تولید شماره سفارش یکتا (مثل ORD2406240001)
+BasketSchema.statics.generateOrderNumber = async function () {
+  const date = new Date();
+  const y = date.getFullYear().toString().slice(-2);
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+
+  const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
+  const endOfDay = new Date(new Date().setHours(23, 59, 59, 999));
+  const todayPaid = await this.countDocuments({
+    orderNumber: { $ne: null },
+    createdAt: { $gte: startOfDay, $lte: endOfDay },
+  });
+
+  const seq = String(todayPaid + 1).padStart(4, "0");
+  return `ORD${y}${m}${d}${seq}`;
+};
+
+// علامت‌گذاری سبد به‌عنوان پرداخت‌شده
+BasketSchema.methods.markPaid = function (transactionId = null) {
+  this.status = "paid";
+  this.statusLabel = "پرداخت شده";
+  this.isPaid = true;
+  this.paidAt = new Date();
+  if (transactionId) this.transactionId = transactionId;
+  return this.save();
 };
 
 // بازمحاسبه‌ی مجموع و به‌روزرسانی زمان فعالیت پیش از هر ذخیره

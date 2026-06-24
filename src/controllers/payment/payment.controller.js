@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const basketModel = require("../../models/basket.model");
 const productModel = require("../../models/product.model");
-const orderModel = require("../../models/order.model");
 const addressModel = require("../../models/address.model");
 const discountModel = require("../../models/discount.model");
 const paymentService = require("../../services/payment.service");
@@ -11,11 +10,11 @@ const controller = require("../.controller");
 const TAX_RATE = 0.1;
 
 class paymentController extends controller {
-  // محاسبه‌ی مبالغ سبد به‌صورت سمت سرور (مرجع حقیقت)
+  // محاسبه‌ی مبالغ سبدِ فعال به‌صورت سمت سرور (مرجع حقیقت)
   // قیمت‌ها هیچ‌وقت از کلاینت گرفته نمی‌شوند.
   async calcBasketTotals(userId, discountCodeRaw) {
     const basket = await basketModel
-      .findOne({ user: userId })
+      .findOne({ user: userId, status: "active" })
       .populate("items.product", "title image priceSingle quantity isActive");
 
     const items =
@@ -24,18 +23,8 @@ class paymentController extends controller {
         : [];
 
     let itemsPrice = 0;
-    const orderItems = items.map((it) => {
-      const unit = it.product.priceSingle || 0;
-      const total = unit * it.quantity;
-      itemsPrice += total;
-      return {
-        product: it.product._id,
-        productName: it.product.title,
-        quantity: it.quantity,
-        price: unit,
-        totalPrice: total,
-        image: it.product.image,
-      };
+    items.forEach((it) => {
+      itemsPrice += (it.product.priceSingle || 0) * it.quantity;
     });
 
     // ───── اعمال کد تخفیف (در صورت وجود) ─────
@@ -72,22 +61,16 @@ class paymentController extends controller {
     // مالیات روی مبلغ پس از کسر تخفیف محاسبه می‌شود
     const taxableAmount = Math.max(itemsPrice - discountAmount, 0);
     const taxPrice = Math.round(taxableAmount * TAX_RATE);
-    const shippingPrice = 0; // در صورت نیاز محاسبه شود
-    const finalPrice = Math.max(
-      itemsPrice - discountAmount + taxPrice + shippingPrice,
-      0,
-    );
+    const finalPrice = Math.max(itemsPrice - discountAmount + taxPrice, 0);
 
     return {
       basket,
       items,
-      orderItems,
       itemsPrice,
       discountAmount,
       discountDoc,
       discountMessage,
       taxPrice,
-      shippingPrice,
       finalPrice,
     };
   }
@@ -153,7 +136,7 @@ class paymentController extends controller {
           .json({ success: false, message: "آدرس انتخاب‌شده یافت نشد" });
       }
 
-      // ───── محاسبه‌ی مبالغ (سمت سرور) ─────
+      // ───── محاسبه‌ی مبالغ روی سبدِ فعال (سمت سرور) ─────
       const totals = await this.calcBasketTotals(userId, discountCode);
 
       if (totals.items.length === 0) {
@@ -162,72 +145,73 @@ class paymentController extends controller {
           .json({ success: false, message: "سبد خرید خالی است" });
       }
 
-      // برچسب روش پرداخت
-      const methodLabel =
-        gateway === "digipay" ? "دیجی‌پی (۴ قسط)" : "درگاه زرین‌پال";
+      const basket = totals.basket;
 
-      // ───── ساخت سفارش در وضعیت «در انتظار پرداخت» ─────
-      const order = await orderModel.create({
-        user: userId,
-        items: totals.orderItems,
-        shippingAddress: address._id,
-        shippingDetails: {
-          receiver: address.receiver,
-          phone: address.phone,
-          address: address.address,
-          postalCode: address.postalCode,
-          city: address.city,
-          state: address.state,
-        },
-        itemsPrice: totals.itemsPrice,
-        shippingPrice: totals.shippingPrice,
-        taxPrice: totals.taxPrice,
-        discountCode: totals.discountDoc ? totals.discountDoc._id : null,
-        discountCodeString: totals.discountDoc ? totals.discountDoc.code : null,
-        discountAmount: totals.discountAmount,
-        totalPrice: totals.finalPrice, // در pre('save') دوباره بازمحاسبه می‌شود
-        paymentMethod: "online",
-        paymentMethodLabel: methodLabel,
-        status: "pending_payment",
-        statusLabel: "در انتظار پرداخت",
+      // قیمت لحظه‌ی پرداخت را روی آیتم‌های سبد ثبت می‌کنیم (snapshot)
+      basket.items.forEach((it) => {
+        const p = totals.items.find(
+          (vi) => vi.product._id.toString() === it.product._id.toString(),
+        );
+        if (p) it.price = p.product.priceSingle || it.price;
       });
+
+      // ───── ذخیره‌ی اطلاعات سفارش روی همین سبدِ فعال ─────
+      basket.shippingAddress = address._id;
+      basket.shippingDetails = {
+        receiver: address.receiver,
+        phone: address.phone,
+        address: address.address,
+        postalCode: address.postalCode,
+      };
+      basket.paymentMethod = gateway;
+      basket.paymentMethodLabel =
+        gateway === "digipay" ? "دیجی‌پی (۴ قسط)" : "درگاه زرین‌پال";
+      basket.totalPrice = totals.itemsPrice; // مجموع اقلام
+      basket.taxPrice = totals.taxPrice;
+      basket.discountCode = totals.discountDoc ? totals.discountDoc._id : null;
+      basket.discountCodeString = totals.discountDoc
+        ? totals.discountDoc.code
+        : null;
+      basket.discountAmount = totals.discountAmount;
+      basket.finalPrice = totals.finalPrice;
+      if (!basket.orderNumber) {
+        basket.orderNumber = await basketModel.generateOrderNumber();
+      }
+      await basket.save();
 
       // ───────── اتصال به درگاه پرداخت ─────────
       // اگر کلید درگاه در .env تنظیم شده باشد، درخواست واقعی زده می‌شود؛
       // در غیر این صورت برای توسعه به verify آزمایشی (mock) هدایت می‌شویم.
       const base = `${req.protocol}://${req.get("host")}`;
-      const callbackUrl = `${base}/payment/verify/${gateway}?orderId=${order._id}`;
+      const callbackUrl = `${base}/payment/verify/${gateway}?basketId=${basket._id}`;
       let paymentUrl;
 
       try {
         if (!paymentService.isConfigured(gateway)) {
-          paymentUrl = `/payment/verify/${gateway}?orderId=${order._id}&mock=1`;
+          paymentUrl = `/payment/verify/${gateway}?basketId=${basket._id}&mock=1`;
         } else if (gateway === "zarinpal") {
           const result = await paymentService.zarinpalRequest({
-            amount: order.totalPrice,
+            amount: basket.finalPrice,
             callbackUrl,
-            description: `پرداخت سفارش ${order.orderNumber}`,
+            description: `پرداخت سفارش ${basket.orderNumber}`,
             mobile: req.user.phone,
             email: req.user.email || undefined,
           });
-          order.transactionId = result.authority;
-          await order.save();
+          basket.transactionId = result.authority;
+          await basket.save();
           paymentUrl = result.url;
         } else {
           const result = await paymentService.digipayRequest({
-            amount: order.totalPrice,
+            amount: basket.finalPrice,
             callbackUrl,
             cellNumber: req.user.phone,
-            providerId: order.orderNumber,
+            providerId: basket.orderNumber,
           });
-          order.transactionId = result.ticket;
-          await order.save();
+          basket.transactionId = result.ticket;
+          await basket.save();
           paymentUrl = result.url;
         }
       } catch (gwErr) {
-        order.status = "payment_failed";
-        order.statusLabel = "خطا در اتصال به درگاه";
-        await order.save();
         return res.status(502).json({
           success: false,
           message: gwErr.message || "خطا در اتصال به درگاه پرداخت",
@@ -237,21 +221,21 @@ class paymentController extends controller {
       return res.json({
         success: true,
         paymentUrl,
-        orderId: order._id,
-        amount: order.totalPrice,
+        orderId: basket._id,
+        amount: basket.finalPrice,
       });
     } catch (err) {
       next(err);
     }
   }
 
-  // بازگشت از درگاه — تأیید پرداخت، کسر موجودی و خالی‌کردن سبد
+  // بازگشت از درگاه — تأیید پرداخت، کسر موجودی، paid کردن سبد و ساخت سبد فعال جدید
   async verifyPayment(req, res, next) {
     try {
       const { gateway } = req.params;
-      const { orderId } = req.query;
+      const basketId = req.query.basketId || req.query.orderId;
 
-      if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
+      if (!basketId || !mongoose.Types.ObjectId.isValid(basketId)) {
         return res.render("shop/payment-result", {
           success: false,
           order: null,
@@ -259,8 +243,8 @@ class paymentController extends controller {
         });
       }
 
-      const order = await orderModel.findById(orderId);
-      if (!order) {
+      const basket = await basketModel.findById(basketId);
+      if (!basket) {
         return res.render("shop/payment-result", {
           success: false,
           order: null,
@@ -268,68 +252,76 @@ class paymentController extends controller {
         });
       }
 
-      // اگر قبلاً پرداخت شده، همان نتیجه را نشان بده
-      if (order.isPaid) {
-        return res.render("shop/payment-result", { success: true, order });
+      // اگر قبلاً پرداخت شده، همان نتیجه را نشان بده (idempotent)
+      if (basket.isPaid) {
+        return res.render("shop/payment-result", {
+          success: true,
+          order: basket,
+        });
       }
 
       // ───────── تأیید پرداخت با درگاه ─────────
       let verified = false;
-      let refId = order.transactionId;
+      let refId = basket.transactionId;
 
       if (req.query.mock === "1") {
         verified = true; // حالت توسعه (بدون کلید درگاه)
       } else if (gateway === "zarinpal") {
         if (req.query.Status === "OK") {
           const result = await paymentService.zarinpalVerify({
-            amount: order.totalPrice,
-            authority: req.query.Authority || order.transactionId,
+            amount: basket.finalPrice,
+            authority: req.query.Authority || basket.transactionId,
           });
           verified = result.ok;
           refId = result.refId || refId;
         }
       } else if (gateway === "digipay") {
-        const trackingCode = req.query.trackingCode || order.transactionId;
+        const trackingCode = req.query.trackingCode || basket.transactionId;
         const result = await paymentService.digipayVerify({ trackingCode });
         verified = result.ok;
         refId = result.refId || refId;
       }
 
       if (verified) {
-        await order.markAsPaid(refId);
-
         // کسر موجودی محصولات و افزایش فروش
-        for (const item of order.items) {
+        for (const item of basket.items) {
           await productModel.findByIdAndUpdate(item.product, {
             $inc: { quantity: -item.quantity, soldCount: item.quantity },
           });
         }
 
         // ثبت استفاده از کد تخفیف
-        if (order.discountCode && order.discountAmount > 0) {
-          const discountDoc = await discountModel.findById(order.discountCode);
+        if (basket.discountCode && basket.discountAmount > 0) {
+          const discountDoc = await discountModel.findById(basket.discountCode);
           if (discountDoc) {
             await discountDoc.recordUsage(
-              order.user,
-              order._id,
-              order.discountAmount,
+              basket.user,
+              basket._id,
+              basket.discountAmount,
             );
           }
         }
 
-        // خالی‌کردن سبد کاربر
-        const basket = await basketModel.findOne({ user: order.user });
-        if (basket) await basket.clear();
+        // این سبد پرداخت‌شده می‌شود و به‌عنوان سفارش باقی می‌ماند
+        await basket.markPaid(refId);
 
-        return res.render("shop/payment-result", { success: true, order });
+        // یک سبد فعالِ خالی جدید برای کاربر ساخته می‌شود
+        await basketModel.create({
+          user: basket.user,
+          status: "active",
+          items: [],
+        });
+
+        return res.render("shop/payment-result", {
+          success: true,
+          order: basket,
+        });
       }
 
-      order.status = "payment_failed";
-      order.statusLabel = "پرداخت ناموفق";
-      await order.save();
+      // پرداخت ناموفق — سبد همچنان فعال می‌ماند تا کاربر دوباره تلاش کند
       return res.render("shop/payment-result", {
         success: false,
-        order,
+        order: basket,
         message: "پرداخت ناموفق بود",
       });
     } catch (err) {

@@ -1,5 +1,5 @@
 const exchangeRateModel = require("../../models/exchangeRate.model");
-const orderModel = require("../../models/order.model");
+const basketModel = require("../../models/basket.model");
 const productModel = require("../../models/product.model");
 const userModel = require("../../models/user.model");
 const {
@@ -13,7 +13,8 @@ class adminController extends controller {
     try {
       const users = (await userModel.find().sort({})).length;
       const products = await productModel.find().sort({});
-      const orders = (await orderModel.find().sort({})).length;
+      // سفارش‌ها = سبدهای پرداخت‌شده
+      const orders = await basketModel.countDocuments({ status: "paid" });
       const ExchangeRates = await exchangeRateModel.findOne({
         currency: "AED",
       });

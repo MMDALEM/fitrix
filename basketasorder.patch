@@ -1,0 +1,713 @@
+From 221767a4cce4fd6233a29e12541dffd0d2af89f4 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 24 Jun 2026 07:33:45 +0000
+Subject: [PATCH] feat(orders): basket-as-order lifecycle (active -> paid + new
+ active basket)
+
+- Basket model: drop unique-per-user, add status (active/pending_payment/paid/
+  cancelled) plus order fields (orderNumber, shipping, totals, tax, discount,
+  finalPrice, transactionId, isPaid/paidAt); getOrCreate now returns the ACTIVE
+  basket, add generateOrderNumber + markPaid
+- All cart lookups (controller, globalData) target the active basket
+- Payment: snapshot order data onto the active basket; on successful verify mark
+  it paid (kept as the order record) and create a fresh empty active basket;
+  failed payment leaves the basket active for retry. Order model no longer used.
+- Dashboard: list the user's paid baskets as orders (with items, order number,
+  jalali paid date, final price); admin dashboard counts paid baskets
+
+Note: existing DBs must drop the legacy unique index: db.baskets.dropIndex('user_1')
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_019fhmuc7ZofnhXQGM2EDkKu
+---
+ resource/views/dashborad/dashborad.ejs        |  87 ++++-----
+ resource/views/shop/payment-result.ejs        |   2 +-
+ src/controllers/admin/admin.controller.js     |   5 +-
+ .../dashborad/dashborad.controller.js         |  10 +-
+ src/controllers/payment/payment.controller.js | 178 +++++++++---------
+ src/controllers/shop/basket.controller.js     |  10 +-
+ src/middlewares/globalData.js                 |   2 +-
+ src/models/basket.model.js                    |  89 ++++++++-
+ 8 files changed, 222 insertions(+), 161 deletions(-)
+
+diff --git a/resource/views/dashborad/dashborad.ejs b/resource/views/dashborad/dashborad.ejs
+index 2a4283a..25d406a 100644
+--- a/resource/views/dashborad/dashborad.ejs
++++ b/resource/views/dashborad/dashborad.ejs
+@@ -148,7 +148,7 @@
+                     </svg>
+                     <div class="flex flex-col gap-y-1">
+                         <h2 class="font-DanaDemiBold">سفارش‌ها</h2>
+-                        <p class="text-gray-500">10 سفارش</p>
++                        <p class="text-gray-500"><%= (typeof orders !== 'undefined' ? orders.length : 0).toLocaleString('fa-IR') %> سفارش</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-x-4">
+@@ -185,54 +185,43 @@
+                           </tr>
+                     </thead>
+                         <tbody>
+-                            <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+-                                <th scope="row"
+-                                    class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
+-                                        <img class="w-10 object-cover" src="images/products/11.png" alt="">
+-                                       گوشی موبایل اپل مدل iPhone 16
+-                                </th>
+-                                <td class="px-6 py-5">
+-                                            1402/11/11
+-                                </td>
+-                                <td class="px-6 py-5">
+-                                            62,000,000 تومان
+-                                </td>
+-                                <td class="px-6 py-5 text-red-500 font-DanaDemiBold">
+-                                            لغو شده
+-                                </td>
+-                            </tr>
+-                            <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+-                                <th scope="row"
+-                                    class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
+-                                        <img class="w-10 object-cover" src="images/products/8.webp" alt="">
+-                                       گوشی موبایل اپل مدل iPhone 16
+-                                </th>
+-                                <td class="px-6 py-5">
+-                                            1402/11/11
+-                                </td>
+-                                <td class="px-6 py-5">
+-                                            62,000,000 تومان
+-                                </td>
+-                                <td class="px-6 py-5 text-yellow-500 font-DanaDemiBold">
+-                                    درانتظار پرداخت
+-                                </td>
+-                            </tr>
+-                            <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+-                                <th scope="row"
+-                                    class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
+-                                        <img class="w-10 object-cover" src="images/products/3.png" alt="">
+-                                       گوشی موبایل اپل مدل iPhone 16
+-                                </th>
+-                                <td class="px-6 py-5">
+-                                            1402/11/11
+-                                </td>
+-                                <td class="px-6 py-5">
+-                                            62,000,000 تومان
+-                                </td>
+-                                <td class="px-6 py-5 text-green-500 font-DanaDemiBold">
+-                                   پرداخت شده
+-                                </td>
+-                            </tr>
++                            <% if (typeof orders !== 'undefined' && orders.length) { %>
++                                <% orders.forEach(function (order) { %>
++                                    <% var firstItem = (order.items || []).find(function (it) { return it.product; }); %>
++                                    <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
++                                        <th scope="row"
++                                            class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
++                                            <% if (firstItem) { %>
++                                                <img class="w-10 object-cover rounded" src="<%= firstItem.product.image %>" alt="<%= firstItem.product.title %>">
++                                                <span class="flex flex-col gap-y-1">
++                                                    <span class="line-clamp-1"><%= firstItem.product.title %></span>
++                                                    <% if (order.items.length > 1) { %>
++                                                        <span class="text-xs text-gray-400">و <%= order.items.length - 1 %> قلم دیگر</span>
++                                                    <% } %>
++                                                    <span class="text-xs text-gray-400">کد سفارش: <%= order.orderNumber || '-' %></span>
++                                                </span>
++                                            <% } else { %>
++                                                <span class="text-gray-400">—</span>
++                                            <% } %>
++                                        </th>
++                                        <td class="px-6 py-5">
++                                            <%= order.paidAt ? date(order.paidAt).format('jYYYY/jMM/jDD') : '-' %>
++                                        </td>
++                                        <td class="px-6 py-5 whitespace-nowrap">
++                                            <%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString('fa-IR') %> تومان
++                                        </td>
++                                        <td class="px-6 py-5 text-green-500 font-DanaDemiBold">
++                                            <%= order.statusLabel || 'پرداخت شده' %>
++                                        </td>
++                                    </tr>
++                                <% }) %>
++                            <% } else { %>
++                                <tr class="bg-white dark:bg-gray-800">
++                                    <td colspan="4" class="px-6 py-8 text-center text-gray-400">
++                                        هنوز سفارشی ثبت نکرده‌اید.
++                                    </td>
++                                </tr>
++                            <% } %>
+                         </tbody>
+                 </table>
+             </div>
+diff --git a/resource/views/shop/payment-result.ejs b/resource/views/shop/payment-result.ejs
+index fff348c..fd036cd 100644
+--- a/resource/views/shop/payment-result.ejs
++++ b/resource/views/shop/payment-result.ejs
+@@ -8,7 +8,7 @@
+             <% if (typeof order !== "undefined" && order) { %>
+                 <ul class="text-sm text-gray-500 dark:text-gray-400 space-y-2 mt-2">
+                     <li>شماره سفارش: <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= order.orderNumber %></span></li>
+-                    <li>مبلغ پرداختی: <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= Number(order.totalPrice).toLocaleString("fa-IR") %></span> تومان</li>
++                    <li>مبلغ پرداختی: <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= Number(order.finalPrice || order.totalPrice).toLocaleString("fa-IR") %></span> تومان</li>
+                 </ul>
+             <% } %>
+             <a href="/dashboard" class="mt-4 flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-lg shadow py-2 px-6">
+diff --git a/src/controllers/admin/admin.controller.js b/src/controllers/admin/admin.controller.js
+index c537fe9..a56212d 100644
+--- a/src/controllers/admin/admin.controller.js
++++ b/src/controllers/admin/admin.controller.js
+@@ -1,5 +1,5 @@
+ const exchangeRateModel = require("../../models/exchangeRate.model");
+-const orderModel = require("../../models/order.model");
++const basketModel = require("../../models/basket.model");
+ const productModel = require("../../models/product.model");
+ const userModel = require("../../models/user.model");
+ const {
+@@ -13,7 +13,8 @@ class adminController extends controller {
+     try {
+       const users = (await userModel.find().sort({})).length;
+       const products = await productModel.find().sort({});
+-      const orders = (await orderModel.find().sort({})).length;
++      // سفارش‌ها = سبدهای پرداخت‌شده
++      const orders = await basketModel.countDocuments({ status: "paid" });
+       const ExchangeRates = await exchangeRateModel.findOne({
+         currency: "AED",
+       });
+diff --git a/src/controllers/dashborad/dashborad.controller.js b/src/controllers/dashborad/dashborad.controller.js
+index 9d23c82..a583a1e 100644
+--- a/src/controllers/dashborad/dashborad.controller.js
++++ b/src/controllers/dashborad/dashborad.controller.js
+@@ -1,11 +1,19 @@
+ const addressModel = require("../../models/address.model");
++const basketModel = require("../../models/basket.model");
+ const controller = require("../.controller");
+ 
+ class dashboradController extends controller {
+   async dashborad(req, res, next) {
+     try {
+       const addresses = await addressModel.find({ user: req.user._id });
+-      return res.render("dashborad/dashborad", { addresses });
++
++      // سفارش‌های کاربر = سبدهای پرداخت‌شده (به ترتیب جدیدترین)
++      const orders = await basketModel
++        .find({ user: req.user._id, status: "paid" })
++        .populate("items.product", "title image slug")
++        .sort({ paidAt: -1 });
++
++      return res.render("dashborad/dashborad", { addresses, orders });
+     } catch (err) {
+       next(err);
+     }
+diff --git a/src/controllers/payment/payment.controller.js b/src/controllers/payment/payment.controller.js
+index 86eab2f..12cf74f 100644
+--- a/src/controllers/payment/payment.controller.js
++++ b/src/controllers/payment/payment.controller.js
+@@ -1,7 +1,6 @@
+ const mongoose = require("mongoose");
+ const basketModel = require("../../models/basket.model");
+ const productModel = require("../../models/product.model");
+-const orderModel = require("../../models/order.model");
+ const addressModel = require("../../models/address.model");
+ const discountModel = require("../../models/discount.model");
+ const paymentService = require("../../services/payment.service");
+@@ -11,11 +10,11 @@ const controller = require("../.controller");
+ const TAX_RATE = 0.1;
+ 
+ class paymentController extends controller {
+-  // محاسبه‌ی مبالغ سبد به‌صورت سمت سرور (مرجع حقیقت)
++  // محاسبه‌ی مبالغ سبدِ فعال به‌صورت سمت سرور (مرجع حقیقت)
+   // قیمت‌ها هیچ‌وقت از کلاینت گرفته نمی‌شوند.
+   async calcBasketTotals(userId, discountCodeRaw) {
+     const basket = await basketModel
+-      .findOne({ user: userId })
++      .findOne({ user: userId, status: "active" })
+       .populate("items.product", "title image priceSingle quantity isActive");
+ 
+     const items =
+@@ -24,18 +23,8 @@ class paymentController extends controller {
+         : [];
+ 
+     let itemsPrice = 0;
+-    const orderItems = items.map((it) => {
+-      const unit = it.product.priceSingle || 0;
+-      const total = unit * it.quantity;
+-      itemsPrice += total;
+-      return {
+-        product: it.product._id,
+-        productName: it.product.title,
+-        quantity: it.quantity,
+-        price: unit,
+-        totalPrice: total,
+-        image: it.product.image,
+-      };
++    items.forEach((it) => {
++      itemsPrice += (it.product.priceSingle || 0) * it.quantity;
+     });
+ 
+     // ───── اعمال کد تخفیف (در صورت وجود) ─────
+@@ -72,22 +61,16 @@ class paymentController extends controller {
+     // مالیات روی مبلغ پس از کسر تخفیف محاسبه می‌شود
+     const taxableAmount = Math.max(itemsPrice - discountAmount, 0);
+     const taxPrice = Math.round(taxableAmount * TAX_RATE);
+-    const shippingPrice = 0; // در صورت نیاز محاسبه شود
+-    const finalPrice = Math.max(
+-      itemsPrice - discountAmount + taxPrice + shippingPrice,
+-      0,
+-    );
++    const finalPrice = Math.max(itemsPrice - discountAmount + taxPrice, 0);
+ 
+     return {
+       basket,
+       items,
+-      orderItems,
+       itemsPrice,
+       discountAmount,
+       discountDoc,
+       discountMessage,
+       taxPrice,
+-      shippingPrice,
+       finalPrice,
+     };
+   }
+@@ -153,7 +136,7 @@ class paymentController extends controller {
+           .json({ success: false, message: "آدرس انتخاب‌شده یافت نشد" });
+       }
+ 
+-      // ───── محاسبه‌ی مبالغ (سمت سرور) ─────
++      // ───── محاسبه‌ی مبالغ روی سبدِ فعال (سمت سرور) ─────
+       const totals = await this.calcBasketTotals(userId, discountCode);
+ 
+       if (totals.items.length === 0) {
+@@ -162,72 +145,73 @@ class paymentController extends controller {
+           .json({ success: false, message: "سبد خرید خالی است" });
+       }
+ 
+-      // برچسب روش پرداخت
+-      const methodLabel =
+-        gateway === "digipay" ? "دیجی‌پی (۴ قسط)" : "درگاه زرین‌پال";
++      const basket = totals.basket;
+ 
+-      // ───── ساخت سفارش در وضعیت «در انتظار پرداخت» ─────
+-      const order = await orderModel.create({
+-        user: userId,
+-        items: totals.orderItems,
+-        shippingAddress: address._id,
+-        shippingDetails: {
+-          receiver: address.receiver,
+-          phone: address.phone,
+-          address: address.address,
+-          postalCode: address.postalCode,
+-          city: address.city,
+-          state: address.state,
+-        },
+-        itemsPrice: totals.itemsPrice,
+-        shippingPrice: totals.shippingPrice,
+-        taxPrice: totals.taxPrice,
+-        discountCode: totals.discountDoc ? totals.discountDoc._id : null,
+-        discountCodeString: totals.discountDoc ? totals.discountDoc.code : null,
+-        discountAmount: totals.discountAmount,
+-        totalPrice: totals.finalPrice, // در pre('save') دوباره بازمحاسبه می‌شود
+-        paymentMethod: "online",
+-        paymentMethodLabel: methodLabel,
+-        status: "pending_payment",
+-        statusLabel: "در انتظار پرداخت",
++      // قیمت لحظه‌ی پرداخت را روی آیتم‌های سبد ثبت می‌کنیم (snapshot)
++      basket.items.forEach((it) => {
++        const p = totals.items.find(
++          (vi) => vi.product._id.toString() === it.product._id.toString(),
++        );
++        if (p) it.price = p.product.priceSingle || it.price;
+       });
+ 
++      // ───── ذخیره‌ی اطلاعات سفارش روی همین سبدِ فعال ─────
++      basket.shippingAddress = address._id;
++      basket.shippingDetails = {
++        receiver: address.receiver,
++        phone: address.phone,
++        address: address.address,
++        postalCode: address.postalCode,
++      };
++      basket.paymentMethod = gateway;
++      basket.paymentMethodLabel =
++        gateway === "digipay" ? "دیجی‌پی (۴ قسط)" : "درگاه زرین‌پال";
++      basket.totalPrice = totals.itemsPrice; // مجموع اقلام
++      basket.taxPrice = totals.taxPrice;
++      basket.discountCode = totals.discountDoc ? totals.discountDoc._id : null;
++      basket.discountCodeString = totals.discountDoc
++        ? totals.discountDoc.code
++        : null;
++      basket.discountAmount = totals.discountAmount;
++      basket.finalPrice = totals.finalPrice;
++      if (!basket.orderNumber) {
++        basket.orderNumber = await basketModel.generateOrderNumber();
++      }
++      await basket.save();
++
+       // ───────── اتصال به درگاه پرداخت ─────────
+       // اگر کلید درگاه در .env تنظیم شده باشد، درخواست واقعی زده می‌شود؛
+       // در غیر این صورت برای توسعه به verify آزمایشی (mock) هدایت می‌شویم.
+       const base = `${req.protocol}://${req.get("host")}`;
+-      const callbackUrl = `${base}/payment/verify/${gateway}?orderId=${order._id}`;
++      const callbackUrl = `${base}/payment/verify/${gateway}?basketId=${basket._id}`;
+       let paymentUrl;
+ 
+       try {
+         if (!paymentService.isConfigured(gateway)) {
+-          paymentUrl = `/payment/verify/${gateway}?orderId=${order._id}&mock=1`;
++          paymentUrl = `/payment/verify/${gateway}?basketId=${basket._id}&mock=1`;
+         } else if (gateway === "zarinpal") {
+           const result = await paymentService.zarinpalRequest({
+-            amount: order.totalPrice,
++            amount: basket.finalPrice,
+             callbackUrl,
+-            description: `پرداخت سفارش ${order.orderNumber}`,
++            description: `پرداخت سفارش ${basket.orderNumber}`,
+             mobile: req.user.phone,
+             email: req.user.email || undefined,
+           });
+-          order.transactionId = result.authority;
+-          await order.save();
++          basket.transactionId = result.authority;
++          await basket.save();
+           paymentUrl = result.url;
+         } else {
+           const result = await paymentService.digipayRequest({
+-            amount: order.totalPrice,
++            amount: basket.finalPrice,
+             callbackUrl,
+             cellNumber: req.user.phone,
+-            providerId: order.orderNumber,
++            providerId: basket.orderNumber,
+           });
+-          order.transactionId = result.ticket;
+-          await order.save();
++          basket.transactionId = result.ticket;
++          await basket.save();
+           paymentUrl = result.url;
+         }
+       } catch (gwErr) {
+-        order.status = "payment_failed";
+-        order.statusLabel = "خطا در اتصال به درگاه";
+-        await order.save();
+         return res.status(502).json({
+           success: false,
+           message: gwErr.message || "خطا در اتصال به درگاه پرداخت",
+@@ -237,21 +221,21 @@ class paymentController extends controller {
+       return res.json({
+         success: true,
+         paymentUrl,
+-        orderId: order._id,
+-        amount: order.totalPrice,
++        orderId: basket._id,
++        amount: basket.finalPrice,
+       });
+     } catch (err) {
+       next(err);
+     }
+   }
+ 
+-  // بازگشت از درگاه — تأیید پرداخت، کسر موجودی و خالی‌کردن سبد
++  // بازگشت از درگاه — تأیید پرداخت، کسر موجودی، paid کردن سبد و ساخت سبد فعال جدید
+   async verifyPayment(req, res, next) {
+     try {
+       const { gateway } = req.params;
+-      const { orderId } = req.query;
++      const basketId = req.query.basketId || req.query.orderId;
+ 
+-      if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
++      if (!basketId || !mongoose.Types.ObjectId.isValid(basketId)) {
+         return res.render("shop/payment-result", {
+           success: false,
+           order: null,
+@@ -259,8 +243,8 @@ class paymentController extends controller {
+         });
+       }
+ 
+-      const order = await orderModel.findById(orderId);
+-      if (!order) {
++      const basket = await basketModel.findById(basketId);
++      if (!basket) {
+         return res.render("shop/payment-result", {
+           success: false,
+           order: null,
+@@ -268,68 +252,76 @@ class paymentController extends controller {
+         });
+       }
+ 
+-      // اگر قبلاً پرداخت شده، همان نتیجه را نشان بده
+-      if (order.isPaid) {
+-        return res.render("shop/payment-result", { success: true, order });
++      // اگر قبلاً پرداخت شده، همان نتیجه را نشان بده (idempotent)
++      if (basket.isPaid) {
++        return res.render("shop/payment-result", {
++          success: true,
++          order: basket,
++        });
+       }
+ 
+       // ───────── تأیید پرداخت با درگاه ─────────
+       let verified = false;
+-      let refId = order.transactionId;
++      let refId = basket.transactionId;
+ 
+       if (req.query.mock === "1") {
+         verified = true; // حالت توسعه (بدون کلید درگاه)
+       } else if (gateway === "zarinpal") {
+         if (req.query.Status === "OK") {
+           const result = await paymentService.zarinpalVerify({
+-            amount: order.totalPrice,
+-            authority: req.query.Authority || order.transactionId,
++            amount: basket.finalPrice,
++            authority: req.query.Authority || basket.transactionId,
+           });
+           verified = result.ok;
+           refId = result.refId || refId;
+         }
+       } else if (gateway === "digipay") {
+-        const trackingCode = req.query.trackingCode || order.transactionId;
++        const trackingCode = req.query.trackingCode || basket.transactionId;
+         const result = await paymentService.digipayVerify({ trackingCode });
+         verified = result.ok;
+         refId = result.refId || refId;
+       }
+ 
+       if (verified) {
+-        await order.markAsPaid(refId);
+-
+         // کسر موجودی محصولات و افزایش فروش
+-        for (const item of order.items) {
++        for (const item of basket.items) {
+           await productModel.findByIdAndUpdate(item.product, {
+             $inc: { quantity: -item.quantity, soldCount: item.quantity },
+           });
+         }
+ 
+         // ثبت استفاده از کد تخفیف
+-        if (order.discountCode && order.discountAmount > 0) {
+-          const discountDoc = await discountModel.findById(order.discountCode);
++        if (basket.discountCode && basket.discountAmount > 0) {
++          const discountDoc = await discountModel.findById(basket.discountCode);
+           if (discountDoc) {
+             await discountDoc.recordUsage(
+-              order.user,
+-              order._id,
+-              order.discountAmount,
++              basket.user,
++              basket._id,
++              basket.discountAmount,
+             );
+           }
+         }
+ 
+-        // خالی‌کردن سبد کاربر
+-        const basket = await basketModel.findOne({ user: order.user });
+-        if (basket) await basket.clear();
++        // این سبد پرداخت‌شده می‌شود و به‌عنوان سفارش باقی می‌ماند
++        await basket.markPaid(refId);
+ 
+-        return res.render("shop/payment-result", { success: true, order });
++        // یک سبد فعالِ خالی جدید برای کاربر ساخته می‌شود
++        await basketModel.create({
++          user: basket.user,
++          status: "active",
++          items: [],
++        });
++
++        return res.render("shop/payment-result", {
++          success: true,
++          order: basket,
++        });
+       }
+ 
+-      order.status = "payment_failed";
+-      order.statusLabel = "پرداخت ناموفق";
+-      await order.save();
++      // پرداخت ناموفق — سبد همچنان فعال می‌ماند تا کاربر دوباره تلاش کند
+       return res.render("shop/payment-result", {
+         success: false,
+-        order,
++        order: basket,
+         message: "پرداخت ناموفق بود",
+       });
+     } catch (err) {
+diff --git a/src/controllers/shop/basket.controller.js b/src/controllers/shop/basket.controller.js
+index d701e1f..8c19846 100644
+--- a/src/controllers/shop/basket.controller.js
++++ b/src/controllers/shop/basket.controller.js
+@@ -98,7 +98,7 @@ class basketController extends controller {
+           .json({ success: false, message: "تعداد نامعتبر است" });
+       }
+ 
+-      const basket = await basketModel.findOne({ user: userId });
++      const basket = await basketModel.findOne({ user: userId, status: "active" });
+       if (!basket) {
+         return res
+           .status(404)
+@@ -150,7 +150,7 @@ class basketController extends controller {
+           .json({ success: false, message: "شناسه محصول معتبر نیست" });
+       }
+ 
+-      const basket = await basketModel.findOne({ user: userId });
++      const basket = await basketModel.findOne({ user: userId, status: "active" });
+       if (!basket) {
+         return res
+           .status(404)
+@@ -177,7 +177,7 @@ class basketController extends controller {
+     try {
+       const userId = req.user._id;
+ 
+-      const basket = await basketModel.findOne({ user: userId });
++      const basket = await basketModel.findOne({ user: userId, status: "active" });
+       if (!basket) {
+         return res
+           .status(404)
+@@ -201,7 +201,7 @@ class basketController extends controller {
+   async getBasketCount(req, res, next) {
+     try {
+       const userId = req.user._id;
+-      const basket = await basketModel.findOne({ user: userId });
++      const basket = await basketModel.findOne({ user: userId, status: "active" });
+       const totalItems = basket
+         ? basket.items.reduce((s, i) => s + i.quantity, 0)
+         : 0;
+@@ -222,7 +222,7 @@ class basketController extends controller {
+           .json({ success: false, message: "داده‌ی نامعتبر" });
+       }
+ 
+-      const basket = await basketModel.findOne({ user: userId });
++      const basket = await basketModel.findOne({ user: userId, status: "active" });
+       if (!basket) {
+         return res
+           .status(404)
+diff --git a/src/middlewares/globalData.js b/src/middlewares/globalData.js
+index 1232e52..27977f8 100644
+--- a/src/middlewares/globalData.js
++++ b/src/middlewares/globalData.js
+@@ -78,7 +78,7 @@ class GlobalData {
+ 
+       if (req.user) {
+         const basket = await basketModel
+-          .findOne({ user: req.user._id })
++          .findOne({ user: req.user._id, status: "active" })
+           .populate("items.product", PRODUCT_SELECT)
+           .lean();
+ 
+diff --git a/src/models/basket.model.js b/src/models/basket.model.js
+index a5ff5e2..12ca6da 100644
+--- a/src/models/basket.model.js
++++ b/src/models/basket.model.js
+@@ -33,21 +33,64 @@ const BasketItemSchema = new Schema(
+ 
+ const BasketSchema = new Schema(
+   {
+-    // هر کاربر فقط یک سبد فعال دارد
++    // هر کاربر در هر لحظه فقط یک سبد «active» دارد؛ سبدهای «paid»
++    // به‌عنوان تاریخچه‌ی سفارش‌ها باقی می‌مانند، پس user دیگر unique نیست.
+     user: {
+       type: Schema.Types.ObjectId,
+       ref: "User",
+       required: true,
+-      unique: true,
+       index: true,
+     },
+     items: [BasketItemSchema],
+-    // مجموع قیمت سبد — در pre('save') به‌صورت خودکار بازمحاسبه می‌شود
++    // وضعیت سبد:
++    //  active           = سبد جاری کاربر (در حال خرید)
++    //  pending_payment  = در انتظار بازگشت از درگاه
++    //  paid             = پرداخت‌شده (به‌عنوان سفارش باقی می‌ماند)
++    //  cancelled        = لغو/ناموفق
++    status: {
++      type: String,
++      enum: ["active", "pending_payment", "paid", "cancelled"],
++      default: "active",
++      index: true,
++    },
++    statusLabel: {
++      type: String,
++      default: "سبد خرید",
++    },
++    // مجموع قیمت اقلام (قبل از مالیات/تخفیف)
+     totalPrice: {
+       type: Number,
+       default: 0,
+       min: 0,
+     },
++    // ───── اطلاعات سفارش (هنگام نهایی‌سازی/پرداخت پر می‌شوند) ─────
++    orderNumber: { type: String, default: null, index: true },
++    shippingAddress: {
++      type: Schema.Types.ObjectId,
++      ref: "Address",
++      default: null,
++    },
++    shippingDetails: {
++      receiver: String,
++      phone: String,
++      address: String,
++      postalCode: String,
++    },
++    paymentMethod: { type: String, default: null }, // zarinpal | digipay
++    paymentMethodLabel: { type: String, default: null },
++    taxPrice: { type: Number, default: 0, min: 0 },
++    discountCode: {
++      type: Schema.Types.ObjectId,
++      ref: "Discount",
++      default: null,
++    },
++    discountCodeString: { type: String, default: null },
++    discountAmount: { type: Number, default: 0, min: 0 },
++    // مبلغ نهایی قابل پرداخت (اقلام - تخفیف + مالیات)
++    finalPrice: { type: Number, default: 0, min: 0 },
++    transactionId: { type: String, default: null },
++    isPaid: { type: Boolean, default: false, index: true },
++    paidAt: { type: Date, default: null },
+     // آخرین فعالیت روی سبد (برای گزارش سبدهای رهاشده یا پاکسازی)
+     lastActivity: {
+       type: Date,
+@@ -133,13 +176,41 @@ BasketSchema.methods.clear = function () {
+   return this.save();
+ };
+ 
+-// گرفتن سبد کاربر یا ساختن سبد جدید اگر وجود نداشت
++// گرفتن سبدِ «فعالِ» کاربر یا ساختن یک سبد فعال جدید اگر وجود نداشت
+ BasketSchema.statics.getOrCreate = async function (userId) {
+-  return this.findOneAndUpdate(
+-    { user: userId },
+-    { $setOnInsert: { user: userId, items: [] } },
+-    { upsert: true, setDefaultsOnInsert: true },
+-  );
++  let basket = await this.findOne({ user: userId, status: "active" });
++  if (!basket) {
++    basket = await this.create({ user: userId, status: "active", items: [] });
++  }
++  return basket;
++};
++
++// تولید شماره سفارش یکتا (مثل ORD2406240001)
++BasketSchema.statics.generateOrderNumber = async function () {
++  const date = new Date();
++  const y = date.getFullYear().toString().slice(-2);
++  const m = String(date.getMonth() + 1).padStart(2, "0");
++  const d = String(date.getDate()).padStart(2, "0");
++
++  const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
++  const endOfDay = new Date(new Date().setHours(23, 59, 59, 999));
++  const todayPaid = await this.countDocuments({
++    orderNumber: { $ne: null },
++    createdAt: { $gte: startOfDay, $lte: endOfDay },
++  });
++
++  const seq = String(todayPaid + 1).padStart(4, "0");
++  return `ORD${y}${m}${d}${seq}`;
++};
++
++// علامت‌گذاری سبد به‌عنوان پرداخت‌شده
++BasketSchema.methods.markPaid = function (transactionId = null) {
++  this.status = "paid";
++  this.statusLabel = "پرداخت شده";
++  this.isPaid = true;
++  this.paidAt = new Date();
++  if (transactionId) this.transactionId = transactionId;
++  return this.save();
+ };
+ 
+ // بازمحاسبه‌ی مجموع و به‌روزرسانی زمان فعالیت پیش از هر ذخیره
+-- 
+2.43.0
+
