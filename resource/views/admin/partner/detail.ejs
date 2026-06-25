@@ -1,0 +1,84 @@
+<main class="container relative">
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <%- include(viewPath('layout/menu')) %>
+
+        <div class="flex flex-col gap-y-5 mt-5 lg:mt-0">
+
+            <div class="flex items-center justify-between shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <span class="flex items-center gap-x-2">
+                    <svg class="size-7 text-blue-500"><use href="#user" /></svg>
+                    <h2 class="font-DanaMedium text-lg">دفترحساب <%= partnerName %></h2>
+                </span>
+                <a href="/admin/partners" class="text-sm text-blue-500 font-DanaMedium">→ بازگشت به تسویه شرکا</a>
+            </div>
+
+            <!-- خلاصه‌ی کیف -->
+            <div class="grid grid-cols-12 gap-4 child:col-span-6 md:child:col-span-3 child:rounded-lg child:bg-white child:dark:bg-gray-800 child:shadow child:p-4">
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">کل واریز به کیف</p>
+                    <p class="font-DanaDemiBold text-green-600"><%= Number(totalCredit).toLocaleString('fa-IR') %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">کسورات (تخفیف/هزینه)</p>
+                    <p class="font-DanaDemiBold text-orange-500"><%= Number(totalReducers).toLocaleString('fa-IR') %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">تسویه‌شده</p>
+                    <p class="font-DanaDemiBold text-red-500"><%= Number(totalSettled).toLocaleString('fa-IR') %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">مانده کیف</p>
+                    <p class="font-DanaDemiBold text-lg <%= balance > 0 ? 'text-blue-600' : 'text-green-600' %>"><%= Number(balance).toLocaleString('fa-IR') %> تومان</p>
+                </div>
+            </div>
+
+            <!-- ثبت تسویه برای این شریک -->
+            <form action="/admin/partners/settlement" method="POST" class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white flex items-center gap-x-2 flex-wrap gap-y-2">
+                <input type="hidden" name="partner" value="<%= pk %>">
+                <span class="font-DanaMedium text-sm">ثبت پرداخت به <%= partnerName %>:</span>
+                <input type="number" name="amount" min="1" placeholder="مبلغ (تومان)" required
+                       class="flex-1 min-w-0 text-sm bg-transparent rounded-lg border-2 border-gray-200 dark:border-white/20 py-2 px-3 outline-none focus:border-blue-500">
+                <input type="text" name="note" placeholder="بابت / توضیح (اختیاری)"
+                       class="flex-1 min-w-0 text-sm bg-transparent rounded-lg border-2 border-gray-200 dark:border-white/20 py-2 px-3 outline-none focus:border-blue-500">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-5 py-2 text-sm font-DanaMedium">ثبت و کسر از کیف</button>
+            </form>
+
+            <!-- دفترحساب: ریز هر مبلغ، زمان، دلیل و محصول -->
+            <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white mb-8">
+                <h2 class="font-DanaMedium text-lg mb-4">گردش حساب</h2>
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 bg-gray-100 dark:bg-gray-900 dark:text-gray-200">
+                            <tr>
+                                <th class="px-4 py-3">تاریخ</th>
+                                <th class="px-4 py-3">شرح / دلیل</th>
+                                <th class="px-4 py-3">محصول</th>
+                                <th class="px-4 py-3">سفارش</th>
+                                <th class="px-4 py-3">مبلغ</th>
+                                <th class="px-4 py-3">مانده</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (!entries.length) { %>
+                                <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">گردشی ثبت نشده است.</td></tr>
+                            <% } %>
+                            <% entries.forEach(function (en) { %>
+                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                    <td class="px-4 py-3 whitespace-nowrap"><%= en.date ? date(en.date).format('jYYYY/jMM/jDD - HH:mm') : '-' %></td>
+                                    <td class="px-4 py-3 <%= en.settlement ? 'text-red-500 font-DanaMedium' : '' %>"><%= en.reason %></td>
+                                    <td class="px-4 py-3"><%= en.product || '—' %></td>
+                                    <td class="px-4 py-3 text-xs text-gray-400"><%= en.order || '—' %></td>
+                                    <td class="px-4 py-3 font-DanaMedium whitespace-nowrap <%= en.sign > 0 ? 'text-green-600' : 'text-red-500' %>">
+                                        <%= en.sign > 0 ? '+' : '−' %> <%= Number(en.amount).toLocaleString('fa-IR') %>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap"><%= Number(en.balance).toLocaleString('fa-IR') %></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>

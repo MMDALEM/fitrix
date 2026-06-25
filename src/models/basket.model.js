@@ -15,9 +15,6 @@ const BasketItemSchema = new Schema(
       min: 1,
       default: 1,
     },
-    // قیمت لحظه‌ی افزودن (snapshot) — صرفاً برای نمایش سریع در سبد.
-    // ⚠️ هنگام نهایی‌سازی سفارش حتماً دوباره از روی محصول واقعی محاسبه شود،
-    // چون قیمت محصول ممکن است بعد از افزودن به سبد تغییر کرده باشد.
     price: {
       type: Number,
       required: true,
@@ -39,7 +36,6 @@ const BasketSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
     items: [BasketItemSchema],
     // وضعیت سبد:
@@ -91,6 +87,11 @@ const BasketSchema = new Schema(
     transactionId: { type: String, default: null },
     isPaid: { type: Boolean, default: false, index: true },
     paidAt: { type: Date, default: null },
+    // ───── وضعیت ارسال (پنل ادمین) ─────
+    isShipped: { type: Boolean, default: false, index: true },
+    shippedAt: { type: Date, default: null },
+    trackingCode: { type: String, default: null },
+    shippingNote: { type: String, default: null },
     // آخرین فعالیت روی سبد (برای گزارش سبدهای رهاشده یا پاکسازی)
     lastActivity: {
       type: Date,
@@ -104,6 +105,10 @@ const BasketSchema = new Schema(
     toObject: { virtuals: true },
   },
 );
+
+// ایندکس ترکیبی برای یافتن سریع سبدِ فعال/پرداخت‌شده‌ی هر کاربر
+// (نامِ این ایندکس user_1_status_1 است و با ایندکس قدیمیِ unique تداخل ندارد)
+BasketSchema.index({ user: 1, status: 1 });
 
 // تعداد کل اقلام داخل سبد
 BasketSchema.virtual("totalItems").get(function () {
@@ -210,6 +215,16 @@ BasketSchema.methods.markPaid = function (transactionId = null) {
   this.isPaid = true;
   this.paidAt = new Date();
   if (transactionId) this.transactionId = transactionId;
+  return this.save();
+};
+
+// علامت‌گذاری سفارش به‌عنوان «ارسال‌شده»
+BasketSchema.methods.markShipped = function (trackingCode = null, note = null) {
+  this.isShipped = true;
+  this.shippedAt = new Date();
+  this.statusLabel = "ارسال شده";
+  if (trackingCode) this.trackingCode = trackingCode;
+  if (note) this.shippingNote = note;
   return this.save();
 };
 

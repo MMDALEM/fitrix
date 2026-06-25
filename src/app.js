@@ -68,9 +68,21 @@ module.exports = class Application {
     mongoose.connect(DATABASE_MONGODB_URL, { autoIndex: true });
     mongoose.set("strictPopulate", true);
     mongoose.set("strictQuery", true);
-    mongoose.connection.on("connected", () =>
-      console.log(`connect to mongodb `),
-    );
+    mongoose.connection.on("connected", async () => {
+      console.log(`connect to mongodb `);
+      // حذف ایندکس قدیمیِ unique روی baskets.user
+      // (هر کاربر حالا چند سبد دارد: یک active + چند paid)
+      try {
+        const coll = mongoose.connection.db.collection("baskets");
+        const indexes = await coll.indexes();
+        if (indexes.some((i) => i.name === "user_1")) {
+          await coll.dropIndex("user_1");
+          console.log("dropped legacy baskets.user_1 unique index");
+        }
+      } catch (e) {
+        console.log("basket index cleanup skipped:", e.message);
+      }
+    });
     mongoose.connection.on("desconnected", () =>
       console.log(`desconnect to mongodb `),
     );

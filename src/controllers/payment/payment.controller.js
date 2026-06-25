@@ -10,6 +10,31 @@ const controller = require("../.controller");
 const TAX_RATE = 0.1;
 
 class paymentController extends controller {
+  // ساخت سبد فعالِ جدید با خودترمیمی:
+  // اگر ایندکس قدیمیِ unique روی user باعث خطای duplicate شد،
+  // همان‌جا (در کنترلر) آن را حذف و دوباره تلاش می‌کنیم.
+  async createActiveBasket(userId) {
+    try {
+      return await basketModel.create({
+        user: userId,
+        status: "active",
+        items: [],
+      });
+    } catch (e) {
+      if (e && e.code === 11000) {
+        try {
+          await basketModel.collection.dropIndex("user_1");
+        } catch (_) {}
+        return await basketModel.create({
+          user: userId,
+          status: "active",
+          items: [],
+        });
+      }
+      throw e;
+    }
+  }
+
   // محاسبه‌ی مبالغ سبدِ فعال به‌صورت سمت سرور (مرجع حقیقت)
   // قیمت‌ها هیچ‌وقت از کلاینت گرفته نمی‌شوند.
   async calcBasketTotals(userId, discountCodeRaw) {
@@ -305,12 +330,8 @@ class paymentController extends controller {
         // این سبد پرداخت‌شده می‌شود و به‌عنوان سفارش باقی می‌ماند
         await basket.markPaid(refId);
 
-        // یک سبد فعالِ خالی جدید برای کاربر ساخته می‌شود
-        await basketModel.create({
-          user: basket.user,
-          status: "active",
-          items: [],
-        });
+        // یک سبد فعالِ خالی جدید برای کاربر ساخته می‌شود (با خودترمیمیِ ایندکس)
+        await this.createActiveBasket(basket.user);
 
         return res.render("shop/payment-result", {
           success: true,

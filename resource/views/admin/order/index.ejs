@@ -1,0 +1,111 @@
+<main class="container relative">
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <%- include(viewPath('layout/menu')) %>
+
+        <!-- محتوای صفحه‌ی سفارش‌ها -->
+        <div class="flex flex-col gap-y-5 mt-5 lg:mt-0">
+
+            <!-- هدر + فیلترها -->
+            <div class="flex flex-col gap-y-4 shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <span class="flex items-center gap-x-2">
+                    <svg class="size-7 text-blue-500"><use href="#shopping-bag" /></svg>
+                    <h2 class="font-DanaMedium text-lg">مدیریت سفارش‌ها</h2>
+                </span>
+                <div class="flex items-center gap-x-2 flex-wrap gap-y-2 text-sm font-DanaMedium">
+                    <a href="/admin/orders?filter=all"
+                       class="px-4 py-2 rounded-lg border-2 <%= filter==='all' ? 'border-blue-500 text-blue-500 bg-blue-50 dark:bg-blue-900/10' : 'border-gray-200 dark:border-white/20' %>">
+                        همه (<%= counts.all.toLocaleString('fa-IR') %>)
+                    </a>
+                    <a href="/admin/orders?filter=new"
+                       class="px-4 py-2 rounded-lg border-2 <%= filter==='new' ? 'border-yellow-500 text-yellow-600 bg-yellow-50 dark:bg-yellow-900/10' : 'border-gray-200 dark:border-white/20' %>">
+                        جدید / ارسال‌نشده (<%= counts.new.toLocaleString('fa-IR') %>)
+                    </a>
+                    <a href="/admin/orders?filter=shipped"
+                       class="px-4 py-2 rounded-lg border-2 <%= filter==='shipped' ? 'border-green-500 text-green-600 bg-green-50 dark:bg-green-900/10' : 'border-gray-200 dark:border-white/20' %>">
+                        ارسال‌شده (<%= counts.shipped.toLocaleString('fa-IR') %>)
+                    </a>
+                </div>
+            </div>
+
+            <% if (!orders.length) { %>
+                <div class="shadow rounded-lg p-10 text-center text-gray-400 dark:bg-gray-800 bg-white">
+                    سفارشی در این بخش وجود ندارد.
+                </div>
+            <% } %>
+
+            <% orders.forEach(function (order) { %>
+                <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white flex flex-col gap-y-4">
+
+                    <!-- ردیف بالا: شماره سفارش / تاریخ / وضعیت -->
+                    <div class="flex items-center justify-between flex-wrap gap-y-2 border-b border-gray-200 dark:border-white/10 pb-3">
+                        <span class="flex items-center gap-x-2">
+                            <span class="font-DanaMedium">کد سفارش:</span>
+                            <span class="text-blue-500 font-DanaMedium"><%= order.orderNumber || '-' %></span>
+                        </span>
+                        <span class="text-sm text-gray-500">
+                            <%= order.paidAt ? date(order.paidAt).format('jYYYY/jMM/jDD - HH:mm') : '-' %>
+                        </span>
+                        <% if (order.isShipped) { %>
+                            <span class="text-green-600 font-DanaMedium text-sm flex items-center gap-x-1">
+                                <svg class="w-5 h-5"><use href="#check-badge" /></svg> ارسال شده
+                            </span>
+                        <% } else { %>
+                            <span class="text-yellow-600 font-DanaMedium text-sm">در انتظار ارسال</span>
+                        <% } %>
+                    </div>
+
+                    <!-- مشخصات گیرنده -->
+                    <div class="grid grid-cols-12 gap-3 text-sm">
+                        <div class="col-span-12 md:col-span-6 flex flex-col gap-y-1 text-gray-600 dark:text-gray-300">
+                            <p><span class="font-DanaMedium">گیرنده:</span> <%= order.shippingDetails && order.shippingDetails.receiver || (order.user && order.user.fullName) || '-' %></p>
+                            <p><span class="font-DanaMedium">تلفن:</span> <%= order.shippingDetails && order.shippingDetails.phone || (order.user && order.user.phone) || '-' %></p>
+                            <p><span class="font-DanaMedium">کدپستی:</span> <%= order.shippingDetails && order.shippingDetails.postalCode || '-' %></p>
+                            <p><span class="font-DanaMedium">آدرس:</span> <%= order.shippingDetails && order.shippingDetails.address || '-' %></p>
+                        </div>
+                        <div class="col-span-12 md:col-span-6 flex flex-col gap-y-1 text-gray-600 dark:text-gray-300">
+                            <p><span class="font-DanaMedium">مبلغ نهایی:</span> <%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString('fa-IR') %> تومان</p>
+                            <p><span class="font-DanaMedium">درگاه:</span> <%= order.paymentMethodLabel || '-' %></p>
+                            <% if (order.discountAmount) { %><p><span class="font-DanaMedium">تخفیف:</span> <%= Number(order.discountAmount).toLocaleString('fa-IR') %> تومان</p><% } %>
+                            <% if (order.trackingCode) { %><p><span class="font-DanaMedium">کد رهگیری:</span> <%= order.trackingCode %></p><% } %>
+                        </div>
+                    </div>
+
+                    <!-- اقلام -->
+                    <div class="flex flex-col gap-y-2 border-t border-gray-200 dark:border-white/10 pt-3">
+                        <% (order.items || []).forEach(function (it) { %>
+                            <% if (!it.product) return; %>
+                            <div class="flex items-center gap-x-3">
+                                <img src="<%= it.product.image %>" class="w-12 h-12 object-cover rounded" alt="<%= it.product.title %>">
+                                <span class="flex-1 line-clamp-1 text-sm"><%= it.product.title %></span>
+                                <span class="text-sm text-gray-500">تعداد: <%= Number(it.quantity).toLocaleString('fa-IR') %></span>
+                                <span class="text-sm font-DanaMedium"><%= Number((it.price||0) * it.quantity).toLocaleString('fa-IR') %> تومان</span>
+                            </div>
+                        <% }) %>
+                    </div>
+
+                    <!-- اکشن‌ها -->
+                    <div class="flex items-center gap-x-3 flex-wrap gap-y-3 border-t border-gray-200 dark:border-white/10 pt-3">
+                        <a href="/admin/orders/<%= order._id %>/label" target="_blank"
+                           class="flex items-center gap-x-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all rounded-lg px-4 py-2 text-sm font-DanaMedium">
+                            <svg class="w-5 h-5"><use href="#tag" /></svg>
+                            چاپ برچسب پستی
+                        </a>
+
+                        <% if (!order.isShipped) { %>
+                            <form action="/admin/orders/<%= order._id %>/ship" method="POST" class="flex items-center gap-x-2 flex-wrap gap-y-2">
+                                <input type="text" name="trackingCode" placeholder="کد رهگیری مرسوله (اختیاری)"
+                                       class="text-sm bg-transparent rounded-lg border-2 border-gray-200 dark:border-white/20 py-2 px-3 outline-none focus:border-blue-500">
+                                <button type="submit"
+                                        class="flex items-center gap-x-1 bg-green-500 hover:bg-green-600 text-white transition-all rounded-lg px-4 py-2 text-sm font-DanaMedium">
+                                    <svg class="w-5 h-5"><use href="#check-badge" /></svg>
+                                    تیک ارسال
+                                </button>
+                            </form>
+                        <% } %>
+                    </div>
+                </div>
+            <% }) %>
+
+        </div>
+    </div>
+</main>

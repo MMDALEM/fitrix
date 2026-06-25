@@ -43,6 +43,12 @@ router.use("/admin/category", verifyAdmin, categoryAdminRouter);
 const adminPdfRouter = require("./admin/pdf.route");
 router.use("/admin/pdf", verifyAdmin, adminPdfRouter);
 
+const adminOrderRouter = require("./admin/order.route");
+router.use("/admin/orders", verifyAdmin, adminOrderRouter);
+
+const adminPartnerRouter = require("./admin/partner.route");
+router.use("/admin/partners", verifyAdmin, adminPartnerRouter);
+
 router.use("/logout", logout);
 
 module.exports = { AllRouters: router };

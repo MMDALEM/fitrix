@@ -8,12 +8,28 @@ const PRODUCT_SELECT =
   "title image slug priceSingle quantity flavor weight isActive";
 
 class basketController extends controller {
+  // گرفتن سبد فعال با خودترمیمی: اگر ایندکس قدیمیِ unique روی user باعث
+  // خطای duplicate شد، در همین کنترلر آن را حذف و دوباره تلاش می‌کنیم.
+  async getActiveBasket(userId) {
+    try {
+      return await basketModel.getOrCreate(userId);
+    } catch (e) {
+      if (e && e.code === 11000) {
+        try {
+          await basketModel.collection.dropIndex("user_1");
+        } catch (_) {}
+        return await basketModel.getOrCreate(userId);
+      }
+      throw e;
+    }
+  }
+
   // صفحه‌ی سبد خرید (رندر EJS)
   async getBasket(req, res, next) {
     try {
       const userId = req.user._id;
 
-      const basket = await basketModel.getOrCreate(userId);
+      const basket = await this.getActiveBasket(userId);
       await basket.populate("items.product", PRODUCT_SELECT);
 
       return res.render("shop/basket", { basket });
@@ -49,7 +65,7 @@ class basketController extends controller {
           .json({ success: false, message: "محصول یافت نشد" });
       }
 
-      const basket = await basketModel.getOrCreate(userId);
+      const basket = await this.getActiveBasket(userId);
 
       // تعداد فعلی همین محصول در سبد + جدید نباید از موجودی بیشتر شود
       const existing = basket.items.find(
@@ -98,7 +114,10 @@ class basketController extends controller {
           .json({ success: false, message: "تعداد نامعتبر است" });
       }
 
-      const basket = await basketModel.findOne({ user: userId, status: "active" });
+      const basket = await basketModel.findOne({
+        user: userId,
+        status: "active",
+      });
       if (!basket) {
         return res
           .status(404)
@@ -150,7 +169,10 @@ class basketController extends controller {
           .json({ success: false, message: "شناسه محصول معتبر نیست" });
       }
 
-      const basket = await basketModel.findOne({ user: userId, status: "active" });
+      const basket = await basketModel.findOne({
+        user: userId,
+        status: "active",
+      });
       if (!basket) {
         return res
           .status(404)
@@ -177,7 +199,10 @@ class basketController extends controller {
     try {
       const userId = req.user._id;
 
-      const basket = await basketModel.findOne({ user: userId, status: "active" });
+      const basket = await basketModel.findOne({
+        user: userId,
+        status: "active",
+      });
       if (!basket) {
         return res
           .status(404)
@@ -201,7 +226,10 @@ class basketController extends controller {
   async getBasketCount(req, res, next) {
     try {
       const userId = req.user._id;
-      const basket = await basketModel.findOne({ user: userId, status: "active" });
+      const basket = await basketModel.findOne({
+        user: userId,
+        status: "active",
+      });
       const totalItems = basket
         ? basket.items.reduce((s, i) => s + i.quantity, 0)
         : 0;
@@ -222,7 +250,10 @@ class basketController extends controller {
           .json({ success: false, message: "داده‌ی نامعتبر" });
       }
 
-      const basket = await basketModel.findOne({ user: userId, status: "active" });
+      const basket = await basketModel.findOne({
+        user: userId,
+        status: "active",
+      });
       if (!basket) {
         return res
           .status(404)
