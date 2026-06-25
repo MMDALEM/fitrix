@@ -10,11 +10,15 @@ const { ZarinPal } = require("zarinpal-node-sdk");
 
 const ZARINPAL_MERCHANT = process.env.ZARINPAL_MERCHANT_ID || "";
 const ZARINPAL_SANDBOX = process.env.ZARINPAL_SANDBOX;
+const ZARINPAL_BASE_URL_TEST = process.env.ZARINPAL_BASE_URL_TEST;
+const ZARINPAL_BASE_URL = process.env.ZARINPAL_BASE_URL;
 const DIGIPAY_USERNAME = process.env.DIGIPAY_USERNAME || "";
 const DIGIPAY_PASSWORD = process.env.DIGIPAY_PASSWORD || "";
 const DIGIPAY_CLIENT_ID = process.env.DIGIPAY_CLIENT_ID || "";
 const DIGIPAY_CLIENT_SECRET = process.env.DIGIPAY_CLIENT_SECRET || "";
 const DIGIPAY_SANDBOX = process.env.DIGIPAY_SANDBOX;
+const DIGIPAY_BASE_URL = process.env.DIGIPAY_BASE_URL;
+const DIGIPAY_BASE_URL_TEST = process.env.DIGIPAY_BASE_URL_TEST;
 
 const zarinpalConfigured =
   ZARINPAL_MERCHANT &&
@@ -28,12 +32,10 @@ const zarinpal = zarinpalConfigured
   : null;
 
 const ZARINPAL_STARTPAY = ZARINPAL_SANDBOX
-  ? process.env.ZARINPAL_BASE_URL_TEST
-  : process.env.ZARINPAL_BASE_URL;
+  ? ZARINPAL_BASE_URL_TEST
+  : ZARINPAL_BASE_URL;
 
-const DIGIPAY_BASE = DIGIPAY_SANDBOX
-  ? process.env.DIGIPAY_BASE_URL
-  : process.env.DIGIPAY_BASE_URL_TEST;
+const DIGIPAY_BASE = DIGIPAY_SANDBOX ? DIGIPAY_BASE_URL : DIGIPAY_BASE_URL_TEST;
 
 const DIGIPAY_VERSION = "2022-02-02";
 const DIGIPAY_TYPE = process.env.DIGIPAY_TICKET_TYPE || "0";
