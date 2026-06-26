@@ -208,12 +208,13 @@ class paymentController extends controller {
       // اگر کلید درگاه در .env تنظیم شده باشد، درخواست واقعی زده می‌شود؛
       // در غیر این صورت برای توسعه به verify آزمایشی (mock) هدایت می‌شویم.
       const base = `${req.protocol}://${req.get("host")}`;
-      const callbackUrl = `${base}/payment/verify/${gateway}?basketId=${basket._id}`;
+      // basketId را در مسیر می‌گذاریم تا در URL کوئریِ اضافه نماند
+      const callbackUrl = `${base}/payment/verify/${gateway}/${basket._id}`;
       let paymentUrl;
 
       try {
         if (!paymentService.isConfigured(gateway)) {
-          paymentUrl = `/payment/verify/${gateway}?basketId=${basket._id}&mock=1`;
+          paymentUrl = `/payment/verify/${gateway}/${basket._id}?mock=1`;
         } else if (gateway === "zarinpal") {
           const result = await paymentService.zarinpalRequest({
             amount: basket.finalPrice,
@@ -258,7 +259,10 @@ class paymentController extends controller {
   async verifyPayment(req, res, next) {
     try {
       const { gateway } = req.params;
-      const basketId = req.query.basketId || req.query.orderId;
+      // basketId از مسیر (path) خوانده می‌شود تا در URL تمیز بماند؛
+      // برای سازگاری، query هم پشتیبانی می‌شود.
+      const basketId =
+        req.params.basketId || req.query.basketId || req.query.orderId;
 
       if (!basketId || !mongoose.Types.ObjectId.isValid(basketId)) {
         return res.render("shop/payment-result", {
@@ -277,12 +281,9 @@ class paymentController extends controller {
         });
       }
 
-      // اگر قبلاً پرداخت شده، همان نتیجه را نشان بده (idempotent)
+      // اگر قبلاً پرداخت شده، مستقیم به صفحه‌ی نتیجه‌ی تمیز برو (idempotent)
       if (basket.isPaid) {
-        return res.render("shop/payment-result", {
-          success: true,
-          order: basket,
-        });
+        return res.redirect("/payment/result/" + basket._id);
       }
 
       // ───────── تأیید پرداخت با درگاه ─────────
@@ -333,17 +334,47 @@ class paymentController extends controller {
         // یک سبد فعالِ خالی جدید برای کاربر ساخته می‌شود (با خودترمیمیِ ایندکس)
         await this.createActiveBasket(basket.user);
 
-        return res.render("shop/payment-result", {
-          success: true,
-          order: basket,
-        });
+        // ریدایرکت به URL تمیز (بدون Authority/Status/basketId در کوئری)
+        return res.redirect("/payment/result/" + basket._id);
       }
 
       // پرداخت ناموفق — سبد همچنان فعال می‌ماند تا کاربر دوباره تلاش کند
+      if (req.flash) req.flash("payMessage", "پرداخت ناموفق بود");
+      return res.redirect("/payment/result/" + basket._id);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // نمایش نتیجه‌ی پرداخت روی یک URL تمیز: /payment/result/:id
+  async paymentResult(req, res, next) {
+    try {
+      const { id } = req.params;
+      if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        return res.render("shop/payment-result", {
+          success: false,
+          order: null,
+          message: "تراکنش یافت نشد",
+        });
+      }
+
+      const order = await basketModel.findById(id);
+      if (!order) {
+        return res.render("shop/payment-result", {
+          success: false,
+          order: null,
+          message: "تراکنش یافت نشد",
+        });
+      }
+
+      const success = !!order.isPaid;
+      const flashArr = req.flash ? req.flash("payMessage") : [];
+      const flashMsg = flashArr && flashArr.length ? flashArr[0] : null;
+
       return res.render("shop/payment-result", {
-        success: false,
-        order: basket,
-        message: "پرداخت ناموفق بود",
+        success,
+        order,
+        message: success ? null : flashMsg || "پرداخت انجام نشد یا ناتمام ماند",
       });
     } catch (err) {
       next(err);

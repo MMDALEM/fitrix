@@ -19,7 +19,14 @@ router.post(
   paymentController.createPayment,
 );
 
-// بازگشت از درگاه
+// بازگشت از درگاه (basketId در مسیر؛ نسخه‌ی query هم برای سازگاری می‌ماند)
+router.get(
+  "/payment/verify/:gateway/:basketId",
+  paymentController.verifyPayment,
+);
 router.get("/payment/verify/:gateway", paymentController.verifyPayment);
+
+// نمایش نتیجه‌ی پرداخت روی URL تمیز
+router.get("/payment/result/:id", paymentController.paymentResult);
 
 module.exports = router;

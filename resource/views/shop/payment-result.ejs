@@ -1,30 +1,88 @@
 <main class="container">
-    <section class="flex flex-col items-center justify-center text-center bg-white dark:bg-gray-800 shadow rounded-lg p-10 mt-10 gap-y-4">
-        <% if (success) { %>
-            <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <svg class="w-12 h-12 text-green-600"><use href="#check-badge"></use></svg>
+    <div class="max-w-lg mx-auto mt-10 mb-16" style="padding: 0 1rem; min-width: 12rem; max-width: 30rem;">
+        <div class="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-xl">
+
+            <!-- بنر بالای کارت -->
+            <div  class="<%= success ? 'bg-gradient-to-bl from-emerald-500 to-green-600' : 'bg-gradient-to-bl from-rose-500 to-red-600' %> px-6 pt-9 pb-14 text-center text-white">
+                <div style="<%= success ? 'color: #10B981 !important' : 'color: #EF4444 !important' %>" class="mx-auto w-20 h-20 rounded-full bg-white/20 ring-8 ring-white/10 flex items-center justify-center">
+                    <svg class="w-11 h-11"><use href="<%= success ? '#check-badge' : '#x-mark' %>"></use></svg>
+                </div>
+                <h2 class="font-DanaDemiBold text-xl mt-4" style="<%= success ? 'color: #10B981 !important' : 'color: #EF4444 !important' %>">
+                    <%= success ? 'پرداخت با موفقیت انجام شد' : 'پرداخت ناموفق بود' %>
+                </h2>
+                <% if (typeof order !== "undefined" && order) { %>
+                    <p class="mt-2 text-white/90">
+                        <span class="font-DanaDemiBold text-2xl"><%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString("fa-IR") %></span>
+                        <span class="text-sm">تومان</span>
+                    </p>
+                <% } else { %>
+                    <p class="mt-2 text-white/90 text-sm"><%= typeof message !== "undefined" && message ? message : 'متاسفانه پرداخت شما انجام نشد.' %></p>
+                <% } %>
             </div>
-            <h2 class="font-DanaMedium text-xl text-green-600">پرداخت با موفقیت انجام شد</h2>
+
+            <!-- جزئیات تراکنش -->
             <% if (typeof order !== "undefined" && order) { %>
-                <ul class="text-sm text-gray-500 dark:text-gray-400 space-y-2 mt-2">
-                    <li>شماره سفارش: <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= order.orderNumber %></span></li>
-                    <li>مبلغ پرداختی: <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= Number(order.finalPrice || order.totalPrice).toLocaleString("fa-IR") %></span> تومان</li>
-                </ul>
+                <div class="px-5 -mt-8">
+                    <div class="rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-white/10 shadow-md">
+                        <div style="text-align: center;" class="px-4 py-3 border-b border-gray-100 dark:border-white/10">
+                            <h3 class="font-DanaMedium text-sm text-gray-700 dark:text-gray-200">جزئیات تراکنش</h3>
+                        </div>
+                        <ul class="text-sm divide-y divide-gray-100 dark:divide-white/10 child:flex child:items-center child:justify-between child:gap-x-2 child:px-4 child:py-3">
+                            <li>
+                                <span class="flex items-center gap-x-2 text-gray-400"><svg class="w-4 h-4"><use href="#check-badge"/></svg> وضعیت</span>
+                                <span style="<%= success ? 'color: #10B981 !important' : 'color: #EF4444 !important' %>" class="font-DanaMedium <%= success ? 'text-emerald-600' : 'text-red-500' %>">
+                                    <%= success ? 'پرداخت موفق' : 'ناموفق' %>
+                                </span>
+                            </li>
+                            <li>
+                                <span class="flex items-center gap-x-2 text-gray-400"><svg class="w-4 h-4"><use href="#shopping-bag"/></svg> شماره سفارش</span>
+                                <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= order.orderNumber || '-' %></span>
+                            </li>
+                            <li>
+                                <span class="flex items-center gap-x-2 text-gray-400"><svg class="w-4 h-4"><use href="#calendar"/></svg> تاریخ تراکنش</span>
+                                <span class="font-DanaMedium text-gray-700 dark:text-gray-200">
+                                    <%= date(order.paidAt || order.updatedAt || order.createdAt).format('jYYYY/jMM/jDD - HH:mm') %>
+                                </span>
+                            </li>
+                            <li>
+                                <span class="flex items-center gap-x-2 text-gray-400"><svg class="w-4 h-4"><use href="#wallet"/></svg> نوع درگاه</span>
+                                <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= order.paymentMethodLabel || '-' %></span>
+                            </li>
+                            <% if (order.transactionId) { %>
+                            <li>
+                                <span class="flex items-center gap-x-2 text-gray-400 shrink-0"><svg class="w-4 h-4"><use href="#tag"/></svg> کد پیگیری</span>
+                                <span class="font-DanaMedium text-gray-700 dark:text-gray-200 break-all text-left"><%= order.transactionId || '-' %></span>
+                            </li>
+                            <% } %>
+                            <li>
+                                <span class="flex items-center gap-x-2 text-gray-400"><svg class="w-4 h-4"><use href="#tag"/></svg> مبلغ پرداختی</span>
+                                <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString("fa-IR") %> تومان</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             <% } %>
-            <a href="/dashboard" class="mt-4 flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-lg shadow py-2 px-6">
-                مشاهده سفارش‌ها
-                <svg class="w-5 h-5"><use href="#chevron-left"></use></svg>
-            </a>
-        <% } else { %>
-            <div class="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <svg class="w-12 h-12 text-red-500"><use href="#x-mark"></use></svg>
+
+            <!-- دکمه‌ها -->
+            <div class="p-5 flex items-center gap-x-3">
+                <% if (success) { %>
+                    <a href="/dashboard" style="height: 2.5rem !important;" class="flex-1 flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-xl shadow py-2.5 font-DanaMedium">
+                        مشاهده سفارش‌ها
+                        <svg class="w-5 h-5"><use href="#chevron-left"></use></svg>
+                    </a>
+                    <a href="/shop" style="height: 2.5rem !important;" class="flex items-center justify-center gap-x-1 border border-gray-200 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-all rounded-xl py-2.5 px-4 font-DanaMedium">
+                        ادامه خرید
+                    </a>
+                <% } else { %>
+                    <a href="/basket" style="height: 2.5rem !important;" class="flex-1 flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-xl shadow py-2.5 font-DanaMedium">
+                        بازگشت به سبد خرید
+                        <svg class="w-5 h-5"><use href="#chevron-left"></use></svg>
+                    </a>
+                    <a href="/" style="height: 2.5rem !important;" class="flex items-center justify-center gap-x-1 border border-gray-200 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-all rounded-xl py-2.5 px-4 font-DanaMedium">
+                        <svg class="w-5 h-5"><use href="#home"></use></svg>
+                    </a>
+                <% } %>
             </div>
-            <h2 class="font-DanaMedium text-xl text-red-500">پرداخت ناموفق</h2>
-            <p class="text-gray-400 text-sm"><%= typeof message !== "undefined" && message ? message : "متاسفانه پرداخت شما انجام نشد." %></p>
-            <a href="/basket" class="mt-4 flex items-center gap-x-1 justify-center bg-blue-500 text-white hover:bg-blue-600 transition-all rounded-lg shadow py-2 px-6">
-                بازگشت به سبد خرید
-                <svg class="w-5 h-5"><use href="#chevron-left"></use></svg>
-            </a>
-        <% } %>
-    </section>
+        </div>
+    </div>
 </main>
