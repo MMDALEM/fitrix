@@ -1,7 +1,9 @@
 node_modules/
+node_modules.zip
 dist/
 build/
 .env
+.env.example
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -13,6 +15,4 @@ yarn-error.log*
 coverage/
 .gitignore
 مکمل
-/public/uploads
-
-./node_modules.zip
+public/uploads
