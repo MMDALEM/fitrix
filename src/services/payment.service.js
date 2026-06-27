@@ -91,6 +91,7 @@ class PaymentService {
       body: form,
     });
     const data = await res.json().catch(() => null);
+    console.log(data);
     if (!data || !data.access_token) {
       const msg =
         (data && data.result && data.result.message) ||

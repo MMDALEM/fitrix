@@ -13,6 +13,6 @@ yarn-error.log*
 coverage/
 .gitignore
 مکمل
-./public/uploads
+/public/uploads
 
 ./node_modules.zip

@@ -231,7 +231,9 @@ class paymentController extends controller {
             amount: basket.finalPrice,
             callbackUrl,
             cellNumber: req.user.phone,
-            providerId: basket.orderNumber,
+            // providerId باید در هر تلاش یکتا باشد تا دیجی‌پی تیکت تازه بسازد
+            // (در غیر این صورت تیکتِ منقضی‌شده‌ی قبلی برگردانده می‌شود)
+            providerId: `${basket.orderNumber}-${Date.now()}`,
           });
           basket.transactionId = result.ticket;
           await basket.save();
