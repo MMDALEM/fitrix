@@ -99,6 +99,27 @@
       color: white;
     }
 
+    /* ===== درصد دلخواه ===== */
+    .custom-percent {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #e0f2fe;
+      padding: 4px 6px;
+      border-radius: 10px;
+    }
+    .percent-input {
+      width: 110px;
+      padding: 7px 10px;
+      border: 2px solid #bae6fd;
+      border-radius: 7px;
+      font-family: inherit; font-size: 13px; font-weight: 700;
+      color: #0284c7; background: white;
+      outline: none; text-align: center;
+    }
+    .percent-input:focus { border-color: #0ea5e9; }
+    .percent-suffix { font-size: 13px; font-weight: 700; color: #0284c7; }
+
     .btn {
       padding: 10px 20px;
       border: none; border-radius: 10px;
@@ -266,8 +287,32 @@
       var validTiers = ['single', '5', '10', '15', '20'];
       if (validTiers.indexOf(tier) === -1) tier = '10';
 
+      // درصد دلخواه از query string (۱ تا ۱۰۰)؛ اگر معتبر نبود نادیده گرفته می‌شود
+      var customPercent = null;
+      if (typeof query !== 'undefined' && query.percent != null && query.percent !== '') {
+        var cp = Number(query.percent);
+        if (!isNaN(cp)) {
+          cp = Math.max(1, Math.min(100, Math.round(cp)));
+          customPercent = cp;
+        }
+      }
+
+      // پایه‌ی قیمت به تومان = قیمت خام درهم × نرخ لحظه‌ی درهم
+      function priceBase(p){
+        return (Number(p.originalPrice) || 0) * (Number(p.AED) || 0);
+      }
+
+      // اعمال درصد روی پایه + گرد کردن به بالا به نزدیک‌ترین ۱۰۰۰۰ (همان منطق سرور)
+      function priceWithPercent(base, percent){
+        return Math.ceil((base * (1 + percent / 100)) / 10000) * 10000;
+      }
+
       // قیمت هر محصول بر اساس درصد انتخاب‌شده
       function priceByTier(p){
+        // اگر درصد دلخواه وارد شده باشد، اولویت با آن است
+        if (customPercent != null) {
+          return priceWithPercent(priceBase(p), customPercent);
+        }
         switch (tier) {
           case 'single': return p.priceSingle || 0;
           case '5':      return p.priceHigh5 || 0;
@@ -276,9 +321,6 @@
           default:       return p.priceHigh10 || 0;
         }
       }
-
-      // ساخت لینک با حفظ درصد
-      function tierLink(t){ return '?tier=' + t; }
     %>
 
     <!-- ===== Header ===== -->
@@ -307,13 +349,12 @@
         <% }) %>
       </select>
 
-      <!-- انتخاب درصد — لینک‌های EJS -->
-      <div class="price-tier">
-        <a href="<%= tierLink('single') %>" class="<%= tier === 'single' ? 'active' : '' %>">تکی</a>
-        <a href="<%= tierLink('5') %>" class="<%= tier === '5' ? 'active' : '' %>">۵٪</a>
-        <a href="<%= tierLink('10') %>" class="<%= tier === '10' ? 'active' : '' %>">۱۰٪</a>
-        <a href="<%= tierLink('15') %>" class="<%= tier === '15' ? 'active' : '' %>">۱۵٪</a>
-        <a href="<%= tierLink('20') %>" class="<%= tier === '20' ? 'active' : '' %>">۲۰٪</a>
+      <!-- درصد دلخواه — هر عددی از ۱ تا ۱۰۰ -->
+      <div class="custom-percent">
+        <input type="number" id="percentInput" class="percent-input" min="1" max="100" step="1"
+               placeholder="درصد دلخواه" value="<%= customPercent != null ? customPercent : '' %>" />
+        <span class="percent-suffix">٪</span>
+        <button type="button" class="btn btn-primary" onclick="applyCustomPercent()">اعمال</button>
       </div>
 
       <button class="btn btn-secondary" onclick="resetFilters()">پاک کردن فیلتر</button>
@@ -402,7 +443,9 @@
 
                   <div class="product-footer">
                     <div class="product-price">
-                      <%= Number(priceByTier(p)).toLocaleString('fa-IR') %>
+                      <span class="price-value"
+                            data-base="<%= Math.round(priceBase(p)) %>"
+                            data-single="<%= (p.darsad && p.darsad.single != null) ? p.darsad.single : 0 %>"><%= Number(priceByTier(p)).toLocaleString('fa-IR') %></span>
                       <span class="currency">تومان</span>
                     </div>
                     <% if(p.quantity > 0){ %>
@@ -454,7 +497,9 @@
                 <div class="product-title"><%= p.title %></div>
                 <div class="product-footer">
                   <div class="product-price">
-                    <%= Number(priceByTier(p)).toLocaleString('fa-IR') %>
+                    <span class="price-value"
+                          data-base="<%= Math.round(priceBase(p)) %>"
+                          data-single="<%= (p.darsad && p.darsad.single != null) ? p.darsad.single : 0 %>"><%= Number(priceByTier(p)).toLocaleString('fa-IR') %></span>
                     <span class="currency">تومان</span>
                   </div>
                   <% if(p.quantity > 0){ %>
@@ -485,6 +530,55 @@
 
     var searchInput = document.getElementById('searchInput');
     var brandFilter = document.getElementById('brandFilter');
+    var percentInput = document.getElementById('percentInput');
+
+    // اعمال درصد روی پایه + گرد کردن به بالا به نزدیک‌ترین ۱۰۰۰۰ (همان منطق سرور)
+    function calcPrice(base, percent){
+      return Math.ceil((base * (1 + percent / 100)) / 10000) * 10000;
+    }
+
+    // درصد را روی همه‌ی قیمت‌ها اعمال و زنده بازمحاسبه می‌کند
+    function recalcPrices(percent){
+      document.querySelectorAll('.price-value').forEach(function(el){
+        var base = Number(el.dataset.base) || 0;
+        var pct = percent;
+        // اگر درصد دلخواه خالی بود، از درصد تکی همان محصول استفاده می‌شود
+        if (pct == null) pct = Number(el.dataset.single) || 0;
+        el.textContent = calcPrice(base, pct).toLocaleString('fa-IR');
+      });
+    }
+
+    // خواندن و محدودسازی درصد ورودی به بازه‌ی ۱ تا ۱۰۰
+    function readPercent(){
+      var raw = percentInput ? percentInput.value.trim() : '';
+      if (raw === '') return null;
+      var v = Number(raw);
+      if (isNaN(v)) return null;
+      v = Math.max(1, Math.min(100, Math.round(v)));
+      return v;
+    }
+
+    // اعمال درصد دلخواه و به‌روزرسانی آدرس برای حفظ مقدار هنگام چاپ/تازه‌سازی
+    function applyCustomPercent(){
+      var v = readPercent();
+      if (v == null) return;
+      percentInput.value = v;
+      recalcPrices(v);
+      var url = new URL(window.location.href);
+      url.searchParams.set('percent', v);
+      window.history.replaceState({}, '', url);
+    }
+
+    if (percentInput) {
+      // بازمحاسبه‌ی زنده هنگام تایپ
+      percentInput.addEventListener('input', function(){
+        var v = readPercent();
+        recalcPrices(v);
+      });
+      percentInput.addEventListener('keydown', function(e){
+        if (e.key === 'Enter') { e.preventDefault(); applyCustomPercent(); }
+      });
+    }
 
     function applyFilters(){
       var q = searchInput.value.trim().toLowerCase();
