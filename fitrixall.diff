@@ -1,0 +1,1336 @@
+diff --git a/resource/views/admin/master.ejs b/resource/views/admin/master.ejs
+index 771e188..aa6207f 100644
+--- a/resource/views/admin/master.ejs
++++ b/resource/views/admin/master.ejs
+@@ -1,10 +1,11 @@
+ <!doctype html>
+-<html lang="en" dir="rtl">
++<html lang="fa" dir="rtl">
+ 
+ <head>
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title><%= settings.siteName %></title>
++    <meta name="robots" content="noindex, nofollow" />
++    <title>پنل مدیریت | <%= settings.siteName %></title>
+     <link rel="stylesheet" href="/styles/app.css">
+     <link rel="stylesheet" href="/styles/swiper-bundle.css">
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.min.css" >
+diff --git a/resource/views/admin/pdf.ejs b/resource/views/admin/pdf.ejs
+index 90f0151..c2215e7 100644
+--- a/resource/views/admin/pdf.ejs
++++ b/resource/views/admin/pdf.ejs
+@@ -3,6 +3,7 @@
+ <head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
++  <meta name="robots" content="noindex, nofollow" />
+   <title>کاتالوگ محصولات | فیت ریکس</title>
+   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+   <style>
+@@ -99,6 +100,27 @@
+       color: white;
+     }
+ 
++    /* ===== درصد دلخواه ===== */
++    .custom-percent {
++      display: inline-flex;
++      align-items: center;
++      gap: 6px;
++      background: #e0f2fe;
++      padding: 4px 6px;
++      border-radius: 10px;
++    }
++    .percent-input {
++      width: 110px;
++      padding: 7px 10px;
++      border: 2px solid #bae6fd;
++      border-radius: 7px;
++      font-family: inherit; font-size: 13px; font-weight: 700;
++      color: #0284c7; background: white;
++      outline: none; text-align: center;
++    }
++    .percent-input:focus { border-color: #0ea5e9; }
++    .percent-suffix { font-size: 13px; font-weight: 700; color: #0284c7; }
++
+     .btn {
+       padding: 10px 20px;
+       border: none; border-radius: 10px;
+@@ -266,8 +288,32 @@
+       var validTiers = ['single', '5', '10', '15', '20'];
+       if (validTiers.indexOf(tier) === -1) tier = '10';
+ 
++      // درصد دلخواه از query string (۱ تا ۱۰۰)؛ اگر معتبر نبود نادیده گرفته می‌شود
++      var customPercent = null;
++      if (typeof query !== 'undefined' && query.percent != null && query.percent !== '') {
++        var cp = Number(query.percent);
++        if (!isNaN(cp)) {
++          cp = Math.max(1, Math.min(100, Math.round(cp)));
++          customPercent = cp;
++        }
++      }
++
++      // پایه‌ی قیمت به تومان = قیمت خام درهم × نرخ لحظه‌ی درهم
++      function priceBase(p){
++        return (Number(p.originalPrice) || 0) * (Number(p.AED) || 0);
++      }
++
++      // اعمال درصد روی پایه + گرد کردن به بالا به نزدیک‌ترین ۱۰۰۰۰ (همان منطق سرور)
++      function priceWithPercent(base, percent){
++        return Math.ceil((base * (1 + percent / 100)) / 10000) * 10000;
++      }
++
+       // قیمت هر محصول بر اساس درصد انتخاب‌شده
+       function priceByTier(p){
++        // اگر درصد دلخواه وارد شده باشد، اولویت با آن است
++        if (customPercent != null) {
++          return priceWithPercent(priceBase(p), customPercent);
++        }
+         switch (tier) {
+           case 'single': return p.priceSingle || 0;
+           case '5':      return p.priceHigh5 || 0;
+@@ -276,9 +322,6 @@
+           default:       return p.priceHigh10 || 0;
+         }
+       }
+-
+-      // ساخت لینک با حفظ درصد
+-      function tierLink(t){ return '?tier=' + t; }
+     %>
+ 
+     <!-- ===== Header ===== -->
+@@ -307,13 +350,12 @@
+         <% }) %>
+       </select>
+ 
+-      <!-- انتخاب درصد — لینک‌های EJS -->
+-      <div class="price-tier">
+-        <a href="<%= tierLink('single') %>" class="<%= tier === 'single' ? 'active' : '' %>">تکی</a>
+-        <a href="<%= tierLink('5') %>" class="<%= tier === '5' ? 'active' : '' %>">۵٪</a>
+-        <a href="<%= tierLink('10') %>" class="<%= tier === '10' ? 'active' : '' %>">۱۰٪</a>
+-        <a href="<%= tierLink('15') %>" class="<%= tier === '15' ? 'active' : '' %>">۱۵٪</a>
+-        <a href="<%= tierLink('20') %>" class="<%= tier === '20' ? 'active' : '' %>">۲۰٪</a>
++      <!-- درصد دلخواه — هر عددی از ۱ تا ۱۰۰ -->
++      <div class="custom-percent">
++        <input type="number" id="percentInput" class="percent-input" min="1" max="100" step="1"
++               placeholder="درصد دلخواه" value="<%= customPercent != null ? customPercent : '' %>" />
++        <span class="percent-suffix">٪</span>
++        <button type="button" class="btn btn-primary" onclick="applyCustomPercent()">اعمال</button>
+       </div>
+ 
+       <button class="btn btn-secondary" onclick="resetFilters()">پاک کردن فیلتر</button>
+@@ -402,7 +444,9 @@
+ 
+                   <div class="product-footer">
+                     <div class="product-price">
+-                      <%= Number(priceByTier(p)).toLocaleString('fa-IR') %>
++                      <span class="price-value"
++                            data-base="<%= Math.round(priceBase(p)) %>"
++                            data-single="<%= (p.darsad && p.darsad.single != null) ? p.darsad.single : 0 %>"><%= Number(priceByTier(p)).toLocaleString('fa-IR') %></span>
+                       <span class="currency">تومان</span>
+                     </div>
+                     <% if(p.quantity > 0){ %>
+@@ -454,7 +498,9 @@
+                 <div class="product-title"><%= p.title %></div>
+                 <div class="product-footer">
+                   <div class="product-price">
+-                    <%= Number(priceByTier(p)).toLocaleString('fa-IR') %>
++                    <span class="price-value"
++                          data-base="<%= Math.round(priceBase(p)) %>"
++                          data-single="<%= (p.darsad && p.darsad.single != null) ? p.darsad.single : 0 %>"><%= Number(priceByTier(p)).toLocaleString('fa-IR') %></span>
+                     <span class="currency">تومان</span>
+                   </div>
+                   <% if(p.quantity > 0){ %>
+@@ -485,6 +531,55 @@
+ 
+     var searchInput = document.getElementById('searchInput');
+     var brandFilter = document.getElementById('brandFilter');
++    var percentInput = document.getElementById('percentInput');
++
++    // اعمال درصد روی پایه + گرد کردن به بالا به نزدیک‌ترین ۱۰۰۰۰ (همان منطق سرور)
++    function calcPrice(base, percent){
++      return Math.ceil((base * (1 + percent / 100)) / 10000) * 10000;
++    }
++
++    // درصد را روی همه‌ی قیمت‌ها اعمال و زنده بازمحاسبه می‌کند
++    function recalcPrices(percent){
++      document.querySelectorAll('.price-value').forEach(function(el){
++        var base = Number(el.dataset.base) || 0;
++        var pct = percent;
++        // اگر درصد دلخواه خالی بود، از درصد تکی همان محصول استفاده می‌شود
++        if (pct == null) pct = Number(el.dataset.single) || 0;
++        el.textContent = calcPrice(base, pct).toLocaleString('fa-IR');
++      });
++    }
++
++    // خواندن و محدودسازی درصد ورودی به بازه‌ی ۱ تا ۱۰۰
++    function readPercent(){
++      var raw = percentInput ? percentInput.value.trim() : '';
++      if (raw === '') return null;
++      var v = Number(raw);
++      if (isNaN(v)) return null;
++      v = Math.max(1, Math.min(100, Math.round(v)));
++      return v;
++    }
++
++    // اعمال درصد دلخواه و به‌روزرسانی آدرس برای حفظ مقدار هنگام چاپ/تازه‌سازی
++    function applyCustomPercent(){
++      var v = readPercent();
++      if (v == null) return;
++      percentInput.value = v;
++      recalcPrices(v);
++      var url = new URL(window.location.href);
++      url.searchParams.set('percent', v);
++      window.history.replaceState({}, '', url);
++    }
++
++    if (percentInput) {
++      // بازمحاسبه‌ی زنده هنگام تایپ
++      percentInput.addEventListener('input', function(){
++        var v = readPercent();
++        recalcPrices(v);
++      });
++      percentInput.addEventListener('keydown', function(e){
++        if (e.key === 'Enter') { e.preventDefault(); applyCustomPercent(); }
++      });
++    }
+ 
+     function applyFilters(){
+       var q = searchInput.value.trim().toLowerCase();
+diff --git a/resource/views/admin/product/edit.ejs b/resource/views/admin/product/edit.ejs
+index 24a504c..7093bdb 100644
+--- a/resource/views/admin/product/edit.ejs
++++ b/resource/views/admin/product/edit.ejs
+@@ -205,7 +205,7 @@
+ 
+                 <!-- دکمه ثبت -->
+                 <div class="col-span-12 flex justify-end gap-x-3 pt-2">
+-                    <a href="/admin/products" style="width: 6rem; height: 5rem;"
++                    <a href="/admin/product" style="width: 6rem; height: 5rem;"
+                         class="px-6 py-2.5 rounded-lg text-sm font-DanaMedium text-white bg-red-600 hover:bg-red-500 transition-all flex items-center gap-x-2">
+                         انصراف
+                     </a>
+diff --git a/resource/views/dashborad/address.ejs b/resource/views/dashborad/address.ejs
+index 2c4dcee..bd46266 100644
+--- a/resource/views/dashborad/address.ejs
++++ b/resource/views/dashborad/address.ejs
+@@ -99,7 +99,7 @@
+                 <svg class="w-6 h-6 ">
+                     <use href="#shopping-bag"></use>
+                 </svg>
+-                <a href="dashboard-orders.html">
++                <a href="/dashboard">
+                     سفارش ها
+                 </a>
+             </li>
+@@ -113,7 +113,7 @@
+                 <svg class="w-6 h-6 ">
+                     <use href="#cog"></use>
+                 </svg>
+-                <a href="dashboard-account.html">اطلاعات حساب </a>
++                <a href="/dashboard">اطلاعات حساب </a>
+             </li>
+             <li class="text-red-400">
+                 <svg class="w-6 h-6 ">
+diff --git a/resource/views/dashborad/dashborad.ejs b/resource/views/dashborad/dashborad.ejs
+index 25d406a..5679103 100644
+--- a/resource/views/dashborad/dashborad.ejs
++++ b/resource/views/dashborad/dashborad.ejs
+@@ -32,7 +32,7 @@
+                 <svg class="w-6 h-6 ">
+                     <use href="#shopping-bag"></use>
+                 </svg>
+-                <a href="dashboard-orders.html">
++                <a href="/dashboard">
+                     سفارش ها
+                 </a>
+             </li>
+@@ -46,7 +46,7 @@
+                 <svg class="w-6 h-6 ">
+                     <use href="#cog"></use>
+                 </svg>
+-                <a href="dashboard-account.html">اطلاعات حساب </a>
++                <a href="/dashboard">اطلاعات حساب </a>
+             </li>
+             <li class="text-red-400">
+                 <svg class="w-6 h-6 ">
+@@ -100,7 +100,7 @@
+                         <svg class="w-6 h-6 ">
+                             <use href="#shopping-bag"></use>
+                         </svg>
+-                        <a href="dashboard-orders.html">
++                        <a href="/dashboard">
+                             سفارش ها
+                         </a>
+                     </li>
+@@ -114,13 +114,13 @@
+                         <svg class="w-6 h-6 ">
+                             <use href="#bell"></use>
+                         </svg>
+-                        <a href="dashboard-messages.html">پیام ها</a>
++                        <a href="/dashboard">پیام ها</a>
+                     </li>
+                     <li class="hover:text-blue-500">
+                         <svg class="w-6 h-6 ">
+                             <use href="#cog"></use>
+                         </svg>
+-                        <a href="dashboard-account.html">اطلاعات حساب </a>
++                        <a href="/dashboard">اطلاعات حساب </a>
+                     </li>
+                     <li class="text-red-400">
+                         <svg class="w-6 h-6 ">
+diff --git a/resource/views/home/home.ejs b/resource/views/home/home.ejs
+index 083d965..5e4235d 100644
+--- a/resource/views/home/home.ejs
++++ b/resource/views/home/home.ejs
+@@ -4,17 +4,17 @@
+         <div class="px-3 lg:container group w-full mt-4 lg:mt-10">
+             <div dir="rtl" class="swiper header-slider h-52 md:h-96 cursor-pointer">
+                 <div class="swiper-wrapper">
+-                    <a href="shop.html" class="swiper-slide">
+-                        <img src="images/slider/4.webp" class="rounded-xl" alt="">
++                    <a href="/shop" class="swiper-slide">
++                        <img src="/images/slider/4.webp" class="rounded-xl" alt="فروشگاه مکمل ورزشی فیت ریکس شاپ">
+                     </a >
+-                    <a href="shop.html" class="swiper-slide">
+-                        <img src="images/slider/1.jpg" class="rounded-xl" alt="">
++                    <a href="/shop" class="swiper-slide">
++                        <img src="/images/slider/1.jpg" class="rounded-xl" alt="خرید مکمل ورزشی با تخفیف ویژه">
+                     </a >
+-                    <a href="shop.html" class="swiper-slide">
+-                        <img src="images/slider/2.jpg" class="rounded-xl" alt="">
++                    <a href="/shop" class="swiper-slide">
++                        <img src="/images/slider/2.jpg" class="rounded-xl" alt="جدیدترین مکمل‌های ورزشی">
+                     </a >
+-                    <a href="shop.html" class="swiper-slide">
+-                        <img src="images/slider/3.gif" class="rounded-xl" alt="">
++                    <a href="/shop" class="swiper-slide">
++                        <img src="/images/slider/3.gif" class="rounded-xl" alt="پیشنهادهای شگفت‌انگیز فیت ریکس شاپ">
+                     </a >
+                 </div>
+                 <div class="swiper-pagination-wrapper">
+@@ -62,7 +62,7 @@
+                     </div>
+                 </div>
+                 <div class="w-full xs:w-auto flex justify-center items-center gap-x-2">
+-                    <a href="shop.html"
++                    <a href="/shop"
+                         class="group shadow-xl text-sm md:text-base flex gap-x-1.5 items-center px-2 h-10 md:px-3 text-white bg-blue-600 rounded-xl">
+                         <p>مشاهده همه</p>
+                         <span
+@@ -77,62 +77,63 @@
+             <!-- ITEMS -->
+             <div
+                 class="flex items-center justify-evenly flex-wrap mt-12 child:mb-8 gap-x-8 child:items-center child:flex-col child:duration-300 child:cursor-pointer child:gap-y-1 child:text-gray-800 child:dark:text-gray-300 child:relative">
+-                <a href="shop.html" class="group flex">
+-                    <img src="images/category/5.png"
++                <a href="/shop?search=پروتئین وی" class="group flex">
++                    <img src="/images/category/5.png"
+                         class="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
+-                        alt="category1" />
++                        alt="پروتئین وی" />
+                     <p class="pt-1 text-sm lg:text-lg line-clamp-1">
+                         پروتئین وی
+                     </p>
+                 </a>
+-                <a href="shop.html" class="group flex">
+-                    <img src="images/category/6.png"
++                <a href="/shop?search=گینر" class="group flex">
++                    <img src="/images/category/6.png"
+                         class="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
+-                        alt="category1" />
++                        alt="گینر" />
+                     <p class="pt-1 text-sm lg:text-lg line-clamp-1">
+                         گینر
+                     </p>
+                 </a>
+-                <a href="shop.html" class="group flex">
+-                    <img src="images/category/7.png"
++                <a href="/shop?search=کراتین" class="group flex">
++                    <img src="/images/category/7.png"
+                         class="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
+-                        alt="category1" />
++                        alt="کراتین" />
+                     <p class="pt-1 text-sm lg:text-lg line-clamp-1">
+                         کراتین
+                     </p>
+                 </a>
+-                <a href="shop.html" class="group flex">
+-                    <img src="images/category/8.png"
++                <a href="/shop?search=گلوتامین" class="group flex">
++                    <img src="/images/category/8.png"
+                         class="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
+-                        alt="category1" />
++                        alt="گلوتامین" />
+                     <p class="pt-1 text-sm lg:text-lg line-clamp-1">
+                         گلوتامین
+                     </p>
+                 </a>
+-                <a href="shop.html" class="group flex">
+-                    <img src="images/category/9.png"
++                <a href="/shop?search=BCAA" class="group flex">
++                    <img src="/images/category/9.png"
+                         class="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
+-                        alt="category1" />
++                        alt="BCAA" />
+                     <p class="pt-1 text-sm lg:text-lg line-clamp-1">
+                         BCAA
+                     </p>
+ 
+                 </a>
+-                <a href="shop.html" class="group flex">
+-                    <img src="images/category/10.png"
++                <a href="/shop?search=آمینو" class="group flex">
++                    <img src="/images/category/10.png"
+                         class="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
+-                        alt="category1" />
++                        alt="آمینو" />
+                     <p class="pt-1 text-sm lg:text-lg line-clamp-1">
+                         آمینو
+                     </p>
+-                    <a href="shop.html" class="group hidden md:flex">
+-                        <img src="images/category/11.png"
+-                            class="w-[200px] h-[200px] lg:w-[120px] lg:h-[120] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
+-                            alt="category1" />
+-                        <p class="pt-1 text-sm lg:text-lg line-clamp-1">
+-                            مولتی ویتامین
+-                        </p>
+-                    </a>
++                </a>
++                <a href="/shop?search=مولتی ویتامین" class="group hidden md:flex">
++                    <img src="/images/category/11.png"
++                        class="w-[120px] h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
++                        alt="مولتی ویتامین" />
++                    <p class="pt-1 text-sm lg:text-lg line-clamp-1">
++                        مولتی ویتامین
++                    </p>
++                </a>
+             </div>
+         </section>
+ 
+@@ -144,7 +145,7 @@
+                     <div class="swiper-wrapper">
+                         <!-- item -->
+                         <div class="swiper-slide amazing-card">
+-                            <img style="object-fit: scale-down;" class="w-28 h-28" src="./images/slider/Amazings.svg" alt="">
++                            <img style="object-fit: scale-down;" class="w-28 h-28" src="/images/slider/Amazings.svg" alt="پیشنهادهای شگفت‌انگیز">
+                             <!-- TIMER -->
+                             <div class="flex items-center gap-x-2">
+                                 <span class="timer-box" id="seconds">00</span>
+@@ -154,7 +155,7 @@
+                                 <span class="timer-box" id="hours">03</span>
+                             </div>
+ 
+-                            <a href="shop.html" class="flex items-center gap-x-.5 text-gray-100 cursor-pointer">
++                            <a href="/shop" class="flex items-center gap-x-.5 text-gray-100 cursor-pointer">
+                                 <p>مشاهده همه</p>
+                                 <svg class="size-4 rotate-90">
+                                     <use href="#chevron"></use>
+@@ -174,11 +175,11 @@
+                             </div>
+                             <!-- product img -->
+                             <a href="/product/<%= product.slug %>">
+-                                <img style="object-fit: scale-down; width: 15vw; height: 15vh;" class="object-contain object-center h-full w-32 mx-auto transition-transform duration-300 group-hover:scale-105" src="<%= product.image %>" alt="<%= product.slug %>">
++                                <img style="object-fit: scale-down; width: 15vw; height: 15vh;" class="object-contain object-center h-full w-32 mx-auto transition-transform duration-300 group-hover:scale-105" src="<%= product.image %>" alt="<%= product.title %>">
+                             </a>
+                             <!--  product footer -->
+                             <div class="space-y-2">
+-                                <a href="/<%= product.slug %>" class="small-card_link"><%= product.title %></a>
++                                <a href="/product/<%= product.slug %>" class="small-card_link"><%= product.title %></a>
+                                 <!-- Rate and Price -->
+                                 <div class="product-card_price-wrapper">
+                                     <!-- Price -->
+@@ -255,7 +256,7 @@
+                     <!-- PRODUCT ITEM -->
+                 <% brands.forEach(brand => { %>
+                     <div class="swiper-slide brand-card group">
+-                        <a href="#"><img style="object-fit: scale-down;" src="<%= brand.image %>" class="object-contain object-center h-full w-32 mx-auto transition-transform duration-300 group-hover:scale-105" alt="<%= brand.title %>"></a>
++                        <a href="/shop?brand=<%= brand.slug %>"><img style="object-fit: scale-down;" src="<%= brand.image %>" class="object-contain object-center h-full w-32 mx-auto transition-transform duration-300 group-hover:scale-105" alt="<%= brand.title %>"></a>
+                     </div>
+                 <% }) %>
+                 </div>
+@@ -267,15 +268,15 @@
+             class="container w-full mt-10 lg:mt-20 flex flex-wrap items-center  justify-center md:justify-between gap-6 child:text-sm child:gap-y-1 child:cursor-pointer">
+             <!-- item -->
+             <span class="flex flex-col items-center justify-center">
+-                <img class="w-14 h-14" src="images/svg/3.svg" alt="">
++                <img class="w-14 h-14" src="/images/svg/3.svg" alt="ضمانت بازگشت کالا">
+                 <p class="text-gray-500 dark:text-gray-300">ضمانت بازگشت کالا</p>
+             </span>
+             <span class="flex flex-col items-center justify-center">
+-                <img class="w-14 h-14" src="images/svg/2.svg" alt="">
++                <img class="w-14 h-14" src="/images/svg/2.svg" alt="ضمانت اصل بودن کالا">
+                 <p class="text-gray-500 dark:text-gray-300">ضمانت اصل بودن کالا</p>
+             </span>
+             <span class="flex flex-col items-center justify-center">
+-                <img class="w-14 h-14" src="images/svg/4.svg" alt="">
++                <img class="w-14 h-14" src="/images/svg/4.svg" alt="پشتیبانی ۲۴ ساعته">
+                 <p class="text-gray-500 dark:text-gray-300">پشتیبانی 24 ساعته</p>
+             </span>
+         </div>
+diff --git a/resource/views/home/master.ejs b/resource/views/home/master.ejs
+index 25db2b0..978c96a 100644
+--- a/resource/views/home/master.ejs
++++ b/resource/views/home/master.ejs
+@@ -1,10 +1,80 @@
+ <!doctype html>
+-<html lang="en" dir="rtl">
++<html lang="fa" dir="rtl">
+ 
+ <head>
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title><%= settings.siteName %></title>
++    <%
++        // مقادیر SEO با fallback امن — کنترلرها می‌توانند بازنویسی کنند
++        var _siteName = settings.siteName || "فیت ریکس شاپ";
++        var _title = (typeof pageTitle !== "undefined" && pageTitle)
++            ? pageTitle + " | " + _siteName
++            : _siteName + " | خرید مکمل و لوازم ورزشی";
++        var _desc = (typeof metaDescription !== "undefined" && metaDescription) ? metaDescription : "";
++        var _canonical = (typeof canonicalUrl !== "undefined" && canonicalUrl) ? canonicalUrl : "";
++        var _ogImage = (typeof ogImage !== "undefined" && ogImage) ? ogImage : "/images/logo.png";
++        var _ogType = (typeof ogType !== "undefined" && ogType) ? ogType : "website";
++        var _noindex = (typeof noindex !== "undefined" && noindex) ? true : false;
++        var _siteUrl = (typeof siteUrl !== "undefined" && siteUrl) ? siteUrl : "";
++    %>
++    <title><%= _title %></title>
++    <meta name="description" content="<%= _desc %>" />
++    <% if (_noindex) { %>
++    <meta name="robots" content="noindex, nofollow" />
++    <% } else { %>
++    <meta name="robots" content="index, follow" />
++    <% } %>
++    <% if (_canonical) { %>
++    <link rel="canonical" href="<%= _canonical %>" />
++    <% } %>
++    <meta name="theme-color" content="#2563eb" />
++
++    <!-- Open Graph -->
++    <meta property="og:site_name" content="<%= _siteName %>" />
++    <meta property="og:locale" content="fa_IR" />
++    <meta property="og:type" content="<%= _ogType %>" />
++    <meta property="og:title" content="<%= _title %>" />
++    <meta property="og:description" content="<%= _desc %>" />
++    <% if (_canonical) { %>
++    <meta property="og:url" content="<%= _canonical %>" />
++    <% } %>
++    <meta property="og:image" content="<%= _ogImage %>" />
++
++    <!-- Twitter Card -->
++    <meta name="twitter:card" content="summary_large_image" />
++    <meta name="twitter:title" content="<%= _title %>" />
++    <meta name="twitter:description" content="<%= _desc %>" />
++    <meta name="twitter:image" content="<%= _ogImage %>" />
++
++    <!-- Structured Data: Organization + WebSite -->
++    <script type="application/ld+json">
++    {
++      "@context": "https://schema.org",
++      "@type": "Organization",
++      "name": "<%= _siteName %>",
++      "url": "<%= _siteUrl %>/",
++      "logo": "<%= _siteUrl %>/images/logo.png",
++      "contactPoint": {
++        "@type": "ContactPoint",
++        "telephone": "+98-937-364-0517",
++        "contactType": "customer service"
++      }
++    }
++    </script>
++    <script type="application/ld+json">
++    {
++      "@context": "https://schema.org",
++      "@type": "WebSite",
++      "name": "<%= _siteName %>",
++      "url": "<%= _siteUrl %>/",
++      "potentialAction": {
++        "@type": "SearchAction",
++        "target": "<%= _siteUrl %>/shop?search={search_term_string}",
++        "query-input": "required name=search_term_string"
++      }
++    }
++    </script>
++
+     <link rel="stylesheet" href="/styles/app.css">
+     <link rel="stylesheet" href="/styles/swiper-bundle.css">
+     <link rel="stylesheet" href="/styles/sweetalert2.min.css" >
+diff --git a/resource/views/layout/footer.ejs b/resource/views/layout/footer.ejs
+index e08b4b0..0d43f8d 100644
+--- a/resource/views/layout/footer.ejs
++++ b/resource/views/layout/footer.ejs
+@@ -3,7 +3,7 @@
+         <div class=" relative w-full bg-gray-900 dark:bg-gray-800 text-white rounded-2xl p-4 lg:p-9">
+             <div class="flex items-start flex-col gap-x-7 lg:gap-x-10 gap-y-10 lg:flex-row flex-wrap">
+                 <div class="flex-[2] w-full">
+-                    <h2 class="footer_title">درباره فیت ریکس شاپ</h2>
++                    <h2 id="about" class="footer_title">درباره فیت ریکس شاپ</h2>
+                     <p class="leading-8 text-gray-400 mb-5">در فروشگاه آنلاین ما، بهترین مکمل های ورزشی از
+                         برندهای معتبر جهانی را با کیفیت بالا و قیمتی مناسب برای شما فراهم آورده‌ایم. با انتخاب محصولات
+                         ما، تجربه‌ای حرفه‌ای و لذت‌بخشی در خانه یا باشگاه داشته باشید.
+@@ -43,10 +43,10 @@
+                                 <a href="/shop">فروشگاه</a>
+                             </li>
+                             <li>
+-                                <a href="contact-us.html">تماس با ما </a>
++                                <a href="#contact">تماس با ما </a>
+                             </li>
+                             <li>
+-                                <a href="questions.html">سوالات متداول </a>
++                                <a href="#about">درباره ما</a>
+                             </li>
+                         </ul>
+                         <ul class="child-hover:text-blue-500 md:hidden child:transition-colors">
+@@ -54,19 +54,19 @@
+                                 <a href="/auth"> ثبت نام | ورود </a>
+                             </li>
+                             <li>
+-                                <a href="articles.html">وبلاگ</a>
++                                <a href="/basket">سبد خرید</a>
+                             </li>
+                             <li>
+-                                <a href="">شرایط و قوانین</a>
++                                <a href="/dashboard">حساب کاربری</a>
+                             </li>
+                             <li>
+-                                <a href="">حریم خصوصی </a>
++                                <a href="/shop?sort=bestselling">پرفروش‌ترین‌ها</a>
+                             </li>
+                         </ul>
+                     </div>
+                 </div>
+                 <div class="flex-[1.5] w-full">
+-                    <h2 class="footer_title">تماس با ما</h2>
++                    <h2 id="contact" class="footer_title">تماس با ما</h2>
+                     <ul
+                         class="flex flex-col child:flex child:text-gray-400 child:items-center child:justify-between gap-y-6">
+                         <li>
+@@ -114,7 +114,7 @@
+             <!-- DIV -->
+             <div
+                 class="w-full rounded-xl bg-gray-950 dark:bg-gray-900 flex flex-col md:flex-row gap-y-4 items-center justify-between py-4 md:py-6 md:px-6 mt-6">
+-                <a href="#" class="text-3xl font-MorabbaMedium">
++                <a href="/" class="text-3xl font-MorabbaMedium">
+                     <span class="text-blue-500">فیت ریکس</span> شاپ
+                 </a>
+             </div>
+diff --git a/resource/views/layout/header.ejs b/resource/views/layout/header.ejs
+index e9e382f..7be869c 100644
+--- a/resource/views/layout/header.ejs
++++ b/resource/views/layout/header.ejs
+@@ -26,10 +26,10 @@
+                             <p>جستجو های پرطرفدار :</p>
+                         </span>
+                         <ul class="w-full flex items-center gap-1.5 mt-3 child:search-modal-list-item">
+-                            <li><a href="#">#پروتئین</a></li>
+-                            <li><a href="#">#کراتین</a></li>
+-                            <li><a href="#">#گینر</a></li>
+-                            <li><a href="#">#ویتامین</a></li>
++                            <li><a href="/shop?search=پروتئین">#پروتئین</a></li>
++                            <li><a href="/shop?search=کراتین">#کراتین</a></li>
++                            <li><a href="/shop?search=گینر">#گینر</a></li>
++                            <li><a href="/shop?search=ویتامین">#ویتامین</a></li>
+                         </ul>
+                     </div>
+                 </div>
+@@ -50,11 +50,11 @@
+                             <p>حساب کاربری</p>
+                         </a>
+                         <div class="absolute dark:border-none border border-gray-100 w-52 p-2 bg-white text-gray-900 dark:text-gray-100 flex flex-col gap-y-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:top-12 transition-all delay-100 dark:bg-gray-700 top-20 rounded-lg text-base shadow child:transition-all duration-300 child:py-1.5 child:px-2 z-30 child:rounded-lg child:w-full">
+-                            <a href="/dashboard/orders" class="flex items-center gap-x-2 hover:bg-blue-500 hover:text-gray-100">
++                            <a href="/dashboard" class="flex items-center gap-x-2 hover:bg-blue-500 hover:text-gray-100">
+                                 <svg class="h-5 w-5"><use href="#user"></use></svg>
+                                 سفارشات من
+                             </a>
+-                            <a href="/dashboard/account" class="flex items-center gap-x-2 hover:bg-blue-500 hover:text-gray-100">
++                            <a href="/dashboard/address" class="flex items-center gap-x-2 hover:bg-blue-500 hover:text-gray-100">
+                                 <svg class="h-5 w-5"><use href="#cog"></use></svg>
+                                 اطلاعات کاربری
+                             </a>
+@@ -151,7 +151,7 @@
+                         <ul class="megamenu_category">
+                             <% categories.forEach(function (category) { %>
+                                 <li class="megamenu_category-item">
+-                                    <a href="/shop/<%= category.slug %>"><%= category.title %></a>
++                                    <a href="/shop?category=<%= category.slug %>"><%= category.title %></a>
+                                 </li>
+                             <% }); %>
+                         </ul>
+@@ -163,14 +163,14 @@
+                             <% if (typeof brands !== 'undefined' && brands) { %>
+                                 <h2 class="megamenu_left-title">برندها :</h2>
+                                 <% brands.forEach(function (brand) { %>
+-                                    <a href="/shop/<%= brand.slug %>" class="text-blue-400 flex items-center gap-x-0.5 text-sm mb-4"><%= brand.title %></a>
++                                    <a href="/shop?brand=<%= brand.slug %>" class="text-blue-400 flex items-center gap-x-0.5 text-sm mb-4"><%= brand.title %></a>
+                                 <% }); %>
+                             <% } %>
+                         </div>
+                     </div>
+                 </li>
+                 <li class="menu-item"><a href="/shop" class="menu-item_link">فروشگاه</a></li>
+-                <li class="menu-item"><a href="/about" class="menu-item_link">درباره ما</a></li>
++                <li class="menu-item"><a href="#about" class="menu-item_link">درباره ما</a></li>
+             </ul>
+             <div class="relative">
+                 <button class="flex items-center gap-x-1 citylist-open">
+@@ -225,7 +225,7 @@
+                     <li>
+                         <span class="open-category mobile-menu-item">
+                             <svg class="size-5"><use href="#squares" /></svg>
+-                            <a href="#">دسته بندی</a>
++                            <span>دسته بندی</span>
+                         </span>
+                         <div class="category-slide">
+                             <div class="w-full border-b-normal pb-4">
+@@ -238,7 +238,7 @@
+                                 <% categories.forEach(function (category) { %>
+                                     <li>
+                                         <span style="position: static !important; width: 100vw;" class="mobile-menu-category-badge">
+-                                            <a href="/shop/<%= category.slug %>"><%= category.title %></a>
++                                            <a href="/shop?category=<%= category.slug %>"><%= category.title %></a>
+                                         </span>
+                                     </li>
+                                 <% }) %>
+@@ -255,11 +255,11 @@
+                     </li>
+                     <li class="mobile-menu-item">
+                         <svg class="size-5"><use href="#check-badge" /></svg>
+-                        <a href="/about">دربـاره مـا</a>
++                        <a href="#about">دربـاره مـا</a>
+                     </li>
+                     <li class="mobile-menu-item">
+                         <svg class="size-5"><use href="#phone" /></svg>
+-                        <a href="/contact">تـماس بـا مـا</a>
++                        <a href="#contact">تـماس بـا مـا</a>
+                     </li>
+                 </ul>
+             </div>
+@@ -321,16 +321,16 @@
+                     </span>
+                     <ul class="w-full flex items-center gap-1.5 mt-3 child:search-modal-list-item">
+                         <li>
+-                            <a href="#">#وی</a>
++                            <a href="/shop?search=وی">#وی</a>
+                         </li>
+                         <li>
+-                            <a href="#">#کراتین</a>
++                            <a href="/shop?search=کراتین">#کراتین</a>
+                         </li>
+                         <li>
+-                            <a href="#">#گینر</a>
++                            <a href="/shop?search=گینر">#گینر</a>
+                         </li>
+                         <li>
+-                            <a href="#">#گلوتامین</a>
++                            <a href="/shop?search=گلوتامین">#گلوتامین</a>
+                         </li>
+                     </ul>
+                 </div>
+diff --git a/resource/views/layout/menu-mobile.ejs b/resource/views/layout/menu-mobile.ejs
+index 1810818..ab41f2b 100644
+--- a/resource/views/layout/menu-mobile.ejs
++++ b/resource/views/layout/menu-mobile.ejs
+@@ -27,13 +27,13 @@
+                             <svg class="w-6 h-6 ">
+                                 <use href="#squares"></use>
+                             </svg>
+-                            <a href="dashboard.html">داشبورد</a>
++                            <a href="/dashboard">داشبورد</a>
+                         </li>
+                         <li class="hover:text-blue-500">
+                             <svg class="w-6 h-6 ">
+                                 <use href="#shopping-bag"></use>
+                             </svg>
+-                            <a href="dashboard-orders.html">
++                            <a href="/dashboard">
+                                 سفارش ها
+                             </a>
+                         </li>
+@@ -41,25 +41,25 @@
+                             <svg class="w-6 h-6 ">
+                                 <use href="#map"></use>
+                             </svg>
+-                            <a href="dashboard-address.html">آدرس ها</a>
++                            <a href="/dashboard/address">آدرس ها</a>
+                         </li>
+                         <li class="hover:text-blue-500">
+                             <svg class="w-6 h-6 ">
+                                 <use href="#bell"></use>
+                             </svg>
+-                            <a href="dashboard-messages.html">پیام ها</a>
++                            <a href="/dashboard">پیام ها</a>
+                         </li>
+                         <li class="hover:text-blue-500">
+                             <svg class="w-6 h-6 ">
+                                 <use href="#cog"></use>
+                             </svg>
+-                            <a href="dashboard-account.html">اطلاعات حساب </a>
++                            <a href="/dashboard">اطلاعات حساب </a>
+                         </li>
+                         <li class="text-red-400">
+                             <svg class="w-6 h-6 ">
+                                 <use href="#arrow-left-end"></use>
+                             </svg>
+-                            <a href="index.html">خروج</a>
++                            <a href="/logout">خروج</a>
+                         </li>
+                         </ul>
+                     </div>
+diff --git a/resource/views/layout/menu.ejs b/resource/views/layout/menu.ejs
+index 75b32c1..02e83e6 100644
+--- a/resource/views/layout/menu.ejs
++++ b/resource/views/layout/menu.ejs
+@@ -59,7 +59,7 @@
+                     <svg class="w-6 h-6 ">
+                         <use href="#arrow-left-end"></use>
+                     </svg>
+-                    <a href="index.html">خروج</a>
++                    <a href="/logout">خروج</a>
+                 </li>
+             </ul>
+             </div>
+@@ -94,13 +94,13 @@
+                             <svg class="w-6 h-6 ">
+                                 <use href="#squares"></use>
+                             </svg>
+-                            <a href="dashboard.html">داشبورد</a>
++                            <a href="/admin">داشبورد</a>
+                         </li>
+                         <li class="hover:text-blue-500">
+                             <svg class="w-6 h-6 ">
+                                 <use href="#shopping-bag"></use>
+                             </svg>
+-                            <a href="dashboard-orders.html">
++                            <a href="/admin/orders">
+                                 سفارش ها
+                             </a>
+                         </li>
+@@ -108,25 +108,25 @@
+                             <svg class="w-6 h-6 ">
+                                 <use href="#map"></use>
+                             </svg>
+-                            <a href="dashboard-address.html">آدرس ها</a>
++                            <a href="/admin/product">محصولات</a>
+                         </li>
+                         <li class="hover:text-blue-500">
+                             <svg class="w-6 h-6 ">
+                                 <use href="#bell"></use>
+                             </svg>
+-                            <a href="dashboard-messages.html">پیام ها</a>
++                            <a href="/admin/brand">برند</a>
+                         </li>
+                         <li class="hover:text-blue-500">
+                             <svg class="w-6 h-6 ">
+                                 <use href="#cog"></use>
+                             </svg>
+-                            <a href="dashboard-account.html">اطلاعات حساب </a>
++                            <a href="/admin/category">دسته بندی</a>
+                         </li>
+                         <li class="text-red-400">
+                             <svg class="w-6 h-6 ">
+                                 <use href="#arrow-left-end"></use>
+                             </svg>
+-                            <a href="index.html">خروج</a>
++                            <a href="/logout">خروج</a>
+                         </li>
+                         </ul>
+                     </div>
+diff --git a/resource/views/shop/basket.ejs b/resource/views/shop/basket.ejs
+index 96fd7d7..e54cf4f 100644
+--- a/resource/views/shop/basket.ejs
++++ b/resource/views/shop/basket.ejs
+@@ -412,7 +412,7 @@
+                             </label>
+                         <% }) %>
+                     <% } else { %>
+-                        <p class="text-xs text-gray-400">هنوز آدرسی ثبت نکرده‌اید. <a href="/dashboard/addresses" class="text-blue-500">افزودن آدرس</a></p>
++                        <p class="text-xs text-gray-400">هنوز آدرسی ثبت نکرده‌اید. <a href="/dashboard/address" class="text-blue-500">افزودن آدرس</a></p>
+                     <% } %>
+                 </div>
+ 
+diff --git a/resource/views/shop/shop.ejs b/resource/views/shop/shop.ejs
+index 7695f45..cb237f9 100644
+--- a/resource/views/shop/shop.ejs
++++ b/resource/views/shop/shop.ejs
+@@ -367,7 +367,7 @@
+                     
+                     <!-- دکمه قبلی -->
+                     <% if (products.hasPrevPage) { %>
+-                    <li class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="goToPage(<%= products.prevPage %>)">
++                    <li class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="location.href='<%= pageUrl(products.prevPage) %>'">
+                         <svg class="size-5 rotate-180">
+                             <use href="#chevron-left"></use>
+                         </svg>
+@@ -381,7 +381,20 @@
+                     <% } %>
+ 
+                     <!-- صفحات -->
+-                    <% 
++                    <%
++                    // ساخت لینک صفحه با حفظ فیلترهای فعلی (برای خزش گوگل)
++                    function pageUrl(p) {
++                        var q = [];
++                        if (currentFilters.category) q.push('category=' + encodeURIComponent(currentFilters.category));
++                        if (currentFilters.brand) q.push('brand=' + encodeURIComponent(currentFilters.brand));
++                        if (currentFilters.search) q.push('search=' + encodeURIComponent(currentFilters.search));
++                        if (currentFilters.minPrice) q.push('minPrice=' + encodeURIComponent(currentFilters.minPrice));
++                        if (currentFilters.maxPrice) q.push('maxPrice=' + encodeURIComponent(currentFilters.maxPrice));
++                        if (currentFilters.sort && currentFilters.sort !== 'newest') q.push('sort=' + encodeURIComponent(currentFilters.sort));
++                        if (currentFilters.inStock) q.push('inStock=' + encodeURIComponent(currentFilters.inStock));
++                        if (p > 1) q.push('page=' + p);
++                        return '/shop' + (q.length ? '?' + q.join('&') : '');
++                    }
+                     const currentPage = products.page;
+                     const totalPages = products.totalPages;
+                     let startPage = Math.max(1, currentPage - 2);
+@@ -397,8 +410,8 @@
+ 
+                     <!-- صفحه اول -->
+                     <% if (startPage > 1) { %>
+-                    <li class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white" onclick="goToPage(1)">
+-                        <a href="#">1</a>
++                    <li class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white">
++                        <a href="<%= pageUrl(1) %>">1</a>
+                     </li>
+                     <% if (startPage > 2) { %>
+                     <li class="bg-white dark:bg-gray-800 cursor-default">...</li>
+@@ -407,9 +420,8 @@
+ 
+                     <!-- صفحات وسط -->
+                     <% for (let i = startPage; i <= endPage; i++) { %>
+-                    <li class="<%= i === currentPage ? 'text-white bg-blue-500' : 'bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white' %>" 
+-                        onclick="goToPage(<%= i %>)">
+-                        <a href="#"><%= i %></a>
++                    <li class="<%= i === currentPage ? 'text-white bg-blue-500' : 'bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white' %>">
++                        <a href="<%= pageUrl(i) %>"><%= i %></a>
+                     </li>
+                     <% } %>
+ 
+@@ -418,14 +430,14 @@
+                     <% if (endPage < totalPages - 1) { %>
+                     <li class="bg-white dark:bg-gray-800 cursor-default">...</li>
+                     <% } %>
+-                    <li class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white" onclick="goToPage(<%= totalPages %>)">
+-                        <a href="#"><%= totalPages %></a>
++                    <li class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white">
++                        <a href="<%= pageUrl(totalPages) %>"><%= totalPages %></a>
+                     </li>
+                     <% } %>
+ 
+                     <!-- دکمه بعدی -->
+                     <% if (products.hasNextPage) { %>
+-                    <li class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="goToPage(<%= products.nextPage %>)">
++                    <li class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="location.href='<%= pageUrl(products.nextPage) %>'">
+                         <svg class="size-5">
+                             <use href="#chevron-left"></use>
+                         </svg>
+diff --git a/resource/views/shop/singleProduct.ejs b/resource/views/shop/singleProduct.ejs
+index 74c4cdd..65b74c9 100644
+--- a/resource/views/shop/singleProduct.ejs
++++ b/resource/views/shop/singleProduct.ejs
+@@ -333,9 +333,9 @@
+                     <div class="w-full md:w-3/4 flex flex-col gap-y-7">
+                         <div class="flex items-center justify-between">
+                             <div class="flex items-center justify-between">
+-                                <a href="/shop/<%= product.category.slug %>" class="font-DanaMedium text-sky-400"><%= product.category.title %></a>
++                                <a href="/shop?category=<%= product.category.slug %>" class="font-DanaMedium text-sky-400"><%= product.category.title %></a>
+                                 &nbsp;&nbsp;/&nbsp;&nbsp;
+-                                <a href="/shop/<%= product.brand.slug %>" class="font-DanaMedium text-sky-400"><%= product.brand.title %></a>
++                                <a href="/shop?brand=<%= product.brand.slug %>" class="font-DanaMedium text-sky-400"><%= product.brand.title %></a>
+                             </div>
+                         </div>
+ 
+@@ -626,3 +626,41 @@
+         }
+     });
+ </script>
++
++<!-- Structured Data: Product + Breadcrumb -->
++<script type="application/ld+json">
++{
++  "@context": "https://schema.org",
++  "@type": "Product",
++  "name": "<%= product.title %>",
++  "image": "<%= siteUrl + product.image %>",
++  "description": "<%= (product.description || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300) %>",
++  "sku": "<%= product._id %>",
++  <% if (product.brand && product.brand.title) { %>
++  "brand": { "@type": "Brand", "name": "<%= product.brand.title %>" },
++  <% } %>
++  "offers": {
++    "@type": "Offer",
++    "url": "<%= siteUrl %>/product/<%= product.slug %>",
++    "priceCurrency": "IRR",
++    "price": "<%= (product.priceSingle || 0) * 10 %>",
++    "availability": "<%= product.quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' %>"
++  }
++}
++</script>
++<script type="application/ld+json">
++{
++  "@context": "https://schema.org",
++  "@type": "BreadcrumbList",
++  "itemListElement": [
++    { "@type": "ListItem", "position": 1, "name": "صفحه اصلی", "item": "<%= siteUrl %>/" },
++    { "@type": "ListItem", "position": 2, "name": "فروشگاه", "item": "<%= siteUrl %>/shop" },
++    <% if (product.category && product.category.title) { %>
++    { "@type": "ListItem", "position": 3, "name": "<%= product.category.title %>", "item": "<%= siteUrl %>/shop?category=<%= product.category.slug %>" },
++    { "@type": "ListItem", "position": 4, "name": "<%= product.title %>" }
++    <% } else { %>
++    { "@type": "ListItem", "position": 3, "name": "<%= product.title %>" }
++    <% } %>
++  ]
++}
++</script>
+diff --git a/src/app.js b/src/app.js
+index b12b612..0694028 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -27,6 +27,11 @@ module.exports = class Application {
+   }
+ 
+   configServer() {
++    // پشت reverse proxy (nginx) با SSL اجرا می‌شویم؛ با این تنظیم
++    // req.protocol مقدار واقعی (https) را از هدر X-Forwarded-Proto می‌خواند.
++    // در غیر این صورت callbackUrl درگاه با http ساخته می‌شود و مرورگر
++    // هنگام بازگشت از درگاه هشدار «اتصال ناامن» می‌دهد.
++    app.set("trust proxy", true);
+     app.use(express.json({ limit: "100mb" }));
+     app.use(express.urlencoded({ limit: "100mb", extended: true }));
+     app.use(cookieParser());
+diff --git a/src/controllers/auth/auth.controller.js b/src/controllers/auth/auth.controller.js
+index 79a7973..20b652e 100644
+--- a/src/controllers/auth/auth.controller.js
++++ b/src/controllers/auth/auth.controller.js
+@@ -5,7 +5,10 @@ const { generateOtp, jwtSign, sendCode } = require("../../utils/function");
+ class authController extends controller {
+   async auth(req, res, next) {
+     try {
+-      return res.render("auth/auth");
++      return res.render("auth/auth", {
++        pageTitle: "ورود | ثبت‌نام",
++        noindex: true,
++      });
+     } catch (err) {
+       next(err);
+     }
+@@ -70,7 +73,12 @@ class authController extends controller {
+         });
+ 
+       const { phone, expiresIn } = JSON.parse(req.cookies.fitrix_otp);
+-      return res.render("auth/otp", { phone, expiresIn });
++      return res.render("auth/otp", {
++        phone,
++        expiresIn,
++        pageTitle: "تایید کد یکبار مصرف",
++        noindex: true,
++      });
+     } catch (err) {
+       next(err);
+     }
+diff --git a/src/controllers/dashborad/dashborad.controller.js b/src/controllers/dashborad/dashborad.controller.js
+index a583a1e..a4a5a96 100644
+--- a/src/controllers/dashborad/dashborad.controller.js
++++ b/src/controllers/dashborad/dashborad.controller.js
+@@ -13,7 +13,12 @@ class dashboradController extends controller {
+         .populate("items.product", "title image slug")
+         .sort({ paidAt: -1 });
+ 
+-      return res.render("dashborad/dashborad", { addresses, orders });
++      return res.render("dashborad/dashborad", {
++        addresses,
++        orders,
++        pageTitle: "حساب کاربری",
++        noindex: true,
++      });
+     } catch (err) {
+       next(err);
+     }
+@@ -22,7 +27,11 @@ class dashboradController extends controller {
+   async address(req, res, next) {
+     try {
+       const addresses = await addressModel.find({ user: req.user._id });
+-      return res.render("dashborad/address", { addresses });
++      return res.render("dashborad/address", {
++        addresses,
++        pageTitle: "آدرس‌های من",
++        noindex: true,
++      });
+     } catch (err) {
+       next(err);
+     }
+diff --git a/src/controllers/home/home.controller.js b/src/controllers/home/home.controller.js
+index c889f86..f66fc1b 100644
+--- a/src/controllers/home/home.controller.js
++++ b/src/controllers/home/home.controller.js
+@@ -1,5 +1,6 @@
+ const brandModel = require("../../models/brand.model");
+ const productModel = require("../../models/product.model");
++const categoriesModel = require("../../models/categories.model");
+ const controller = require("../.controller");
+ 
+ class homeController extends controller {
+@@ -12,7 +13,92 @@ class homeController extends controller {
+         .limit(10)
+         .lean();
+ 
+-      return res.render("home/home", { brands, products });
++      return res.render("home/home", {
++        brands,
++        products,
++        metaDescription:
++          "فیت ریکس شاپ؛ فروشگاه اینترنتی مکمل ورزشی. خرید پروتئین وی، کراتین، گینر، آمینو و ویتامین از برندهای معتبر جهانی با قیمت مناسب و ارسال سریع به سراسر ایران.",
++      });
++    } catch (err) {
++      next(err);
++    }
++  }
++
++  // robots.txt — مسیرهای خصوصی از ایندکس خارج می‌شوند
++  robots(req, res) {
++    const siteUrl = `${req.protocol}://${req.get("host")}`;
++    res.type("text/plain").send(
++      [
++        "User-agent: *",
++        "Disallow: /admin",
++        "Disallow: /dashboard",
++        "Disallow: /basket",
++        "Disallow: /auth",
++        "Disallow: /payment",
++        "Disallow: /logout",
++        "Allow: /",
++        "",
++        `Sitemap: ${siteUrl}/sitemap.xml`,
++      ].join("\n"),
++    );
++  }
++
++  // sitemap.xml — صفحه اصلی، فروشگاه، دسته‌بندی‌ها و همه محصولات فعال
++  async sitemap(req, res, next) {
++    try {
++      const siteUrl = `${req.protocol}://${req.get("host")}`;
++
++      const [products, categories] = await Promise.all([
++        productModel
++          .find({ isActive: true }, "slug updatedAt")
++          .sort({ updatedAt: -1 })
++          .lean(),
++        categoriesModel.find({ isActive: true }, "slug updatedAt").lean(),
++      ]);
++
++      const esc = (s) =>
++        String(s)
++          .replace(/&/g, "&amp;")
++          .replace(/</g, "&lt;")
++          .replace(/>/g, "&gt;")
++          .replace(/"/g, "&quot;")
++          .replace(/'/g, "&apos;");
++
++      const urlTag = (loc, lastmod, priority) =>
++        "  <url>\n" +
++        `    <loc>${esc(loc)}</loc>\n` +
++        (lastmod
++          ? `    <lastmod>${new Date(lastmod).toISOString().slice(0, 10)}</lastmod>\n`
++          : "") +
++        (priority ? `    <priority>${priority}</priority>\n` : "") +
++        "  </url>";
++
++      const urls = [
++        urlTag(`${siteUrl}/`, null, "1.0"),
++        urlTag(`${siteUrl}/shop`, null, "0.9"),
++        ...categories.map((c) =>
++          urlTag(
++            `${siteUrl}/shop?category=${encodeURIComponent(c.slug)}`,
++            c.updatedAt,
++            "0.7",
++          ),
++        ),
++        ...products.map((p) =>
++          urlTag(
++            `${siteUrl}/product/${encodeURIComponent(p.slug)}`,
++            p.updatedAt,
++            "0.8",
++          ),
++        ),
++      ];
++
++      const xml =
++        '<?xml version="1.0" encoding="UTF-8"?>\n' +
++        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
++        urls.join("\n") +
++        "\n</urlset>";
++
++      return res.type("application/xml").send(xml);
+     } catch (err) {
+       next(err);
+     }
+diff --git a/src/controllers/product/product.controller.js b/src/controllers/product/product.controller.js
+index eb27e34..6169eaf 100644
+--- a/src/controllers/product/product.controller.js
++++ b/src/controllers/product/product.controller.js
+@@ -24,7 +24,25 @@ class productController extends controller {
+         .sort({ createdAt: -1 })
+         .limit(10);
+ 
+-      return res.render("shop/singleProduct", { product, products });
++      // ---------- SEO ----------
++      const siteUrl = `${req.protocol}://${req.get("host")}`;
++      const plainDesc = String(product.description || "")
++        .replace(/<[^>]*>/g, "")
++        .replace(/\s+/g, " ")
++        .trim();
++      const metaDescription =
++        (plainDesc.length > 155 ? plainDesc.slice(0, 155) + "…" : plainDesc) ||
++        `خرید ${product.title} اورجینال با بهترین قیمت از فیت ریکس شاپ.`;
++
++      return res.render("shop/singleProduct", {
++        product,
++        products,
++        pageTitle: `خرید ${product.title}`,
++        metaDescription,
++        canonicalUrl: `${siteUrl}/product/${encodeURIComponent(product.slug)}`,
++        ogImage: product.image ? siteUrl + product.image : undefined,
++        ogType: "product",
++      });
+     } catch (err) {
+       next(err);
+     }
+diff --git a/src/controllers/shop/basket.controller.js b/src/controllers/shop/basket.controller.js
+index 8bcb398..ff9f02b 100644
+--- a/src/controllers/shop/basket.controller.js
++++ b/src/controllers/shop/basket.controller.js
+@@ -32,7 +32,11 @@ class basketController extends controller {
+       const basket = await this.getActiveBasket(userId);
+       await basket.populate("items.product", PRODUCT_SELECT);
+ 
+-      return res.render("shop/basket", { basket });
++      return res.render("shop/basket", {
++        basket,
++        pageTitle: "سبد خرید",
++        noindex: true,
++      });
+     } catch (err) {
+       next(err);
+     }
+diff --git a/src/controllers/shop/shop.controller.js b/src/controllers/shop/shop.controller.js
+index ce4cf59..5feb91f 100644
+--- a/src/controllers/shop/shop.controller.js
++++ b/src/controllers/shop/shop.controller.js
+@@ -94,11 +94,35 @@ class shopController extends controller {
+         selectedBrand,
+       };
+ 
++      // ---------- SEO ----------
++      const siteUrl = `${req.protocol}://${req.get("host")}`;
++      let pageTitle = "فروشگاه";
++      let metaDescription =
++        "خرید انواع مکمل ورزشی، پروتئین، کراتین، گینر و ویتامین با بهترین قیمت از فروشگاه فیت ریکس شاپ.";
++      let canonicalUrl = `${siteUrl}/shop`;
++
++      if (selectedCategory) {
++        pageTitle = `خرید ${selectedCategory.title}`;
++        metaDescription = `خرید ${selectedCategory.title} اورجینال با بهترین قیمت و ارسال سریع از فروشگاه فیت ریکس شاپ.`;
++        canonicalUrl = `${siteUrl}/shop?category=${encodeURIComponent(selectedCategory.slug)}`;
++      } else if (selectedBrand) {
++        pageTitle = `محصولات برند ${selectedBrand.title}`;
++        metaDescription = `خرید محصولات اورجینال برند ${selectedBrand.title} با بهترین قیمت از فروشگاه فیت ریکس شاپ.`;
++        canonicalUrl = `${siteUrl}/shop?brand=${encodeURIComponent(selectedBrand.slug)}`;
++      } else if (search) {
++        pageTitle = `جستجوی «${search}»`;
++      }
++
+       return res.render("shop/shop", {
+         products,
+         categories,
+         brands,
+         currentFilters,
++        pageTitle,
++        metaDescription,
++        canonicalUrl,
++        // نتایج جستجو نباید ایندکس شوند
++        noindex: Boolean(search),
+       });
+     } catch (err) {
+       next(err);
+diff --git a/src/middlewares/globalData.js b/src/middlewares/globalData.js
+index 27977f8..fd1f672 100644
+--- a/src/middlewares/globalData.js
++++ b/src/middlewares/globalData.js
+@@ -60,9 +60,11 @@ class GlobalData {
+   static async settings(req, res, next) {
+     try {
+       res.locals.settings = {
+-        siteName: "FitRix",
++        siteName: "فیت ریکس شاپ",
++        siteNameEn: "FitRix",
+         logo: "/images/logo.png",
+         phone: "09373640517",
++        email: "info@fitrix.ir",
+       };
+     } catch {
+       res.locals.settings = {};
+@@ -70,6 +72,22 @@ class GlobalData {
+     next();
+   }
+ 
++  // مقادیر پیش‌فرض SEO — هر کنترلر می‌تواند هنگام render بازنویسی‌شان کند
++  static seo(req, res, next) {
++    const siteUrl = `${req.protocol}://${req.get("host")}`;
++    res.locals.siteUrl = siteUrl;
++    res.locals.currentUrl = siteUrl + req.originalUrl;
++    // canonical پیش‌فرض بدون query string؛ صفحاتی مثل فیلتر دسته‌بندی بازنویسی می‌کنند
++    res.locals.canonicalUrl = siteUrl + req.path;
++    res.locals.pageTitle = null;
++    res.locals.metaDescription =
++      "فروشگاه اینترنتی فیت ریکس شاپ؛ خرید انواع مکمل ورزشی، پروتئین وی، کراتین، گینر و ویتامین از برندهای معتبر جهانی با قیمت مناسب و ارسال سریع.";
++    res.locals.ogImage = siteUrl + "/images/logo.png";
++    res.locals.ogType = "website";
++    res.locals.noindex = false;
++    next();
++  }
++
+   static async setLocals(req, res, next) {
+     try {
+       const PRODUCT_SELECT = "title image slug priceSingle quantity";
+@@ -96,7 +114,7 @@ class GlobalData {
+   }
+ 
+   static init() {
+-    return [this.auth, this.categories, this.settings, this.setLocals];
++    return [this.auth, this.categories, this.settings, this.seo, this.setLocals];
+   }
+ }
+ 
+diff --git a/src/routers/home/home.route.js b/src/routers/home/home.route.js
+index 253cbf0..6a31dff 100644
+--- a/src/routers/home/home.route.js
++++ b/src/routers/home/home.route.js
+@@ -7,4 +7,8 @@ const homeController = require("../../controllers/home/home.controller");
+ //homeRouer
+ router.get("/", homeController.home);
+ 
+-module.exports = router;
+\ No newline at end of file
++//SEO
++router.get("/robots.txt", homeController.robots);
++router.get("/sitemap.xml", homeController.sitemap);
++
++module.exports = router;
+diff --git a/src/routers/payment/shop.route.js b/src/routers/payment/shop.route.js
+index a4797d8..33fecec 100644
+--- a/src/routers/payment/shop.route.js
++++ b/src/routers/payment/shop.route.js
+@@ -5,6 +5,13 @@ const router = express.Router();
+ const paymentController = require("../../controllers/payment/payment.controller");
+ const { checkBasketAccess } = require("../../middlewares/basket.middleware");
+ 
++// صفحات پرداخت نباید ایندکس شوند
++router.use("/payment", (req, res, next) => {
++  res.locals.noindex = true;
++  res.locals.pageTitle = "پرداخت";
++  next();
++});
++
+ // اعتبارسنجی زنده‌ی کد تخفیف
+ router.post(
+   "/payment/discount",

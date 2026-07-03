@@ -19,7 +19,7 @@ router.use("/shop", verifyTokenPublic, shopRouter);
 const basketRouter = require("./shop/basket.route");
 router.use("/basket", checkBasketAccess, basketRouter);
 
-const paymentRouter = require("./payment/shop.route");
+const paymentRouter = require("./payment/payment.route");
 router.use("/", paymentRouter);
 
 const dashboardRouter = require("./dashboard/dashboard.route");

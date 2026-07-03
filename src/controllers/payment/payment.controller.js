@@ -261,8 +261,6 @@ class paymentController extends controller {
   async verifyPayment(req, res, next) {
     try {
       const { gateway } = req.params;
-      // basketId از مسیر (path) خوانده می‌شود تا در URL تمیز بماند؛
-      // برای سازگاری، query هم پشتیبانی می‌شود.
       const basketId =
         req.params.basketId || req.query.basketId || req.query.orderId;
 
