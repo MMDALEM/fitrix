@@ -333,9 +333,9 @@
                     <div class="w-full md:w-3/4 flex flex-col gap-y-7">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center justify-between">
-                                <a href="/shop/<%= product.category.slug %>" class="font-DanaMedium text-sky-400"><%= product.category.title %></a>
+                                <a href="/shop?category=<%= product.category.slug %>" class="font-DanaMedium text-sky-400"><%= product.category.title %></a>
                                 &nbsp;&nbsp;/&nbsp;&nbsp;
-                                <a href="/shop/<%= product.brand.slug %>" class="font-DanaMedium text-sky-400"><%= product.brand.title %></a>
+                                <a href="/shop?brand=<%= product.brand.slug %>" class="font-DanaMedium text-sky-400"><%= product.brand.title %></a>
                             </div>
                         </div>
 
@@ -356,7 +356,7 @@
 
                         <!-- Features -->
                         <div class="w-full flex flex-col gap-y-4">
-                            <h1 class="font-DanaDemiBold text-lg dark:text-gray-200">ویژگی‌ها</h1>
+                            <h2 class="font-DanaDemiBold text-lg dark:text-gray-200">ویژگی‌ها</h2>
                             <div class="grid grid-cols-12 gap-2 child:p-2 child:h-16 child:bg-gray-100 dark:child:bg-gray-900 child:rounded-lg child:flex child:flex-col child:gap-y-1.5">
                                 <div class="col-span-12 md:col-span-6 xl:col-span-4">
                                     <p class="text-sm text-gray-500">نوع مکمل</p>
@@ -485,8 +485,8 @@
                             </div>
                         </div>
                         <a href="/product/<%= productss.slug %>">
-                            <img style="object-fit:scale-down;" class="product-card_img group-hover:opacity-0 absolute" src="<%= productss.image %>" alt="">
-                            <img style="object-fit:scale-down;" class="product-card_img opacity-0 group-hover:opacity-100" src="<%= productss.image %>" alt="">
+                            <img style="object-fit:scale-down;" class="product-card_img group-hover:opacity-0 absolute" loading="lazy" src="<%= productss.image %>" alt="">
+                            <img style="object-fit:scale-down;" class="product-card_img opacity-0 group-hover:opacity-100" loading="lazy" src="<%= productss.image %>" alt="">
                         </a>
                         <div class="space-y-2">
                             <a href="/product/<%= productss.slug %>" class="product-card_link"><%= productss.title %></a>
@@ -625,4 +625,42 @@
             });
         }
     });
+</script>
+
+<!-- Structured Data: Product + Breadcrumb -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "<%= product.title %>",
+  "image": "<%= siteUrl + product.image %>",
+  "description": "<%= (product.description || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300) %>",
+  "sku": "<%= product._id %>",
+  <% if (product.brand && product.brand.title) { %>
+  "brand": { "@type": "Brand", "name": "<%= product.brand.title %>" },
+  <% } %>
+  "offers": {
+    "@type": "Offer",
+    "url": "<%= siteUrl %>/product/<%= product.slug %>",
+    "priceCurrency": "IRR",
+    "price": "<%= (product.priceSingle || 0) * 10 %>",
+    "availability": "<%= product.quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' %>"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "صفحه اصلی", "item": "<%= siteUrl %>/" },
+    { "@type": "ListItem", "position": 2, "name": "فروشگاه", "item": "<%= siteUrl %>/shop" },
+    <% if (product.category && product.category.title) { %>
+    { "@type": "ListItem", "position": 3, "name": "<%= product.category.title %>", "item": "<%= siteUrl %>/shop?category=<%= product.category.slug %>" },
+    { "@type": "ListItem", "position": 4, "name": "<%= product.title %>" }
+    <% } else { %>
+    { "@type": "ListItem", "position": 3, "name": "<%= product.title %>" }
+    <% } %>
+  ]
+}
 </script>

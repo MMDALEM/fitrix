@@ -26,10 +26,10 @@
                             <p>جستجو های پرطرفدار :</p>
                         </span>
                         <ul class="w-full flex items-center gap-1.5 mt-3 child:search-modal-list-item">
-                            <li><a href="#">#پروتئین</a></li>
-                            <li><a href="#">#کراتین</a></li>
-                            <li><a href="#">#گینر</a></li>
-                            <li><a href="#">#ویتامین</a></li>
+                            <li><a href="/shop?search=پروتئین">#پروتئین</a></li>
+                            <li><a href="/shop?search=کراتین">#کراتین</a></li>
+                            <li><a href="/shop?search=گینر">#گینر</a></li>
+                            <li><a href="/shop?search=ویتامین">#ویتامین</a></li>
                         </ul>
                     </div>
                 </div>
@@ -50,11 +50,11 @@
                             <p>حساب کاربری</p>
                         </a>
                         <div class="absolute dark:border-none border border-gray-100 w-52 p-2 bg-white text-gray-900 dark:text-gray-100 flex flex-col gap-y-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:top-12 transition-all delay-100 dark:bg-gray-700 top-20 rounded-lg text-base shadow child:transition-all duration-300 child:py-1.5 child:px-2 z-30 child:rounded-lg child:w-full">
-                            <a href="/dashboard/orders" class="flex items-center gap-x-2 hover:bg-blue-500 hover:text-gray-100">
+                            <a href="/dashboard" class="flex items-center gap-x-2 hover:bg-blue-500 hover:text-gray-100">
                                 <svg class="h-5 w-5"><use href="#user"></use></svg>
                                 سفارشات من
                             </a>
-                            <a href="/dashboard/account" class="flex items-center gap-x-2 hover:bg-blue-500 hover:text-gray-100">
+                            <a href="/dashboard/address" class="flex items-center gap-x-2 hover:bg-blue-500 hover:text-gray-100">
                                 <svg class="h-5 w-5"><use href="#cog"></use></svg>
                                 اطلاعات کاربری
                             </a>
@@ -151,7 +151,18 @@
                         <ul class="megamenu_category">
                             <% categories.forEach(function (category) { %>
                                 <li class="megamenu_category-item">
-                                    <a href="/shop/<%= category.slug %>"><%= category.title %></a>
+                                    <a href="/shop?category=<%= category.slug %>"><%= category.title %></a>
+                                    <% if (category.subCategories && category.subCategories.length) { %>
+                                        <ul class="mt-1 mr-3 space-y-1">
+                                            <% category.subCategories.forEach(function (sub) { %>
+                                                <li>
+                                                    <a href="/shop?category=<%= sub.slug %>" class="text-sm text-gray-400 hover:text-blue-400 transition-colors">
+                                                        <%= sub.title %>
+                                                    </a>
+                                                </li>
+                                            <% }); %>
+                                        </ul>
+                                    <% } %>
                                 </li>
                             <% }); %>
                         </ul>
@@ -163,14 +174,14 @@
                             <% if (typeof brands !== 'undefined' && brands) { %>
                                 <h2 class="megamenu_left-title">برندها :</h2>
                                 <% brands.forEach(function (brand) { %>
-                                    <a href="/shop/<%= brand.slug %>" class="text-blue-400 flex items-center gap-x-0.5 text-sm mb-4"><%= brand.title %></a>
+                                    <a href="/shop?brand=<%= brand.slug %>" class="text-blue-400 flex items-center gap-x-0.5 text-sm mb-4"><%= brand.title %></a>
                                 <% }); %>
                             <% } %>
                         </div>
                     </div>
                 </li>
                 <li class="menu-item"><a href="/shop" class="menu-item_link">فروشگاه</a></li>
-                <li class="menu-item"><a href="/about" class="menu-item_link">درباره ما</a></li>
+                <li class="menu-item"><a href="#about" class="menu-item_link">درباره ما</a></li>
             </ul>
             <div class="relative">
                 <button class="flex items-center gap-x-1 citylist-open">
@@ -225,7 +236,7 @@
                     <li>
                         <span class="open-category mobile-menu-item">
                             <svg class="size-5"><use href="#squares" /></svg>
-                            <a href="#">دسته بندی</a>
+                            <span>دسته بندی</span>
                         </span>
                         <div class="category-slide">
                             <div class="w-full border-b-normal pb-4">
@@ -238,9 +249,18 @@
                                 <% categories.forEach(function (category) { %>
                                     <li>
                                         <span style="position: static !important; width: 100vw;" class="mobile-menu-category-badge">
-                                            <a href="/shop/<%= category.slug %>"><%= category.title %></a>
+                                            <a href="/shop?category=<%= category.slug %>"><%= category.title %></a>
                                         </span>
                                     </li>
+                                    <% if (category.subCategories && category.subCategories.length) { %>
+                                        <% category.subCategories.forEach(function (sub) { %>
+                                            <li class="mr-5">
+                                                <a href="/shop?category=<%= sub.slug %>" class="text-sm text-gray-500 dark:text-gray-300">
+                                                    <%= sub.title %>
+                                                </a>
+                                            </li>
+                                        <% }) %>
+                                    <% } %>
                                 <% }) %>
                             </ul>
                         </div>
@@ -255,11 +275,11 @@
                     </li>
                     <li class="mobile-menu-item">
                         <svg class="size-5"><use href="#check-badge" /></svg>
-                        <a href="/about">دربـاره مـا</a>
+                        <a href="#about">دربـاره مـا</a>
                     </li>
                     <li class="mobile-menu-item">
                         <svg class="size-5"><use href="#phone" /></svg>
-                        <a href="/contact">تـماس بـا مـا</a>
+                        <a href="#contact">تـماس بـا مـا</a>
                     </li>
                 </ul>
             </div>
@@ -321,16 +341,16 @@
                     </span>
                     <ul class="w-full flex items-center gap-1.5 mt-3 child:search-modal-list-item">
                         <li>
-                            <a href="#">#وی</a>
+                            <a href="/shop?search=وی">#وی</a>
                         </li>
                         <li>
-                            <a href="#">#کراتین</a>
+                            <a href="/shop?search=کراتین">#کراتین</a>
                         </li>
                         <li>
-                            <a href="#">#گینر</a>
+                            <a href="/shop?search=گینر">#گینر</a>
                         </li>
                         <li>
-                            <a href="#">#گلوتامین</a>
+                            <a href="/shop?search=گلوتامین">#گلوتامین</a>
                         </li>
                     </ul>
                 </div>

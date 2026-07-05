@@ -24,7 +24,25 @@ class productController extends controller {
         .sort({ createdAt: -1 })
         .limit(10);
 
-      return res.render("shop/singleProduct", { product, products });
+      // ---------- SEO ----------
+      const siteUrl = `${req.protocol}://${req.get("host")}`;
+      const plainDesc = String(product.description || "")
+        .replace(/<[^>]*>/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      const metaDescription =
+        (plainDesc.length > 155 ? plainDesc.slice(0, 155) + "…" : plainDesc) ||
+        `خرید ${product.title} اورجینال با بهترین قیمت از فیت ریکس شاپ.`;
+
+      return res.render("shop/singleProduct", {
+        product,
+        products,
+        pageTitle: `خرید ${product.title}`,
+        metaDescription,
+        canonicalUrl: `${siteUrl}/product/${encodeURIComponent(product.slug)}`,
+        ogImage: product.image ? siteUrl + product.image : undefined,
+        ogType: "product",
+      });
     } catch (err) {
       next(err);
     }

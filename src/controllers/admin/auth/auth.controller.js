@@ -1,7 +1,8 @@
 
 const controller = require("../../.controller");
 const userModel = require("../../../models/user.model");
-const { generateOtp, jwtSign, randomString, hashPassword, comparePassword } = require("../../../utils/function");
+const { generateOtp, randomString, hashPassword, comparePassword } = require("../../../utils/function");
+const { issueTokens, setAuthCookies } = require("../../../utils/token");
 const { authAdminSchema } = require("../../../validations/auth.validation");
 
 class authAdminController extends controller {
@@ -43,20 +44,9 @@ class authAdminController extends controller {
         });
       }
 
-      const token = await jwtSign(user._id);
-
-
-      res.cookie("fitrix_token", token, {
-        httpOnly: process.env.NODE_ENV === "production",
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        domain:
-          process.env.NODE_ENV === "production"
-            ? process.env.COOKIE_DOMAIN
-            : "",
-        maxAge: 24 * 60 * 60 * 1000,
-      });
+      // اکسس‌توکن کوتاه‌عمر + رفرش‌توکن بلندعمر
+      const tokens = await issueTokens(user);
+      setAuthCookies(res, tokens);
 
       return this.alertAndReview(
         req,

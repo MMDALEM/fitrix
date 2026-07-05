@@ -1,11 +1,23 @@
 const controller = require("../.controller");
 const userModel = require("../../models/user.model");
-const { generateOtp, jwtSign, sendCode } = require("../../utils/function");
+const { generateOtp, sendCode } = require("../../utils/function");
+const {
+  issueTokens,
+  setAuthCookies,
+  clearAuthCookies,
+  revokeRefreshToken,
+  popReturnTo,
+  cookieOptions,
+} = require("../../utils/token");
+const JWT = require("jsonwebtoken");
 
 class authController extends controller {
   async auth(req, res, next) {
     try {
-      return res.render("auth/auth");
+      return res.render("auth/auth", {
+        pageTitle: "ورود | ثبت‌نام",
+        noindex: true,
+      });
     } catch (err) {
       next(err);
     }
@@ -35,17 +47,11 @@ class authController extends controller {
         expiresIn: user?.otp?.expiresIn,
       };
 
-      res.cookie("fitrix_otp", JSON.stringify(cookie_otp), {
-        httpOnly: process.env.NODE_ENV === "production",
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        domain:
-          process.env.NODE_ENV === "production"
-            ? process.env.COOKIE_DOMAIN
-            : "",
-        maxAge: 10 * 60 * 1000,
-      });
+      res.cookie(
+        "fitrix_otp",
+        JSON.stringify(cookie_otp),
+        cookieOptions(10 * 60 * 1000),
+      );
 
       return this.alertAndReview(
         req,
@@ -70,7 +76,12 @@ class authController extends controller {
         });
 
       const { phone, expiresIn } = JSON.parse(req.cookies.fitrix_otp);
-      return res.render("auth/otp", { phone, expiresIn });
+      return res.render("auth/otp", {
+        phone,
+        expiresIn,
+        pageTitle: "تایید کد یکبار مصرف",
+        noindex: true,
+      });
     } catch (err) {
       next(err);
     }
@@ -111,19 +122,13 @@ class authController extends controller {
           icon: "error",
         });
 
-      const token = await jwtSign(user.id);
+      // اکسس‌توکن کوتاه‌عمر + رفرش‌توکن بلندعمر
+      const tokens = await issueTokens(user);
+      setAuthCookies(res, tokens);
+      res.clearCookie("fitrix_otp", cookieOptions());
 
-      res.cookie("fitrix_token", token, {
-        httpOnly: process.env.NODE_ENV === "production",
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        domain:
-          process.env.NODE_ENV === "production"
-            ? process.env.COOKIE_DOMAIN
-            : "",
-        maxAge: 24 * 60 * 60 * 1000,
-      });
+      // اگر کاربر از صفحه‌ای به ورود هدایت شده بود، به همان‌جا برمی‌گردد
+      const returnTo = popReturnTo(req, res) || "/";
 
       return this.alertAndReview(
         req,
@@ -132,7 +137,7 @@ class authController extends controller {
           title: "اعتبار سنجی با موفقیت انجام شد",
           icon: "success",
         },
-        "/",
+        returnTo,
       );
     } catch (err) {
       next(err);
@@ -158,27 +163,17 @@ class authController extends controller {
 
   async logout(req, res, next) {
     try {
-      res.clearCookie("fitrix_token", {
-        httpOnly: process.env.NODE_ENV === "production",
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        domain:
-          process.env.NODE_ENV === "production"
-            ? process.env.COOKIE_DOMAIN
-            : "",
-      });
+      // ابطال رفرش‌توکن در دیتابیس (بهترین تلاش)
+      try {
+        const token = req.cookies.fitrix_token || req.cookies.fitrix_refresh;
+        if (token) {
+          const payload = JWT.decode(token);
+          if (payload && payload.id) await revokeRefreshToken(payload.id);
+        }
+      } catch {}
 
-      res.clearCookie("fitrix_otp", {
-        httpOnly: process.env.NODE_ENV === "production",
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        domain:
-          process.env.NODE_ENV === "production"
-            ? process.env.COOKIE_DOMAIN
-            : "",
-      });
+      clearAuthCookies(res);
+      res.clearCookie("fitrix_otp", cookieOptions());
 
       return this.alertAndReview(
         req,

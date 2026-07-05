@@ -1,0 +1,356 @@
+<!-- ═══════════ ویجت مشاوره هوش مصنوعی (شناور در همه صفحات) ═══════════ -->
+<style>
+    /* CSS مستقل — به کلاس‌های Tailwind ساخته‌شده وابسته نیست */
+    .fx-consult-fab {
+        position: fixed;
+        left: 16px;
+        bottom: 16px;
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        color: #fff;
+        border: none;
+        border-radius: 9999px;
+        padding: 12px 18px 12px 14px;
+        font-family: inherit;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .fx-consult-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(37, 99, 235, 0.55); }
+    .fx-consult-fab .fx-fab-dot {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 12px; height: 12px;
+        background: #22c55e;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        animation: fx-pulse 1.6s infinite;
+    }
+    @keyframes fx-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+        70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+    /* روی موبایل بالاتر از ناوبار پایین می‌نشیند و فقط آیکون است */
+    @media (max-width: 1023px) {
+        .fx-consult-fab { bottom: 76px; padding: 13px; }
+        .fx-consult-fab .fx-fab-label { display: none; }
+    }
+
+    .fx-consult-panel {
+        position: fixed;
+        left: 16px;
+        bottom: 84px;
+        z-index: 9999;
+        width: 370px;
+        max-width: calc(100vw - 32px);
+        height: 520px;
+        max-height: calc(100vh - 120px);
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        font-family: inherit;
+    }
+    .fx-consult-panel.fx-open { display: flex; animation: fx-slide-up 0.22s ease-out; }
+    @keyframes fx-slide-up {
+        from { opacity: 0; transform: translateY(14px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 1023px) {
+        .fx-consult-panel { bottom: 140px; height: 60vh; }
+    }
+    .dark .fx-consult-panel { background: #1f2937; }
+
+    .fx-consult-head {
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        color: #fff;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+    .fx-consult-head .fx-head-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+    .fx-consult-head .fx-head-sub { font-size: 11px; opacity: 0.9; margin-top: 2px; font-weight: 400; }
+    .fx-consult-close {
+        background: rgba(255, 255, 255, 0.15);
+        border: none; color: #fff;
+        width: 30px; height: 30px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px; line-height: 1;
+        flex-shrink: 0;
+    }
+    .fx-consult-close:hover { background: rgba(255, 255, 255, 0.28); }
+
+    .fx-consult-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: #f8fafc;
+    }
+    .dark .fx-consult-body { background: #111827; }
+
+    .fx-msg { max-width: 86%; padding: 10px 13px; border-radius: 14px; font-size: 13px; line-height: 1.9; word-wrap: break-word; }
+    .fx-msg-bot { align-self: flex-start; background: #e0ecff; color: #1e293b; border-top-right-radius: 4px; }
+    .dark .fx-msg-bot { background: #374151; color: #f3f4f6; }
+    .fx-msg-user { align-self: flex-end; background: #2563eb; color: #fff; border-top-left-radius: 4px; }
+    .fx-msg-error { color: #dc2626 !important; }
+    .fx-msg a { color: #2563eb; text-decoration: underline; }
+    .dark .fx-msg a { color: #60a5fa; }
+    .fx-msg.fx-typing { opacity: 0.7; animation: fx-blink 1.1s infinite; }
+    @keyframes fx-blink { 50% { opacity: 0.35; } }
+
+    .fx-consult-suggests { padding: 0 14px 8px; display: flex; flex-wrap: wrap; gap: 6px; background: #f8fafc; flex-shrink: 0; }
+    .dark .fx-consult-suggests { background: #111827; }
+    .fx-consult-suggests button {
+        font-family: inherit;
+        font-size: 11px;
+        padding: 6px 10px;
+        border-radius: 9999px;
+        border: 1px solid #bfdbfe;
+        background: #fff;
+        color: #2563eb;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .fx-consult-suggests button:hover { background: #eff6ff; }
+    .dark .fx-consult-suggests button { background: #1f2937; border-color: #4b5563; color: #93c5fd; }
+
+    .fx-consult-form {
+        display: flex;
+        gap: 8px;
+        padding: 10px 12px;
+        border-top: 1px solid #e5e7eb;
+        background: #fff;
+        flex-shrink: 0;
+    }
+    .dark .fx-consult-form { background: #1f2937; border-color: #374151; }
+    .fx-consult-form input {
+        flex: 1;
+        font-family: inherit;
+        font-size: 13px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        outline: none;
+        background: #f9fafb;
+        color: #111827;
+        min-width: 0;
+    }
+    .fx-consult-form input:focus { border-color: #3b82f6; }
+    .dark .fx-consult-form input { background: #111827; border-color: #4b5563; color: #f9fafb; }
+    .fx-consult-form button {
+        font-family: inherit;
+        font-size: 13px;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 10px;
+        background: #2563eb;
+        color: #fff;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    .fx-consult-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .fx-consult-disclaimer {
+        font-size: 10px;
+        color: #9ca3af;
+        text-align: center;
+        padding: 0 12px 8px;
+        background: #fff;
+        flex-shrink: 0;
+    }
+    .dark .fx-consult-disclaimer { background: #1f2937; color: #6b7280; }
+</style>
+
+<!-- دکمه شناور -->
+<button id="fxConsultFab" class="fx-consult-fab" aria-label="مشاوره رایگان مکمل با هوش مصنوعی">
+    <span class="fx-fab-dot"></span>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:22px;height:22px;flex-shrink:0;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
+    </svg>
+    <span class="fx-fab-label">مشاوره رایگان</span>
+</button>
+
+<!-- پنل چت -->
+<div id="fxConsultPanel" class="fx-consult-panel" role="dialog" aria-label="گفتگو با مشاور هوشمند">
+    <div class="fx-consult-head">
+        <div>
+            <div class="fx-head-title"> مشاور هوشمند فیت‌ریکس</div>
+            <div class="fx-head-sub">راهنمای انتخاب مکمل — رایگان</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+            <button id="fxConsultReset" style="font-size:28px; color: #dc2626; font-weight: bold;" title="پایان گفتگو و پاک کردن" aria-label="پاک کردن گفتگو">🗑</button>
+            <button id="fxConsultClose" style="font-size:22px; margin-right: 10px; color: #fff; font-weight: 400;"  aria-label="بستن">✕</button>
+        </div>
+    </div>
+
+    <div id="fxConsultBody" class="fx-consult-body"></div>
+
+    <div id="fxConsultSuggests" class="fx-consult-suggests">
+        <button>برای عضله‌سازی چی بخرم؟</button>
+        <button>پروتئین وی بهتره یا گینر؟</button>
+        <button>تازه‌کارم، از کجا شروع کنم؟</button>
+    </div>
+
+    <form id="fxConsultForm" class="fx-consult-form">
+        <input id="fxConsultInput" type="text" maxlength="2000" autocomplete="off" placeholder="سوال خود را بنویسید..." />
+        <button id="fxConsultSend" type="submit">ارسال</button>
+    </form>
+    <div class="fx-consult-disclaimer">پاسخ‌ها جایگزین نظر پزشک یا متخصص تغذیه نیستند.</div>
+</div>
+
+<script>
+(function () {
+    var fab = document.getElementById("fxConsultFab");
+    var panel = document.getElementById("fxConsultPanel");
+    var closeBtn = document.getElementById("fxConsultClose");
+    var resetBtn = document.getElementById("fxConsultReset");
+    var body = document.getElementById("fxConsultBody");
+    var form = document.getElementById("fxConsultForm");
+    var input = document.getElementById("fxConsultInput");
+    var sendBtn = document.getElementById("fxConsultSend");
+    var suggests = document.getElementById("fxConsultSuggests");
+
+    var GREETING = "سلام! 👋 من مشاور فیت‌ریکسم 😊 بگو هدفت چیه — عضله‌سازی، کاهش وزن، انرژی بیشتر یا ریکاوری — تا بهترین مکمل رو برات پیدا کنم 💪";
+    var STORE_KEY = "fx_consult_history";
+    var busy = false;
+
+    // گفتگو بین صفحات حفظ می‌شود
+    function loadHistory() {
+        try { return JSON.parse(sessionStorage.getItem(STORE_KEY)) || []; }
+        catch (e) { return []; }
+    }
+    function saveHistory(h) {
+        try { sessionStorage.setItem(STORE_KEY, JSON.stringify(h.slice(-20))); } catch (e) {}
+    }
+    var history = loadHistory();
+
+    function esc(t) {
+        var d = document.createElement("div");
+        d.textContent = t;
+        return d.innerHTML;
+    }
+    function linkify(html) {
+        // آدرس مطلق محصول → نسبی (تا الگوهای پایین بگیرندش)
+        html = html.replace(/https?:\/\/[^\s<>()\]"']*\/product\//g, "/product/");
+        // [نام محصول](/product/slug) → لینک با نام محصول (اسلاگ فارسی هم پشتیبانی می‌شود)
+        html = html.replace(/\[([^\]]{1,100})\]\((\/product\/[\w\-.%\u0600-\u06FF]+)\)/g,
+            '<a href="$2">$1</a>');
+        // مسیر خام /product/slug → لینک (بدون دست زدن به href های ساخته‌شده)
+        html = html.replace(/(^|[^"'>\]])(\/product\/[\w\-.%\u0600-\u06FF]+)/g,
+            '$1<a href="$2">$2</a>');
+        // **متن** مارک‌داون → پررنگ (ستاره‌ی خام نمایش داده نشود)
+        html = html.replace(/\*\*([^*\n]{1,120})\*\*/g, "<strong>$1</strong>");
+        return html;
+    }
+    function addMsg(role, text, opts) {
+        var el = document.createElement("div");
+        el.className = "fx-msg " + (role === "user" ? "fx-msg-user" : "fx-msg-bot");
+        if (opts && opts.typing) el.classList.add("fx-typing");
+        el.innerHTML = linkify(esc(text)).replace(/\n/g, "<br>");
+        body.appendChild(el);
+        body.scrollTop = body.scrollHeight;
+        return el;
+    }
+
+    function renderAll() {
+        body.innerHTML = "";
+        addMsg("assistant", GREETING);
+        history.forEach(function (m) { addMsg(m.role, m.content); });
+        suggests.style.display = history.length ? "none" : "";
+    }
+
+    function setBusy(b) {
+        busy = b;
+        sendBtn.disabled = b;
+        input.disabled = b;
+    }
+
+    function openPanel() {
+        panel.classList.add("fx-open");
+        fab.style.display = "none";
+        renderAll();
+        setTimeout(function () { input.focus(); }, 120);
+    }
+    function closePanel() {
+        panel.classList.remove("fx-open");
+        fab.style.display = "flex";
+    }
+
+    fab.addEventListener("click", openPanel);
+    closeBtn.addEventListener("click", closePanel);
+    resetBtn.addEventListener("click", function () {
+        history = [];
+        saveHistory(history);
+        renderAll();
+        input.focus();
+    });
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && panel.classList.contains("fx-open")) closePanel();
+    });
+
+    async function send(text) {
+        if (busy || !text || !text.trim()) return;
+        text = text.trim();
+        suggests.style.display = "none";
+
+        addMsg("user", text);
+        history.push({ role: "user", content: text });
+        saveHistory(history);
+        input.value = "";
+        setBusy(true);
+
+        var typing = addMsg("assistant", "در حال فکر کردن...", { typing: true });
+
+        try {
+            var r = await fetch("/consult/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: history.slice(-10) }),
+            });
+            var data = await r.json();
+            typing.classList.remove("fx-typing");
+            if (data.success) {
+                typing.innerHTML = linkify(esc(data.reply)).replace(/\n/g, "<br>");
+                history.push({ role: "assistant", content: data.reply });
+                saveHistory(history);
+            } else {
+                typing.innerHTML = esc(data.message || "خطایی رخ داد؛ دوباره تلاش کنید.");
+                typing.classList.add("fx-msg-error");
+                history.pop();
+                saveHistory(history);
+            }
+        } catch (e) {
+            typing.classList.remove("fx-typing");
+            typing.textContent = "ارتباط برقرار نشد؛ اینترنت خود را بررسی کنید.";
+            typing.classList.add("fx-msg-error");
+            history.pop();
+            saveHistory(history);
+        }
+        body.scrollTop = body.scrollHeight;
+        setBusy(false);
+        input.focus();
+    }
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        send(input.value);
+    });
+    suggests.querySelectorAll("button").forEach(function (btn) {
+        btn.addEventListener("click", function () { send(btn.textContent); });
+    });
+})();
+</script>

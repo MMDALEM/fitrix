@@ -1,6 +1,7 @@
 
 
 <main class="container">
+<h1 class="sr-only"><%= (typeof pageTitle !== 'undefined' && pageTitle) ? pageTitle : 'فروشگاه مکمل ورزشی' %></h1>
 <!-- Breadcrumb -->
 <nav class="flex mt-8" aria-label="Breadcrumb">
     <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
@@ -312,7 +313,7 @@
 
                     <a href="/product/<%= product.slug %>" class="object-contain object-center h-full w-32 mx-auto transition-transform duration-300 group-hover:scale-105">
                         <img style="object-fit: scale-down;" class="product-card_img" 
-                            src="<%= product.image %>"
+                            loading="lazy" src="<%= product.image %>"
                             alt="<%= product.title %>">
                     </a>
 
@@ -367,7 +368,7 @@
                     
                     <!-- دکمه قبلی -->
                     <% if (products.hasPrevPage) { %>
-                    <li class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="goToPage(<%= products.prevPage %>)">
+                    <li class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="location.href='<%= pageUrl(products.prevPage) %>'">
                         <svg class="size-5 rotate-180">
                             <use href="#chevron-left"></use>
                         </svg>
@@ -381,7 +382,20 @@
                     <% } %>
 
                     <!-- صفحات -->
-                    <% 
+                    <%
+                    // ساخت لینک صفحه با حفظ فیلترهای فعلی (برای خزش گوگل)
+                    function pageUrl(p) {
+                        var q = [];
+                        if (currentFilters.category) q.push('category=' + encodeURIComponent(currentFilters.category));
+                        if (currentFilters.brand) q.push('brand=' + encodeURIComponent(currentFilters.brand));
+                        if (currentFilters.search) q.push('search=' + encodeURIComponent(currentFilters.search));
+                        if (currentFilters.minPrice) q.push('minPrice=' + encodeURIComponent(currentFilters.minPrice));
+                        if (currentFilters.maxPrice) q.push('maxPrice=' + encodeURIComponent(currentFilters.maxPrice));
+                        if (currentFilters.sort && currentFilters.sort !== 'newest') q.push('sort=' + encodeURIComponent(currentFilters.sort));
+                        if (currentFilters.inStock) q.push('inStock=' + encodeURIComponent(currentFilters.inStock));
+                        if (p > 1) q.push('page=' + p);
+                        return '/shop' + (q.length ? '?' + q.join('&') : '');
+                    }
                     const currentPage = products.page;
                     const totalPages = products.totalPages;
                     let startPage = Math.max(1, currentPage - 2);
@@ -397,8 +411,8 @@
 
                     <!-- صفحه اول -->
                     <% if (startPage > 1) { %>
-                    <li class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white" onclick="goToPage(1)">
-                        <a href="#">1</a>
+                    <li class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white">
+                        <a href="<%= pageUrl(1) %>">1</a>
                     </li>
                     <% if (startPage > 2) { %>
                     <li class="bg-white dark:bg-gray-800 cursor-default">...</li>
@@ -407,9 +421,8 @@
 
                     <!-- صفحات وسط -->
                     <% for (let i = startPage; i <= endPage; i++) { %>
-                    <li class="<%= i === currentPage ? 'text-white bg-blue-500' : 'bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white' %>" 
-                        onclick="goToPage(<%= i %>)">
-                        <a href="#"><%= i %></a>
+                    <li class="<%= i === currentPage ? 'text-white bg-blue-500' : 'bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white' %>">
+                        <a href="<%= pageUrl(i) %>"><%= i %></a>
                     </li>
                     <% } %>
 
@@ -418,14 +431,14 @@
                     <% if (endPage < totalPages - 1) { %>
                     <li class="bg-white dark:bg-gray-800 cursor-default">...</li>
                     <% } %>
-                    <li class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white" onclick="goToPage(<%= totalPages %>)">
-                        <a href="#"><%= totalPages %></a>
+                    <li class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white">
+                        <a href="<%= pageUrl(totalPages) %>"><%= totalPages %></a>
                     </li>
                     <% } %>
 
                     <!-- دکمه بعدی -->
                     <% if (products.hasNextPage) { %>
-                    <li class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="goToPage(<%= products.nextPage %>)">
+                    <li class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="location.href='<%= pageUrl(products.nextPage) %>'">
                         <svg class="size-5">
                             <use href="#chevron-left"></use>
                         </svg>

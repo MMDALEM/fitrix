@@ -16,10 +16,13 @@ router.use("/auth", authRouter);
 const shopRouter = require("./shop/shop.route");
 router.use("/shop", verifyTokenPublic, shopRouter);
 
+const consultRouter = require("./consult/consult.route");
+router.use("/consult", consultRouter);
+
 const basketRouter = require("./shop/basket.route");
 router.use("/basket", checkBasketAccess, basketRouter);
 
-const paymentRouter = require("./payment/payment.route");
+const paymentRouter = require("./payment/shop.route");
 router.use("/", paymentRouter);
 
 const dashboardRouter = require("./dashboard/dashboard.route");

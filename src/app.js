@@ -27,7 +27,20 @@ module.exports = class Application {
   }
 
   configServer() {
+    // پشت reverse proxy (nginx) با SSL اجرا می‌شویم؛ با این تنظیم
+    // req.protocol مقدار واقعی (https) را از هدر X-Forwarded-Proto می‌خواند.
+    // در غیر این صورت callbackUrl درگاه با http ساخته می‌شود و مرورگر
+    // هنگام بازگشت از درگاه هشدار «اتصال ناامن» می‌دهد.
     app.set("trust proxy", true);
+    // هدرهای امنیتی (CSP خاموش تا اسکریپت‌های inline قالب نشکنند)
+    const helmet = require("helmet");
+    app.use(
+      helmet({
+        contentSecurityPolicy: false,
+        crossOriginEmbedderPolicy: false,
+        crossOriginResourcePolicy: { policy: "cross-origin" },
+      }),
+    );
     app.use(express.json({ limit: "100mb" }));
     app.use(express.urlencoded({ limit: "100mb", extended: true }));
     app.use(cookieParser());
@@ -111,6 +124,15 @@ module.exports = class Application {
       const serverError = createError.InternalServerError(error);
       const message = error.message || serverError.message;
       const status = error.status || serverError.status;
+
+      // برای درخواست‌های مرورگر، صفحه‌ی ۴۰۴ واقعی (کد وضعیت درست برای سئو)
+      if (status === 404 && req.accepts("html")) {
+        return res.status(404).render("home/404", {
+          pageTitle: "صفحه پیدا نشد",
+          noindex: true,
+        });
+      }
+
       return res.status(status).json({ message: message });
     });
   }

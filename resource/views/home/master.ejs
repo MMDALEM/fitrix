@@ -1,10 +1,80 @@
 <!doctype html>
-<html lang="en" dir="rtl">
+<html lang="fa" dir="rtl">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= settings.siteName %></title>
+    <%
+        // مقادیر SEO با fallback امن — کنترلرها می‌توانند بازنویسی کنند
+        var _siteName = settings.siteName || "فیت ریکس شاپ";
+        var _title = (typeof pageTitle !== "undefined" && pageTitle)
+            ? pageTitle + " | " + _siteName
+            : _siteName + " | خرید مکمل و لوازم ورزشی";
+        var _desc = (typeof metaDescription !== "undefined" && metaDescription) ? metaDescription : "";
+        var _canonical = (typeof canonicalUrl !== "undefined" && canonicalUrl) ? canonicalUrl : "";
+        var _ogImage = (typeof ogImage !== "undefined" && ogImage) ? ogImage : "/images/logo.png";
+        var _ogType = (typeof ogType !== "undefined" && ogType) ? ogType : "website";
+        var _noindex = (typeof noindex !== "undefined" && noindex) ? true : false;
+        var _siteUrl = (typeof siteUrl !== "undefined" && siteUrl) ? siteUrl : "";
+    %>
+    <title><%= _title %></title>
+    <meta name="description" content="<%= _desc %>" />
+    <% if (_noindex) { %>
+    <meta name="robots" content="noindex, nofollow" />
+    <% } else { %>
+    <meta name="robots" content="index, follow" />
+    <% } %>
+    <% if (_canonical) { %>
+    <link rel="canonical" href="<%= _canonical %>" />
+    <% } %>
+    <meta name="theme-color" content="#2563eb" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="<%= _siteName %>" />
+    <meta property="og:locale" content="fa_IR" />
+    <meta property="og:type" content="<%= _ogType %>" />
+    <meta property="og:title" content="<%= _title %>" />
+    <meta property="og:description" content="<%= _desc %>" />
+    <% if (_canonical) { %>
+    <meta property="og:url" content="<%= _canonical %>" />
+    <% } %>
+    <meta property="og:image" content="<%= _ogImage %>" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="<%= _title %>" />
+    <meta name="twitter:description" content="<%= _desc %>" />
+    <meta name="twitter:image" content="<%= _ogImage %>" />
+
+    <!-- Structured Data: Organization + WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "<%= _siteName %>",
+      "url": "<%= _siteUrl %>/",
+      "logo": "<%= _siteUrl %>/images/logo.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+98-937-364-0517",
+        "contactType": "customer service"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "<%= _siteName %>",
+      "url": "<%= _siteUrl %>/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "<%= _siteUrl %>/shop?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
     <link rel="stylesheet" href="/styles/app.css">
     <link rel="stylesheet" href="/styles/swiper-bundle.css">
     <link rel="stylesheet" href="/styles/sweetalert2.min.css" >
@@ -26,6 +96,7 @@
 <body>
 
     <%- include(viewPath('layout/header')) %><%- include(viewPath('layout/svg')) %> <%- body %> <%- include(viewPath('layout/footer')) %>
+    <%- include(viewPath('layout/consult-widget')) %>
     <div class="overlay"></div>
     <div class="search-overlay"></div>
     

@@ -94,11 +94,35 @@ class shopController extends controller {
         selectedBrand,
       };
 
+      // ---------- SEO ----------
+      const siteUrl = `${req.protocol}://${req.get("host")}`;
+      let pageTitle = "فروشگاه";
+      let metaDescription =
+        "خرید انواع مکمل ورزشی، پروتئین، کراتین، گینر و ویتامین با بهترین قیمت از فروشگاه فیت ریکس شاپ.";
+      let canonicalUrl = `${siteUrl}/shop`;
+
+      if (selectedCategory) {
+        pageTitle = `خرید ${selectedCategory.title}`;
+        metaDescription = `خرید ${selectedCategory.title} اورجینال با بهترین قیمت و ارسال سریع از فروشگاه فیت ریکس شاپ.`;
+        canonicalUrl = `${siteUrl}/shop?category=${encodeURIComponent(selectedCategory.slug)}`;
+      } else if (selectedBrand) {
+        pageTitle = `محصولات برند ${selectedBrand.title}`;
+        metaDescription = `خرید محصولات اورجینال برند ${selectedBrand.title} با بهترین قیمت از فروشگاه فیت ریکس شاپ.`;
+        canonicalUrl = `${siteUrl}/shop?brand=${encodeURIComponent(selectedBrand.slug)}`;
+      } else if (search) {
+        pageTitle = `جستجوی «${search}»`;
+      }
+
       return res.render("shop/shop", {
         products,
         categories,
         brands,
         currentFilters,
+        pageTitle,
+        metaDescription,
+        canonicalUrl,
+        // نتایج جستجو نباید ایندکس شوند
+        noindex: Boolean(search),
       });
     } catch (err) {
       next(err);

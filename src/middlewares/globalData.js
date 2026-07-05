@@ -7,50 +7,38 @@ const addressModel = require("../models/address.model");
 class GlobalData {
   static async auth(req, res, next) {
     try {
-      const token = req.cookies.fitrix_token;
-      if (!token) {
-        req.user = null;
-        res.locals.user = null;
-        return next();
-      }
+      // اکسس‌توکن، و در صورت انقضا رفرش‌توکن (تمدید بی‌صدا) —
+      // کاربر هنگام بازگشت از درگاه پرداخت هم لاگین می‌ماند
+      const { resolveUser } = require("./auth.middleware");
+      const user = await resolveUser(req, res);
 
-      const payload = JWT.verify(
-        token,
-        process.env.JWT_ACCESS_TOKEN_SECRET_USER,
-      );
-
-      const user = await userModel.findById(payload.id, {
-        phone: 1,
-        isActive: 1,
-        roles: 1,
-        name: 1,
-        avatar: 1,
-      });
-
-      const addresses = await addressModel.find({ user: user._id });
-
-      if (user && user.isActive) {
+      if (user) {
         req.user = user;
         res.locals.user = user;
-        res.locals.addresses = addresses;
+        res.locals.addresses = await addressModel.find({ user: user._id });
       } else {
         req.user = null;
         res.locals.user = null;
-        res.clearCookie("fitrix_token");
       }
     } catch {
       req.user = null;
       res.locals.user = null;
-      res.clearCookie("fitrix_token");
     }
     next();
   }
 
   static async categories(req, res, next) {
     try {
+      // فقط دسته‌های اصلی؛ زیر‌دسته‌های فعال داخل subCategories می‌آیند
+      // (قبلاً همه‌ی دسته‌ها flat برمی‌گشتند و زیر‌دسته‌ها در منو تکرار می‌شدند)
       res.locals.categories = await categoriesModel
-        .find({ isActive: true })
-        .populate("subCategories");
+        .find({ isActive: true, parent: null })
+        .sort({ displayOrder: 1, title: 1 })
+        .populate({
+          path: "subCategories",
+          match: { isActive: true },
+          options: { sort: { title: 1 } },
+        });
     } catch {
       res.locals.categories = [];
     }
@@ -60,13 +48,31 @@ class GlobalData {
   static async settings(req, res, next) {
     try {
       res.locals.settings = {
-        siteName: "FitRix",
+        siteName: "فیت ریکس شاپ",
+        siteNameEn: "FitRix",
         logo: "/images/logo.png",
         phone: "09373640517",
+        email: "info@fitrix.ir",
       };
     } catch {
       res.locals.settings = {};
     }
+    next();
+  }
+
+  // مقادیر پیش‌فرض SEO — هر کنترلر می‌تواند هنگام render بازنویسی‌شان کند
+  static seo(req, res, next) {
+    const siteUrl = `${req.protocol}://${req.get("host")}`;
+    res.locals.siteUrl = siteUrl;
+    res.locals.currentUrl = siteUrl + req.originalUrl;
+    // canonical پیش‌فرض بدون query string؛ صفحاتی مثل فیلتر دسته‌بندی بازنویسی می‌کنند
+    res.locals.canonicalUrl = siteUrl + req.path;
+    res.locals.pageTitle = null;
+    res.locals.metaDescription =
+      "فروشگاه اینترنتی فیت ریکس شاپ؛ خرید انواع مکمل ورزشی، پروتئین وی، کراتین، گینر و ویتامین از برندهای معتبر جهانی با قیمت مناسب و ارسال سریع.";
+    res.locals.ogImage = siteUrl + "/images/logo.png";
+    res.locals.ogType = "website";
+    res.locals.noindex = false;
     next();
   }
 
@@ -96,7 +102,7 @@ class GlobalData {
   }
 
   static init() {
-    return [this.auth, this.categories, this.settings, this.setLocals];
+    return [this.auth, this.categories, this.settings, this.seo, this.setLocals];
   }
 }
 

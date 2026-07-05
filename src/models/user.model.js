@@ -112,6 +112,11 @@ const UserSchema = new mongoose.Schema(
       default: true,
       index: true,
     },
+    // هش آخرین رفرش‌توکن صادرشده — برای ابطال نشست
+    refreshTokenHash: {
+      type: String,
+      default: null,
+    },
     lastLogin: {
       type: Date,
     },

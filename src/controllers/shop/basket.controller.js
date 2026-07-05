@@ -32,7 +32,11 @@ class basketController extends controller {
       const basket = await this.getActiveBasket(userId);
       await basket.populate("items.product", PRODUCT_SELECT);
 
-      return res.render("shop/basket", { basket });
+      return res.render("shop/basket", {
+        basket,
+        pageTitle: "سبد خرید",
+        noindex: true,
+      });
     } catch (err) {
       next(err);
     }

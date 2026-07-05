@@ -1,20 +1,13 @@
-const JWT = require('jsonwebtoken');
-const userModel= require('../models/user.model');
-const { verifyCookie } = require('../utils/function');
+const { resolveUser } = require("./auth.middleware");
 
+// احراز هویت اختیاری برای صفحات عمومی:
+// اگر توکن معتبر بود کاربر ست می‌شود، وگرنه به‌عنوان مهمان ادامه می‌دهد.
+// (نسخه‌ی قبلی با توکن منقضی کاربر را از صفحات عمومی به /auth می‌فرستاد)
 exports.verifyTokenPublic = async (req, res, next) => {
   try {
-    const token = req.cookies.fitrix_token;
-    if (!token) return next();
-    JWT.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET_USER, async (err, paylod) => {
-      if (err) return res.redirect("/auth");
-      const check = await verifyCookie(paylod.id,res);
-      if(!check) return next();
-      const user = await userModel.findById(paylod.id, { phone:1 , isActive:1 , role:1 });
-      if (!user) return res.redirect("/");
-      req.user = user;
-      next();
-    });
+    const user = await resolveUser(req, res);
+    if (user) req.user = user;
+    next();
   } catch (err) {
     next(err);
   }

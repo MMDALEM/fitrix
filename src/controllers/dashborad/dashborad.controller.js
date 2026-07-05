@@ -13,7 +13,12 @@ class dashboradController extends controller {
         .populate("items.product", "title image slug")
         .sort({ paidAt: -1 });
 
-      return res.render("dashborad/dashborad", { addresses, orders });
+      return res.render("dashborad/dashborad", {
+        addresses,
+        orders,
+        pageTitle: "حساب کاربری",
+        noindex: true,
+      });
     } catch (err) {
       next(err);
     }
@@ -22,7 +27,11 @@ class dashboradController extends controller {
   async address(req, res, next) {
     try {
       const addresses = await addressModel.find({ user: req.user._id });
-      return res.render("dashborad/address", { addresses });
+      return res.render("dashborad/address", {
+        addresses,
+        pageTitle: "آدرس‌های من",
+        noindex: true,
+      });
     } catch (err) {
       next(err);
     }
