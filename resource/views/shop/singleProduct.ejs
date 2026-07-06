@@ -391,6 +391,11 @@
                         </div>
                         <% } %>
 
+                        <div class="flex flex-col gap-y-3">
+                            <p class="text-lg font-DanaDemiBold dark:text-gray-300">نحوه مصرف</p>
+                            <p class="text-sm text-gray-300 dark:text-gray-500"><%= product.howToUse %></p>
+                        </div>
+
                         <!-- Features -->
                         <div class="w-full flex flex-col gap-y-4">
                             <h2 class="font-DanaDemiBold text-lg dark:text-gray-200">ویژگی‌ها</h2>
@@ -687,7 +692,7 @@
                             toast: true,
                             position: 'top-end',
                             showConfirmButton: false,
-                            timer: 2200,
+                            timer: 1200,
                             timerProgressBar: true,
                             didClose: () => location.reload()   // بعد از بسته شدن پیام، رفرش
                         });

@@ -261,10 +261,15 @@
             return saleActive(p) ? p.salePrice : (p.priceSingle || 0);
         }
 
-        let itemsTotal = 0;
+        let itemsTotal = 0;      // مجموع با تخفیف محصولات
+        let originalTotal = 0;   // مجموع بدون تخفیف (قیمت اصلی)
         validItems.forEach(function (it) {
-            itemsTotal += itemUnitPrice(it.product) * it.quantity;
+            var p = it.product;
+            itemsTotal += itemUnitPrice(p) * it.quantity;
+            originalTotal += (p.priceSingle || 0) * it.quantity;
         });
+        // مجموع تخفیف محصولات در کل سبد
+        let productDiscount = Math.max(originalTotal - itemsTotal, 0);
         let totalCount = validItems.reduce(function (sum, it) { return sum + it.quantity; }, 0);
         let discount = 0;
         // نرخ مالیات از تنظیمات سایت — اگر ادمین خاموش کرده باشد ۰ می‌شود
@@ -339,10 +344,18 @@
                                     <p class="mt-1">ارسال 1 روز کاری</p>
                                 </li>
                                 </ul>
-                                <span class="flex items-center gap-x-1 text-gray-700 dark:text-gray-300 font-DanaMedium mt-4">
-                                    <p class="font-DanaMedium text-xl row-total"><%= Number(unitPrice * item.quantity).toLocaleString('fa-IR') %></p>
-                                    <p class="text-lg">تومان</p>
-                                </span>
+                                <div class="flex flex-col gap-y-1 mt-4">
+                                    <% if (saleActive(p)) { %>
+                                    <span class="flex items-center gap-x-2">
+                                        <del class="text-gray-400 text-sm"><%= Number(p.priceSingle * item.quantity).toLocaleString('fa-IR') %> تومان</del>
+                                        <span style="background:#ef4444;color:#fff;border-radius:9999px;padding:1px 8px;font-size:11px;font-weight:700;white-space:nowrap"><%= Number(p.salePercent).toLocaleString('fa-IR') %>٪ تخفیف</span>
+                                    </span>
+                                    <% } %>
+                                    <span class="flex items-center gap-x-1 font-DanaMedium <%= saleActive(p) ? 'text-red-500' : 'text-gray-700 dark:text-gray-300' %>">
+                                        <p class="font-DanaMedium text-xl row-total"><%= Number(unitPrice * item.quantity).toLocaleString('fa-IR') %></p>
+                                        <p class="text-lg">تومان</p>
+                                    </span>
+                                </div>
                                 <svg class="flex sm:hidden absolute top-0 left-0 w-5 h-5 cursor-pointer remove-item" data-product-id="<%= p._id %>">
                                     <use href="#close"></use>
                                 </svg>
@@ -362,12 +375,20 @@
                     <li>
                         <p>قیمت کالاها (<span id="priceBoxCount"><%= totalCount %></span>)</p>
                         <p class="flex gap-x-1 text-gray-600 dark:text-gray-300">
-                            <span id="itemsTotal"><%= Number(itemsTotal).toLocaleString('fa-IR') %></span>
+                            <span id="itemsOriginal"><%= Number(originalTotal).toLocaleString('fa-IR') %></span>
                             <span class="hidden xl:flex">تومان</span>
                         </p>
                     </li>
+                    <% if (productDiscount > 0) { %>
                     <li>
-                        <p>تخفیف</p>
+                        <p>تخفیف محصولات</p>
+                        <p class="font-DanaMedium text-green-600 dark:text-green-400">
+                            <span><%= Number(productDiscount).toLocaleString('fa-IR') %>&minus;</span> تومان
+                        </p>
+                    </li>
+                    <% } %>
+                    <li>
+                        <p>تخفیف کد</p>
                         <p class="font-DanaMedium text-green-600 dark:text-green-400">
                             <span id="discount"><%= Number(discount).toLocaleString('fa-IR') %></span> تومان
                         </p>
@@ -387,14 +408,14 @@
                 </ul>
 
                 <!-- ===== فرم کد تخفیف ===== -->
-                <div class="flex flex-col gap-y-2 pt-4 border-t-2 border-dashed border-gray-400 dark:border-gray-500">
+                <div class="flex flex-col gap-y-2 pt-2 border-t-2 border-dashed border-gray-400 dark:border-gray-500">
+                    <p class="font-DanaMedium text-sm">کد تخفیف :</p>
                     <div class="flex items-stretch gap-x-2">
-                        <p class="font-DanaMedium pt-2 text-sm">کد تخفیف :</p>
-                        <input type="text" id="discountCode" style="width: 1rem;" name="discountCode" autocomplete="off"
+                        <input type="text" id="discountCode" name="discountCode" autocomplete="off"
                             placeholder="کد تخفیف را وارد کنید"
-                            class="pt-2 flex-1 min-w-0 text-sm bg-transparent rounded-lg border-2 border-gray-200 dark:border-white/20 py-2 px-3 outline-none focus:border-blue-500">
+                            class="flex-1 min-w-0 text-sm bg-transparent rounded-lg border-2 border-gray-200 dark:border-white/20 py-2 px-3 outline-none focus:border-blue-500">
                         <button type="button" id="applyDiscountBtn"
-                            class=" shrink-0 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all rounded-lg px-4 text-sm font-DanaMedium">
+                            class="shrink-0 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all rounded-lg px-4 text-sm font-DanaMedium">
                             اعمال
                         </button>
                     </div>

@@ -54,9 +54,41 @@
                                 <span class="font-DanaMedium text-gray-700 dark:text-gray-200 break-all text-left"><%= order.transactionId || '-' %></span>
                             </li>
                             <% } %>
+                            <%
+                                // محاسبه‌ی تخفیف محصولات از روی آیتم‌های سفارش (fullPrice − price)
+                                var _items = (order.items || []);
+                                var _prodDiscount = 0, _original = 0;
+                                _items.forEach(function (it) {
+                                    var full = (it.fullPrice != null && it.fullPrice > 0) ? it.fullPrice : it.price;
+                                    _original += (full || 0) * it.quantity;
+                                    _prodDiscount += Math.max((full || 0) - (it.price || 0), 0) * it.quantity;
+                                });
+                            %>
+                            <% if (_prodDiscount > 0) { %>
+                            <li>
+                                <span class="flex items-center gap-x-2 text-gray-400"><svg class="w-4 h-4"><use href="#tag"/></svg> قیمت کالاها</span>
+                                <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= Number(_original).toLocaleString("fa-IR") %> تومان</span>
+                            </li>
+                            <li>
+                                <span class="flex items-center gap-x-2 text-gray-400"><svg class="w-4 h-4"><use href="#tag"/></svg> تخفیف محصولات</span>
+                                <span class="font-DanaMedium text-green-600 dark:text-green-400">&minus;<%= Number(_prodDiscount).toLocaleString("fa-IR") %> تومان</span>
+                            </li>
+                            <% } %>
+                            <% if (order.discountAmount && order.discountAmount > 0) { %>
+                            <li>
+                                <span class="flex items-center gap-x-2 text-gray-400"><svg class="w-4 h-4"><use href="#tag"/></svg> تخفیف کد<%= order.discountCodeString ? ' (' + order.discountCodeString + ')' : '' %></span>
+                                <span class="font-DanaMedium text-green-600 dark:text-green-400">&minus;<%= Number(order.discountAmount).toLocaleString("fa-IR") %> تومان</span>
+                            </li>
+                            <% } %>
+                            <% if (order.taxPrice && order.taxPrice > 0) { %>
+                            <li>
+                                <span class="flex items-center gap-x-2 text-gray-400"><svg class="w-4 h-4"><use href="#tag"/></svg> مالیات</span>
+                                <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= Number(order.taxPrice).toLocaleString("fa-IR") %> تومان</span>
+                            </li>
+                            <% } %>
                             <li>
                                 <span class="flex items-center gap-x-2 text-gray-400"><svg class="w-4 h-4"><use href="#tag"/></svg> مبلغ پرداختی</span>
-                                <span class="font-DanaMedium text-gray-700 dark:text-gray-200"><%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString("fa-IR") %> تومان</span>
+                                <span class="font-DanaDemiBold text-blue-600 dark:text-blue-400"><%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString("fa-IR") %> تومان</span>
                             </li>
                         </ul>
                     </div>
