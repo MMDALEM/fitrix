@@ -66,6 +66,18 @@ exports.verifyAdmin = async (req, res, next) => {
     }
 
     req.user = user;
+
+    // تعداد اعلان‌های خوانده‌نشده‌ی ادمین — برای نشان‌گر (badge) منوی پنل
+    try {
+      const notificationModel = require("../models/notification.model");
+      res.locals.adminUnread = await notificationModel.countDocuments({
+        audience: "admin",
+        isRead: false,
+      });
+    } catch {
+      res.locals.adminUnread = 0;
+    }
+
     next();
   } catch (err) {
     next(err);

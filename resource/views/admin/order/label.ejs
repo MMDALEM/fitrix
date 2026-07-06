@@ -1,15 +1,101 @@
 <style>
     @media print {
-        .no-print { display: none !important; }
-        body { background: #fff !important; }
+        @page {
+            margin: 0;
+        }
+
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+        }
+
+        .no-print {
+            display: none !important;
+        }
     }
 </style>
+
+<script>
+    function printShippingLabel() {
+        const label = document.getElementById('shipping-label').outerHTML;
+
+        const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+            .map(el => el.outerHTML)
+            .join('\n');
+
+        const printWindow = window.open('', '_blank');
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="fa" dir="rtl">
+            <head>
+                <meta charset="UTF-8">
+                <title>چاپ برچسب سفارش</title>
+
+                ${styles}
+
+                <style>
+                    @page {
+                        margin: 0;
+                    }
+
+                    html,
+                    body {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: #fff !important;
+                        direction: rtl;
+                    }
+
+                    body {
+                        display: flex;
+                        justify-content: center;
+                        align-items: flex-start;
+                    }
+
+                    #shipping-label {
+                        width: 100%;
+                        max-width: 700px;
+                        margin: 0 auto;
+                        box-shadow: none !important;
+                    }
+
+                    .no-print {
+                        display: none !important;
+                    }
+                </style>
+            </head>
+
+            <body>
+                ${label}
+
+                <script>
+                    window.onload = function () {
+                        window.focus();
+                        window.print();
+                        window.onafterprint = function () {
+                            window.close();
+                        };
+                    };
+                <\/script>
+            </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+    }
+</script>
+
 <main class="container">
     <div class="max-w-2xl mx-auto mt-8">
 
         <div class="no-print flex items-center justify-between mb-4">
-            <a href="/admin/orders" class="text-sm text-blue-500 font-DanaMedium">→ بازگشت به سفارش‌ها</a>
-            <button onclick="window.print()"
+            <a href="/admin/orders" class="text-sm text-blue-500 font-DanaMedium">
+                → بازگشت به سفارش‌ها
+            </a>
+
+            <button onclick="printShippingLabel()"
                     class="flex items-center gap-x-1 bg-blue-500 hover:bg-blue-600 text-white transition-all rounded-lg px-5 py-2 text-sm font-DanaMedium">
                 <svg class="w-5 h-5"><use href="#tag" /></svg>
                 چاپ برچسب
@@ -17,53 +103,68 @@
         </div>
 
         <!-- برچسب پستی -->
-        <div class="border-2 border-gray-800 rounded-lg p-6 bg-white text-gray-900">
+        <div id="shipping-label" class="border-2 border-gray-800 rounded-lg p-6 bg-white text-gray-900">
+
             <div class="flex items-center justify-between border-b-2 border-gray-800 pb-3 mb-4">
                 <h1 class="font-DanaDemiBold text-xl">فیت ریکس | FitRix</h1>
+
                 <div class="text-left">
                     <p class="text-sm">کد سفارش</p>
-                    <p class="font-DanaDemiBold text-lg"><%= order.orderNumber || '-' %></p>
+                    <p class="font-DanaDemiBold text-lg">
+                        <%= order.orderNumber || '-' %>
+                    </p>
                 </div>
             </div>
 
             <!-- گیرنده -->
             <div class="mb-4">
-                <p class="font-DanaDemiBold mb-2 bg-gray-800 text-white inline-block px-3 py-1 rounded">گیرنده</p>
+                <p class="font-DanaDemiBold mb-2 bg-gray-800 text-white inline-block px-3 py-1 rounded">
+                    گیرنده
+                </p>
+
                 <div class="grid grid-cols-2 gap-2 text-sm mt-2">
-                    <p><span class="font-DanaMedium">نام:</span> <%= order.shippingDetails && order.shippingDetails.receiver || (order.user && order.user.fullName) || '-' %></p>
-                    <p><span class="font-DanaMedium">تلفن:</span> <%= order.shippingDetails && order.shippingDetails.phone || (order.user && order.user.phone) || '-' %></p>
-                    <p><span class="font-DanaMedium">کدپستی:</span> <%= order.shippingDetails && order.shippingDetails.postalCode || '-' %></p>
-                    <p class="col-span-2"><span class="font-DanaMedium">آدرس:</span> <%= order.shippingDetails && order.shippingDetails.address || '-' %></p>
+                    <p>
+                        <span class="font-DanaMedium">نام:</span>
+                        <%= order.shippingDetails && order.shippingDetails.receiver || (order.user && order.user.fullName) || '-' %>
+                    </p>
+
+                    <p>
+                        <span class="font-DanaMedium">تلفن:</span>
+                        <%= order.shippingDetails && order.shippingDetails.phone || (order.user && order.user.phone) || '-' %>
+                    </p>
+
+                    <p>
+                        <span class="font-DanaMedium">کدپستی:</span>
+                        <%= order.shippingDetails && order.shippingDetails.postalCode || '-' %>
+                    </p>
+
+                    <p class="col-span-2">
+                        <span class="font-DanaMedium">آدرس:</span>
+                        <%= order.shippingDetails && order.shippingDetails.address || '-' %>
+                    </p>
                 </div>
             </div>
 
-            <!-- اقلام بسته -->
-            <div class="mb-4">
-                <p class="font-DanaDemiBold mb-2 bg-gray-800 text-white inline-block px-3 py-1 rounded">محتویات بسته</p>
-                <table class="w-full text-sm mt-2 border border-gray-300">
-                    <thead>
-                        <tr class="bg-gray-100">
-                            <th class="border border-gray-300 px-2 py-1 text-right">محصول</th>
-                            <th class="border border-gray-300 px-2 py-1">تعداد</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% (order.items || []).forEach(function (it) { %>
-                            <% if (!it.product) return; %>
-                            <tr>
-                                <td class="border border-gray-300 px-2 py-1"><%= it.product.title %><% if (it.product.flavor) { %> - <%= it.product.flavor %><% } %><% if (it.product.weight) { %> (<%= it.product.weight %>)<% } %></td>
-                                <td class="border border-gray-300 px-2 py-1 text-center"><%= Number(it.quantity).toLocaleString('fa-IR') %></td>
-                            </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
+            <div class="flex items-center justify-between border-t-2 border-gray-800 pt-3 text-sm">
+                <p>
+                    <span class="font-DanaMedium">تاریخ:</span>
+                    <%= order.paidAt ? date(order.paidAt).format('jYYYY/jMM/jDD') : '-' %>
+                </p>
+
+                <p>
+                    <span class="font-DanaMedium">مبلغ:</span>
+                    <%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString('fa-IR') %>
+                    تومان
+                </p>
+
+                <% if (order.trackingCode) { %>
+                    <p>
+                        <span class="font-DanaMedium">رهگیری:</span>
+                        <%= order.trackingCode %>
+                    </p>
+                <% } %>
             </div>
 
-            <div class="flex items-center justify-between border-t-2 border-gray-800 pt-3 text-sm">
-                <p><span class="font-DanaMedium">تاریخ:</span> <%= order.paidAt ? date(order.paidAt).format('jYYYY/jMM/jDD') : '-' %></p>
-                <p><span class="font-DanaMedium">مبلغ:</span> <%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString('fa-IR') %> تومان</p>
-                <% if (order.trackingCode) { %><p><span class="font-DanaMedium">رهگیری:</span> <%= order.trackingCode %></p><% } %>
-            </div>
         </div>
     </div>
 </main>

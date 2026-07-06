@@ -356,39 +356,43 @@
 
                         <!-- بنر تخفیف ویژه + شمارش معکوس تا پایان تخفیف -->
                         <% if (saleActive(product)) { %>
-                        <div style="background:linear-gradient(135deg,#ef4444,#f97316);border-radius:.85rem;padding:.9rem 1rem;color:#fff;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem;box-shadow:0 10px 24px rgba(239,68,68,.28)">
-                            <div style="display:flex;align-items:center;gap:.6rem">
-                                <svg style="width:1.7rem;height:1.7rem;flex-shrink:0"><use href="#fire"></use></svg>
-                                <div>
-                                    <p style="font-weight:800;font-size:1.05rem;line-height:1.4">تخفیف ویژه <%= Number(product.salePercent).toLocaleString('fa-IR') %>٪</p>
-                                    <% if (product.saleEndDate) { %>
-                                    <p style="font-size:.72rem;opacity:.92">پایان تخفیف: <%= date(product.saleEndDate).format('jYYYY/jMM/jDD') %></p>
-                                    <% } else { %>
-                                    <p style="font-size:.72rem;opacity:.92">تا پایان موجودی</p>
-                                    <% } %>
+                            <% if (product.quantity > 0) { %>
+                            <div style="background:linear-gradient(135deg,#ef4444,#f97316);border-radius:.85rem;padding:.9rem 1rem;color:#fff;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem;box-shadow:0 10px 24px rgba(239,68,68,.28)">
+                                <div style="display:flex;align-items:center;gap:.6rem">
+                                    <svg style="width:1.7rem;height:1.7rem;flex-shrink:0"><use href="#fire"></use></svg>
+                                    
+                                    <div>
+                                        <p style="font-weight:800;font-size:1.05rem;line-height:1.4">تخفیف ویژه <%= Number(product.salePercent).toLocaleString('fa-IR') %>٪</p>
+                                        <% if (product.saleEndDate) { %>
+                                        <p style="font-size:.72rem;opacity:.92">پایان تخفیف: <%= date(product.saleEndDate).format('jYYYY/jMM/jDD') %></p>
+                                        <% } else { %>
+                                        <p style="font-size:.72rem;opacity:.92">تا پایان موجودی</p>
+                                        <% } %>
+                                    </div>
+                                    
                                 </div>
-                            </div>
-                            <% if (product.saleEndDate) { %>
-                            <div class="sale-countdown" data-end="<%= new Date(product.saleEndDate).getTime() %>" style="display:flex;gap:.35rem;text-align:center;direction:ltr">
-                                <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
-                                    <div class="cd-d" style="font-weight:800;font-size:1rem">۰</div>
-                                    <div style="font-size:.6rem;opacity:.9">روز</div>
+                                <% if (product.saleEndDate) { %>
+                                <div class="sale-countdown" data-end="<%= new Date(product.saleEndDate).getTime() %>" style="display:flex;gap:.35rem;text-align:center;direction:ltr">
+                                    <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
+                                        <div class="cd-d" style="font-weight:800;font-size:1rem">۰</div>
+                                        <div style="font-size:.6rem;opacity:.9">روز</div>
+                                    </div>
+                                    <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
+                                        <div class="cd-h" style="font-weight:800;font-size:1rem">۰۰</div>
+                                        <div style="font-size:.6rem;opacity:.9">ساعت</div>
+                                    </div>
+                                    <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
+                                        <div class="cd-m" style="font-weight:800;font-size:1rem">۰۰</div>
+                                        <div style="font-size:.6rem;opacity:.9">دقیقه</div>
+                                    </div>
+                                    <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
+                                        <div class="cd-s" style="font-weight:800;font-size:1rem">۰۰</div>
+                                        <div style="font-size:.6rem;opacity:.9">ثانیه</div>
+                                    </div>
                                 </div>
-                                <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
-                                    <div class="cd-h" style="font-weight:800;font-size:1rem">۰۰</div>
-                                    <div style="font-size:.6rem;opacity:.9">ساعت</div>
-                                </div>
-                                <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
-                                    <div class="cd-m" style="font-weight:800;font-size:1rem">۰۰</div>
-                                    <div style="font-size:.6rem;opacity:.9">دقیقه</div>
-                                </div>
-                                <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
-                                    <div class="cd-s" style="font-weight:800;font-size:1rem">۰۰</div>
-                                    <div style="font-size:.6rem;opacity:.9">ثانیه</div>
-                                </div>
+                                <% } %>
                             </div>
                             <% } %>
-                        </div>
                         <% } %>
 
                         <!-- Features -->
@@ -435,7 +439,9 @@
             <!-- PRICE & ADD TO CART BOX -->
             <% var hasSale = saleActive(product); %>
             <% var finalPrice = hasSale ? product.salePrice : product.priceSingle; %>
+            
             <div class="w-full lg:w-1/4 lg:sticky top-5 flex flex-col gap-y-6 purchase-box">
+            <% if (product.quantity > 0) { %>
                 <div class="flex flex-col items-center gap-y-2">
                     <% if (hasSale) { %>
                         <div class="flex items-center gap-x-2">
@@ -452,6 +458,7 @@
                         <p class="font-Dana text-sm text-500">تومان</p>
                     </div>
                 </div>
+            <% } %>
 
                 <!-- هشدار موجودی کم (کمتر از ۳ عدد) -->
                 <% if (product.quantity > 0 && product.quantity < 3) { %>
@@ -497,6 +504,7 @@
                     </button>
                 <% } %>
             </div>
+  
         </section>
 
         <!-- Related products -->

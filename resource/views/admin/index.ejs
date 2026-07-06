@@ -67,6 +67,38 @@
                      </div>
                    </div>
                </div>
+               <!-- اعلان‌های خرید (اطلاع‌رسانی به مدیریت) -->
+               <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white mt-5">
+                <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-x-2">
+                        <svg class="size-7 text-blue-500"><use href="#bell" /></svg>
+                        <h2 class="font-DanaMedium text-lg">اعلان‌های خرید</h2>
+                        <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
+                            <span class="text-xs bg-red-500 text-white rounded-full px-2 py-0.5"><%= Number(unreadCount).toLocaleString('fa-IR') %> جدید</span>
+                        <% } %>
+                    </span>
+                    <a href="/admin/notifications" class="text-sm text-blue-500 font-DanaMedium">مشاهده همه</a>
+                </div>
+                <div class="mt-4 flex flex-col gap-y-2">
+                    <% if (typeof notifications !== 'undefined' && notifications.length) { %>
+                        <% notifications.forEach(function (n) { %>
+                            <div class="flex items-start gap-x-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3 <%= n.isRead ? '' : 'bg-blue-50/50 dark:bg-blue-900/10' %>">
+                                <span class="mt-0.5 shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-blue-500/10 text-blue-500">
+                                    <svg class="size-5"><use href="#shopping-bag" /></svg>
+                                </span>
+                                <div class="flex flex-col gap-y-1 min-w-0">
+                                    <p class="font-DanaMedium text-sm"><%= n.title %></p>
+                                    <% if (n.message) { %><p class="text-xs text-gray-500 dark:text-gray-400 leading-6 line-clamp-2"><%= n.message %></p><% } %>
+                                    <span class="text-xs text-gray-400"><%= date(n.createdAt).format('jYYYY/jMM/jDD - HH:mm') %></span>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="text-center text-gray-400 py-6 text-sm">هنوز خریدی ثبت نشده است.</p>
+                    <% } %>
+                </div>
+               </div>
+
                <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white mt-5">
                 <span class="flex items-center gap-x-2">
                     <img src="./images/svg/status-delivered.svg" class="w-10" alt="">
@@ -91,54 +123,28 @@
                               </tr>
                         </thead>
                             <tbody>
-                                <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-                                    <th scope="row"
-                                        class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
-                                            <img class="w-10 object-cover" src="" alt="">
-                                          وی
-                                    </th>
-                                    <td class="px-6 py-5">
-                                                1402/11/11
-                                    </td>
-                                    <td class="px-6 py-5">
-                                                62,000,000 تومان
-                                    </td>
-                                    <td class="px-6 py-5 text-red-500 font-DanaDemiBold">
-                                                لغو شده
-                                    </td>
-                                </tr>
-                                <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-                                    <th scope="row"
-                                        class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
-                                            <img class="w-10 object-cover" src="" alt="">
-                                          گینر
-                                    </th>
-                                    <td class="px-6 py-5">
-                                                1402/11/11
-                                    </td>
-                                    <td class="px-6 py-5">
-                                                62,000,000 تومان
-                                    </td>
-                                    <td class="px-6 py-5 text-yellow-500 font-DanaDemiBold">
-                                        درانتظار پرداخت
-                                    </td>
-                                </tr>
-                                <tr class="bg-white border-b cursor-pointer dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-                                    <th scope="row"
-                                        class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
-                                            <img class="w-10 object-cover" src="" alt="">
-                                          کراتین
-                                    </th>
-                                    <td class="px-6 py-5">
-                                                1402/11/11
-                                    </td>
-                                    <td class="px-6 py-5">
-                                                62,000,000 تومان
-                                    </td>
-                                    <td class="px-6 py-5 text-green-500 font-DanaDemiBold">
-                                       پرداخت شده
-                                    </td>
-                                </tr>
+                                <% if (typeof recentOrders !== 'undefined' && recentOrders.length) { %>
+                                    <% recentOrders.forEach(function (order) { %>
+                                        <% var firstItem = (order.items || []).find(function (it) { return it.product; }); %>
+                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                                            <th scope="row" class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
+                                                <% if (firstItem) { %>
+                                                    <img class="w-10 h-10 object-cover rounded" src="<%= firstItem.product.image %>" alt="">
+                                                    <span class="flex flex-col gap-y-0.5">
+                                                        <span class="line-clamp-1"><%= firstItem.product.title %></span>
+                                                        <% if (order.items.length > 1) { %><span class="text-xs text-gray-400">و <%= Number(order.items.length - 1).toLocaleString('fa-IR') %> قلم دیگر</span><% } %>
+                                                        <span class="text-xs text-gray-400">کد: <%= order.orderNumber || '-' %></span>
+                                                    </span>
+                                                <% } else { %><span class="text-gray-400">—</span><% } %>
+                                            </th>
+                                            <td class="px-6 py-5"><%= order.paidAt ? date(order.paidAt).format('jYYYY/jMM/jDD') : '-' %></td>
+                                            <td class="px-6 py-5 whitespace-nowrap"><%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString('fa-IR') %> تومان</td>
+                                            <td class="px-6 py-5 text-green-500 font-DanaDemiBold whitespace-nowrap"><%= order.statusLabel || 'پرداخت شده' %></td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr class="bg-white dark:bg-gray-800"><td colspan="4" class="px-6 py-8 text-center text-gray-400">هنوز سفارشی ثبت نشده است.</td></tr>
+                                <% } %>
                             </tbody>
                     </table>
                 </div>

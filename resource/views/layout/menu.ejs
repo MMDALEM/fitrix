@@ -83,6 +83,9 @@
                     <a href="/admin/notifications">
                         اعلان‌ها
                     </a>
+                    <% if (typeof adminUnread !== 'undefined' && adminUnread > 0) { %>
+                        <span class="mr-auto text-xs bg-red-500 text-white rounded-full px-2 py-0.5"><%= Number(adminUnread).toLocaleString('fa-IR') %></span>
+                    <% } %>
                 </li>
 
                 <li class="hover:text-blue-500">
@@ -184,6 +187,9 @@
                                 <use href="#bell"></use>
                             </svg>
                             <a href="/admin/notifications">اعلان‌ها</a>
+                            <% if (typeof adminUnread !== 'undefined' && adminUnread > 0) { %>
+                                <span class="mr-auto text-xs bg-red-500 text-white rounded-full px-2 py-0.5"><%= Number(adminUnread).toLocaleString('fa-IR') %></span>
+                            <% } %>
                         </li>
                         <li class="hover:text-blue-500">
                             <svg class="w-6 h-6 ">

@@ -75,7 +75,7 @@
                         <% (order.items || []).forEach(function (it) { %>
                             <% if (!it.product) return; %>
                             <div class="flex items-center gap-x-3">
-                                <img src="<%= it.product.image %>" class="w-12 h-12 object-cover rounded" alt="<%= it.product.title %>">
+                                <img src="<%= it.product.image %>" style="height: 10%; width: 10%;" class="object-cover rounded" alt="<%= it.product.title %>">
                                 <span class="flex-1 line-clamp-1 text-sm"><%= it.product.title %></span>
                                 <span class="text-sm text-gray-500">تعداد: <%= Number(it.quantity).toLocaleString('fa-IR') %></span>
                                 <span class="text-sm font-DanaMedium"><%= Number((it.price||0) * it.quantity).toLocaleString('fa-IR') %> تومان</span>

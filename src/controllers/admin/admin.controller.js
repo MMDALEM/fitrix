@@ -4,6 +4,7 @@ const basketModel = require("../../models/basket.model");
 const productModel = require("../../models/product.model");
 const userModel = require("../../models/user.model");
 const settingModel = require("../../models/setting.model");
+const notificationModel = require("../../models/notification.model");
 const {
   updateExchangeRateNavasan,
   getExchangeRate,
@@ -21,7 +22,34 @@ class adminController extends controller {
         currency: "AED",
       });
 
-      return res.render("admin", { users, products, orders, ExchangeRates });
+      // اعلان‌های خرید برای نمایش روی داشبورد ادمین
+      const notifications = await notificationModel
+        .find({ audience: "admin" })
+        .sort({ createdAt: -1 })
+        .limit(6)
+        .lean();
+      const unreadCount = await notificationModel.countDocuments({
+        audience: "admin",
+        isRead: false,
+      });
+
+      // آخرین سفارش‌های پرداخت‌شده (واقعی) برای جدول داشبورد
+      const recentOrders = await basketModel
+        .find({ status: "paid" })
+        .populate("items.product", "title image")
+        .sort({ paidAt: -1 })
+        .limit(6)
+        .lean();
+
+      return res.render("admin", {
+        users,
+        products,
+        orders,
+        ExchangeRates,
+        notifications,
+        unreadCount,
+        recentOrders,
+      });
     } catch (err) {
       next(err);
     }
