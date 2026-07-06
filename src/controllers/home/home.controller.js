@@ -7,10 +7,17 @@ class homeController extends controller {
   async home(req, res, next) {
     try {
       const brands = await brandModel.find({ showInHomePage: true }).lean();
+
+      // اسلایدر «فروش شگفت‌انگیز»: فقط محصولاتی که در پنل ادمین شگفت‌انگیز
+      // شده‌اند نمایش داده می‌شوند (بدون fallback به محصولات دیگر)
       const products = await productModel
-        .find()
-        .sort({ createdAt: -1 })
-        .limit(10)
+        .find({
+          amazing: true,
+          isActive: true,
+          quantity: { $gt: 0 },
+        })
+        .sort({ updatedAt: -1 })
+        .limit(12)
         .lean();
 
       return res.render("home/home", {

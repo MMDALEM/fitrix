@@ -40,16 +40,23 @@ class paymentController extends controller {
   async calcBasketTotals(userId, discountCodeRaw) {
     const basket = await basketModel
       .findOne({ user: userId, status: "active" })
-      .populate("items.product", "title image priceSingle quantity isActive");
+      .populate(
+        "items.product",
+        "title image priceSingle salePrice salePercent onSale saleStartDate saleEndDate quantity isActive",
+      );
 
     const items =
       basket && basket.items
         ? basket.items.filter((it) => it.product && it.product.isActive)
         : [];
 
+    // قیمت مؤثر محصول: اگر تخفیف محصول همین حالا فعال باشد (بازه‌ی تاریخ) قیمت تخفیف‌خورده
+    const effectivePrice = (p) =>
+      p.saleIsActive() ? p.salePrice : p.priceSingle || 0;
+
     let itemsPrice = 0;
     items.forEach((it) => {
-      itemsPrice += (it.product.priceSingle || 0) * it.quantity;
+      itemsPrice += effectivePrice(it.product) * it.quantity;
     });
 
     // ───── اعمال کد تخفیف (در صورت وجود) ─────
@@ -173,11 +180,18 @@ class paymentController extends controller {
       const basket = totals.basket;
 
       // قیمت لحظه‌ی پرداخت را روی آیتم‌های سبد ثبت می‌کنیم (snapshot)
+      // + قیمت کامل و درصد تخفیف محصول برای گزارش حسابداری
       basket.items.forEach((it) => {
         const p = totals.items.find(
           (vi) => vi.product._id.toString() === it.product._id.toString(),
         );
-        if (p) it.price = p.product.priceSingle || it.price;
+        if (p) {
+          const prod = p.product;
+          const hasSale = prod.saleIsActive();
+          it.price = (hasSale ? prod.salePrice : prod.priceSingle) || it.price;
+          it.fullPrice = prod.priceSingle || it.price;
+          it.discountPercent = hasSale ? prod.salePercent || 0 : 0;
+        }
       });
 
       // ───── ذخیره‌ی اطلاعات سفارش روی همین سبدِ فعال ─────

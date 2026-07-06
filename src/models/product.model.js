@@ -124,7 +124,20 @@ const ProductSchema = new Schema(
       min: 0,
       default: null,
     },
+    // درصد تخفیف خود محصول (روی قیمت تکی اعمال می‌شود)
+    salePercent: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0,
+    },
     onSale: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    // نمایش در اسلایدر «فروش شگفت‌انگیز» صفحه اصلی
+    amazing: {
       type: Boolean,
       default: false,
       index: true,
@@ -180,6 +193,33 @@ const ProductSchema = new Schema(
 );
 
 ProductSchema.index({ title: "text", description: "text" });
+
+// آیا تخفیف محصول همین حالا فعال است؟ (درصد تنظیم‌شده + داخل بازه‌ی تاریخ)
+ProductSchema.methods.saleIsActive = function () {
+  if (!this.onSale || !this.salePrice || this.salePrice <= 0) return false;
+  const now = new Date();
+  if (this.saleStartDate && this.saleStartDate > now) return false;
+  if (this.saleEndDate && this.saleEndDate < now) return false;
+  return true;
+};
+
+// شرط کوئری برای محصولاتی که تخفیفشان همین حالا فعال است (بازه‌ی تاریخ لحاظ می‌شود)
+ProductSchema.statics.activeSaleConditions = function () {
+  const now = new Date();
+  return {
+    onSale: true,
+    salePrice: { $gt: 0 },
+    $and: [
+      { $or: [{ saleStartDate: null }, { saleStartDate: { $lte: now } }] },
+      { $or: [{ saleEndDate: null }, { saleEndDate: { $gte: now } }] },
+    ],
+  };
+};
+
+// قیمت مؤثر فروش تکی: اگر تخفیف محصول فعال باشد قیمت تخفیف‌خورده، وگرنه قیمت تکی
+ProductSchema.virtual("effectivePrice").get(function () {
+  return this.saleIsActive() ? this.salePrice : this.priceSingle;
+});
 
 ProductSchema.plugin(mongoosepaginate);
 

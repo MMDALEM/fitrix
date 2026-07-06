@@ -53,9 +53,13 @@
                                 <div class="tooltiptext">علاقه‌مندی</div>
                             </div>
                         </div>
-                        <% if (product.originalPrice && product.originalPrice > product.priceSingle) { %>
+                        <% if (product.quantity <= 0) { %>
+                        <span class="product-card_badge" style="background-color:#6b7280;">
+                            ناموجود
+                        </span>
+                        <% } else if (product.onSale && product.salePercent > 0) { %>
                         <span class="product-card_badge">
-                            <%= Math.round((1 - product.priceSingle / product.originalPrice) * 100) %>% تخفیف
+                            <%= product.salePercent %>% تخفیف
                         </span>
                         <% } %>
                     </div>
@@ -87,10 +91,12 @@
                                 </span>
                             </div>
                             <div class="product-card_price">
-                                <% if (product.priceSingle && product.originalPrice > product.priceSingle) { %>
+                                <% if (product.onSale && product.salePrice) { %>
                                 <del><%= product.priceSingle.toLocaleString() %> <h6>تومان</h6></del>
-                                <% } %>
+                                <p class="text-red-500"><%= product.salePrice.toLocaleString() %></p>
+                                <% } else { %>
                                 <p><%= product.priceSingle.toLocaleString() %></p>
+                                <% } %>
                                 <span>تومان</span>
                             </div>
                         </div>

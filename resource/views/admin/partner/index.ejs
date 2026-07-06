@@ -21,8 +21,16 @@
                     <p class="font-DanaDemiBold text-green-600"><%= Number(totals.grossProfit).toLocaleString('fa-IR') %></p>
                 </div>
                 <div class="flex flex-col gap-y-1">
-                    <p class="text-gray-500 text-sm">تخفیف‌ها</p>
+                    <p class="text-gray-500 text-sm">تخفیف کدها (سفارش)</p>
                     <p class="font-DanaDemiBold text-orange-500"><%= Number(totals.totalDiscount).toLocaleString('fa-IR') %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">تخفیف محصولات</p>
+                    <p class="font-DanaDemiBold text-orange-500"><%= Number(totals.totalProductDiscount).toLocaleString('fa-IR') %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">هزینه سایت (۱۵٪ سود هر محصول)</p>
+                    <p class="font-DanaDemiBold text-purple-500"><%= Number(totals.totalSiteCost).toLocaleString('fa-IR') %></p>
                 </div>
                 <div class="flex flex-col gap-y-1">
                     <p class="text-gray-500 text-sm">هزینه‌های اضافه</p>
@@ -45,7 +53,7 @@
                     <p class="font-DanaDemiBold text-blue-600 text-lg"><%= Number(profitShare).toLocaleString('fa-IR') %></p>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 -mt-2">سود خالص = سود ناخالص − تخفیف‌ها − هزینه‌های اضافه. مالیات جداست و تقسیم نمی‌شود.</p>
+            <p class="text-xs text-gray-400 -mt-2">سود خالص = سود ناخالص − تخفیف کدها − هزینه‌های اضافه − هزینه سایت (۱۵٪ از سود هر تک محصول). تخفیف محصولات از قبل در سود ناخالص لحاظ شده است. مالیات جداست و تقسیم نمی‌شود.</p>
 
             <!-- کل مبلغی که باید به هر شریک داده شود -->
             <div class="grid grid-cols-12 gap-4 child:col-span-12 md:child:col-span-6 child:rounded-lg child:shadow child:p-4">
@@ -76,15 +84,18 @@
                             <tr>
                                 <th class="px-4 py-3">محصول</th>
                                 <th class="px-4 py-3">درصد سود</th>
+                                <th class="px-4 py-3">درصد تخفیف</th>
                                 <th class="px-4 py-3">تعداد فروش</th>
                                 <th class="px-4 py-3">کل مبلغ</th>
+                                <th class="px-4 py-3">تخفیف محصول</th>
                                 <th class="px-4 py-3">سود</th>
+                                <th class="px-4 py-3">هزینه سایت (۱۵٪)</th>
                                 <th class="px-4 py-3">مالیات</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% if (!productRows.length) { %>
-                                <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">هنوز فروشی ثبت نشده است.</td></tr>
+                                <tr><td colspan="9" class="px-4 py-6 text-center text-gray-400">هنوز فروشی ثبت نشده است.</td></tr>
                             <% } %>
                             <% productRows.forEach(function (r) { %>
                                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
@@ -93,10 +104,56 @@
                                         <span class="line-clamp-1"><%= r.title %></span>
                                     </th>
                                     <td class="px-4 py-3"><%= Number(r.percent).toLocaleString('fa-IR') %>٪</td>
+                                    <td class="px-4 py-3">
+                                        <% if (r.discountPercent > 0) { %>
+                                            <span class="text-orange-500 font-DanaMedium"><%= Number(r.discountPercent).toLocaleString('fa-IR') %>٪</span>
+                                        <% } else { %>
+                                            <span class="text-gray-400">—</span>
+                                        <% } %>
+                                    </td>
                                     <td class="px-4 py-3"><%= Number(r.quantity).toLocaleString('fa-IR') %></td>
                                     <td class="px-4 py-3"><%= Number(r.sale).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3 text-orange-500"><%= Number(r.discount).toLocaleString('fa-IR') %></td>
                                     <td class="px-4 py-3 text-green-600 font-DanaMedium"><%= Number(r.profit).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3 text-purple-500"><%= Number(r.siteCost).toLocaleString('fa-IR') %></td>
                                     <td class="px-4 py-3"><%= Number(r.tax).toLocaleString('fa-IR') %></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- تفکیک درصدهای تخفیف محصولات -->
+            <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <h2 class="font-DanaMedium text-lg mb-1">تخفیف محصولات — تفکیک درصدها</h2>
+                <p class="text-xs text-gray-400 mb-4">فروش‌های پرداخت‌شده بر اساس درصد تخفیفِ محصول در لحظه‌ی خرید گروه‌بندی شده‌اند.</p>
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 bg-gray-100 dark:bg-gray-900 dark:text-gray-200">
+                            <tr>
+                                <th class="px-4 py-3">درصد تخفیف</th>
+                                <th class="px-4 py-3">تعداد محصول</th>
+                                <th class="px-4 py-3">تعداد فروش</th>
+                                <th class="px-4 py-3">کل مبلغ فروش</th>
+                                <th class="px-4 py-3">جمع تخفیف</th>
+                                <th class="px-4 py-3">سود</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (!discountRows.length) { %>
+                                <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">هنوز فروشی ثبت نشده است.</td></tr>
+                            <% } %>
+                            <% discountRows.forEach(function (d) { %>
+                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                    <td class="px-4 py-3 font-DanaMedium <%= d.percent > 0 ? 'text-orange-500' : 'text-gray-500' %>">
+                                        <%= d.percent > 0 ? Number(d.percent).toLocaleString('fa-IR') + '٪' : 'بدون تخفیف' %>
+                                    </td>
+                                    <td class="px-4 py-3"><%= Number(d.productsCount).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3"><%= Number(d.quantity).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3"><%= Number(d.sale).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3 text-orange-500 font-DanaMedium"><%= Number(d.discount).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3 text-green-600"><%= Number(d.profit).toLocaleString('fa-IR') %></td>
                                 </tr>
                             <% }) %>
                         </tbody>

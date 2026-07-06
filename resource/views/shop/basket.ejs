@@ -256,9 +256,14 @@
             ? basket.items.filter(function (it) { return it.product; })
             : [];
 
+        // قیمت مؤثر هر محصول: اگر تخفیف محصول همین حالا فعال باشد (بازه‌ی تاریخ) قیمت تخفیف‌خورده
+        function itemUnitPrice(p) {
+            return saleActive(p) ? p.salePrice : (p.priceSingle || 0);
+        }
+
         let itemsTotal = 0;
         validItems.forEach(function (it) {
-            itemsTotal += (it.product.priceSingle || 0) * it.quantity;
+            itemsTotal += itemUnitPrice(it.product) * it.quantity;
         });
         let totalCount = validItems.reduce(function (sum, it) { return sum + it.quantity; }, 0);
         let discount = 0;
@@ -298,7 +303,7 @@
             <div class="w-full flex flex-col gap-y-4 child:p-2 lg:child:p-4">
                 <% validItems.forEach(function (item, index) { %>
                     <% let p = item.product; %>
-                    <% let unitPrice = p.priceSingle || 0; %>
+                    <% let unitPrice = itemUnitPrice(p); %>
                     <div class="cart-row flex justify-center sm:justify-between relative <%= index < validItems.length - 1 ? 'border-b-2 border-gray-200 dark:border-white/20' : '' %>"
                         data-product-id="<%= p._id %>"
                         data-unit-price="<%= unitPrice %>"

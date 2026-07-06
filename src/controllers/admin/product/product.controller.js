@@ -67,6 +67,54 @@ class productController extends controller {
     }
   }
 
+  // صفحه‌ی مدیریت «فروش شگفت‌انگیز» — انتخاب محصولات اسلایدر صفحه اصلی
+  async amazingPage(req, res, next) {
+    try {
+      const products = await productModel
+        .find({})
+        .populate("brand", "title")
+        .sort({ amazing: -1, onSale: -1, updatedAt: -1 })
+        .lean();
+
+      return res.render("admin/product/amazing", { products });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // فعال/غیرفعال کردن نمایش یک محصول در فروش شگفت‌انگیز
+  async toggleAmazing(req, res, next) {
+    try {
+      const { id } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return this.alertAndBack(req, res, {
+          title: "شناسه محصول معتبر نیست",
+          icon: "error",
+        });
+      }
+
+      const product = await productModel.findById(id);
+      if (!product) {
+        return this.alertAndBack(req, res, {
+          title: "محصول یافت نشد",
+          icon: "error",
+        });
+      }
+
+      product.amazing = !product.amazing;
+      await product.save();
+
+      return this.alertAndBack(req, res, {
+        title: product.amazing
+          ? `«${product.title}» به فروش شگفت‌انگیز اضافه شد`
+          : `«${product.title}» از فروش شگفت‌انگیز حذف شد`,
+        icon: "success",
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async createPage(req, res, next) {
     try {
       const categories = await categoriesModel.find().lean();
@@ -98,6 +146,7 @@ class productController extends controller {
         type,
         servings,
         single, // فقط درصد تکی از فرم می‌آید
+        salePercent, // درصد تخفیف خود محصول (اختیاری)
       } = req.body;
 
       if (!req.file) {
@@ -144,6 +193,8 @@ class productController extends controller {
 
       const image = `/uploads/files/product/${req.file.filename}`;
 
+      const sale = this.calcSale(priceSingle, salePercent);
+
       await productModel.create({
         title,
         slug,
@@ -168,6 +219,9 @@ class productController extends controller {
         priceHigh10,
         priceHigh15,
         priceHigh20,
+        salePercent: sale.percent,
+        salePrice: sale.price,
+        onSale: sale.on,
         AED: aedRate,
         type,
       });
@@ -236,6 +290,7 @@ class productController extends controller {
         type,
         servings,
         single,
+        salePercent,
       } = req.body;
 
       const missing = [];
@@ -275,6 +330,8 @@ class productController extends controller {
         aedRate,
       } = await this.convertToIRR(Number(originalPrice), Number(single));
 
+      const sale = this.calcSale(priceSingle, salePercent);
+
       const updateData = {
         title,
         slug: this.slugify(title),
@@ -301,6 +358,9 @@ class productController extends controller {
         priceHigh10,
         priceHigh15,
         priceHigh20,
+        salePercent: sale.percent,
+        salePrice: sale.price,
+        onSale: sale.on,
         AED: aedRate,
         type,
       };
@@ -342,6 +402,22 @@ class productController extends controller {
     }
   }
 
+  // محاسبه‌ی قیمت تخفیف‌خورده‌ی محصول از روی قیمت تکی و درصد تخفیف
+  // گرد کردن به نزدیک‌ترین ۱۰۰۰ تومان
+  calcSale(priceSingle, salePercent) {
+    let percent = Number(salePercent);
+    if (!Number.isFinite(percent) || percent < 0) percent = 0;
+    if (percent > 100) percent = 100;
+
+    if (percent === 0) {
+      return { percent: 0, price: null, on: false };
+    }
+
+    const price =
+      Math.round((priceSingle * (1 - percent / 100)) / 1000) * 1000;
+    return { percent, price, on: true };
+  }
+
   async convertToIRR(originalPrice, single) {
     const aedRate = await getExchangeRate();
     if (!aedRate) throw new Error("نرخ ارز موجود نیست");
@@ -376,7 +452,10 @@ class productController extends controller {
       // درصدهای عمده‌ی ثابت — اگر خواستی عوض کنی فقط همین‌جا تغییر بده
       const HIGH = [5, 10, 15, 20];
 
-      const products = await productModel.find({}, "originalPrice darsad");
+      const products = await productModel.find(
+        {},
+        "originalPrice darsad salePercent",
+      );
 
       if (products.length === 0) {
         return res.json({
@@ -389,6 +468,7 @@ class productController extends controller {
       const operations = products.map((product) => {
         const originalPrice = product.originalPrice || 0; // درهم خام (دست نمی‌خورد)
         const single = product.darsad?.single ?? 0; // درصد تکی فعلی محصول
+        const salePercent = product.salePercent || 0; // درصد تخفیف خود محصول
 
         const base = originalPrice * aedRate; // پایه به تومان
 
@@ -396,12 +476,22 @@ class productController extends controller {
         const calc = (percent) =>
           Math.ceil((base * (1 + percent / 100)) / 10000) * 10000;
 
+        // بازمحاسبه‌ی قیمت تخفیف‌خورده با قیمت تکی جدید
+        const newPriceSingle = calc(single);
+        const salePrice =
+          salePercent > 0
+            ? Math.round((newPriceSingle * (1 - salePercent / 100)) / 1000) *
+              1000
+            : null;
+
         return {
           updateOne: {
             filter: { _id: product._id },
             update: {
               $set: {
-                priceSingle: calc(single),
+                priceSingle: newPriceSingle,
+                salePrice,
+                onSale: salePercent > 0,
                 priceHigh5: calc(HIGH[0]),
                 priceHigh10: calc(HIGH[1]),
                 priceHigh15: calc(HIGH[2]),

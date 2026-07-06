@@ -354,6 +354,43 @@
                             <p class="text-sm text-gray-300 dark:text-gray-500"><%= product.description %></p>
                         </div>
 
+                        <!-- بنر تخفیف ویژه + شمارش معکوس تا پایان تخفیف -->
+                        <% if (saleActive(product)) { %>
+                        <div style="background:linear-gradient(135deg,#ef4444,#f97316);border-radius:.85rem;padding:.9rem 1rem;color:#fff;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem;box-shadow:0 10px 24px rgba(239,68,68,.28)">
+                            <div style="display:flex;align-items:center;gap:.6rem">
+                                <svg style="width:1.7rem;height:1.7rem;flex-shrink:0"><use href="#fire"></use></svg>
+                                <div>
+                                    <p style="font-weight:800;font-size:1.05rem;line-height:1.4">تخفیف ویژه <%= Number(product.salePercent).toLocaleString('fa-IR') %>٪</p>
+                                    <% if (product.saleEndDate) { %>
+                                    <p style="font-size:.72rem;opacity:.92">پایان تخفیف: <%= date(product.saleEndDate).format('jYYYY/jMM/jDD') %></p>
+                                    <% } else { %>
+                                    <p style="font-size:.72rem;opacity:.92">تا پایان موجودی</p>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <% if (product.saleEndDate) { %>
+                            <div class="sale-countdown" data-end="<%= new Date(product.saleEndDate).getTime() %>" style="display:flex;gap:.35rem;text-align:center;direction:ltr">
+                                <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
+                                    <div class="cd-d" style="font-weight:800;font-size:1rem">۰</div>
+                                    <div style="font-size:.6rem;opacity:.9">روز</div>
+                                </div>
+                                <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
+                                    <div class="cd-h" style="font-weight:800;font-size:1rem">۰۰</div>
+                                    <div style="font-size:.6rem;opacity:.9">ساعت</div>
+                                </div>
+                                <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
+                                    <div class="cd-m" style="font-weight:800;font-size:1rem">۰۰</div>
+                                    <div style="font-size:.6rem;opacity:.9">دقیقه</div>
+                                </div>
+                                <div style="background:rgba(255,255,255,.22);border-radius:.5rem;padding:.3rem .5rem;min-width:2.6rem">
+                                    <div class="cd-s" style="font-weight:800;font-size:1rem">۰۰</div>
+                                    <div style="font-size:.6rem;opacity:.9">ثانیه</div>
+                                </div>
+                            </div>
+                            <% } %>
+                        </div>
+                        <% } %>
+
                         <!-- Features -->
                         <div class="w-full flex flex-col gap-y-4">
                             <h2 class="font-DanaDemiBold text-lg dark:text-gray-200">ویژگی‌ها</h2>
@@ -396,14 +433,27 @@
             </div>
 
             <!-- PRICE & ADD TO CART BOX -->
+            <% var hasSale = saleActive(product); %>
+            <% var finalPrice = hasSale ? product.salePrice : product.priceSingle; %>
             <div class="w-full lg:w-1/4 lg:sticky top-5 flex flex-col gap-y-6 purchase-box">
-                <div class="flex items-center gap-x-1 justify-center">
-                    <p class="text-2xl font-DanaDemiBold product-price" data-price="<%= product.priceSingle %>">
-                        <%= (product.priceSingle).toLocaleString('fa-IR') %>
-                    </p>
-                    <p class="font-Dana text-sm text-500">تومان</p>
+                <div class="flex flex-col items-center gap-y-2">
+                    <% if (hasSale) { %>
+                        <div class="flex items-center gap-x-2">
+                            <span class="bg-red-500 text-white text-xs font-DanaMedium rounded-full px-2 py-1">
+                                <%= Number(product.salePercent).toLocaleString('fa-IR') %>٪ تخفیف
+                            </span>
+                            <del class="text-gray-400 text-base"><%= (product.priceSingle).toLocaleString('fa-IR') %></del>
+                        </div>
+                    <% } %>
+                    <div class="flex items-center gap-x-1 justify-center">
+                        <p class="text-2xl font-DanaDemiBold product-price <%= hasSale ? 'text-red-500' : '' %>" data-price="<%= finalPrice %>">
+                            <%= (finalPrice).toLocaleString('fa-IR') %>
+                        </p>
+                        <p class="font-Dana text-sm text-500">تومان</p>
+                    </div>
                 </div>
 
+                <% if (product.quantity > 0) { %>
                 <div class="w-full flex items-center justify-between gap-x-1 rounded-lg border border-gray-200 dark:border-white/20 py-2 px-3">
                     <button style="width:100%" type="button" class="flex items-center justify-between gap-x-1 rounded-lg border-gray-200 dark:border-white/20 py-1 px-2">
                         <svg class="size-4 increment text-green-600 cursor-pointer"><use href="#plus"></use></svg>
@@ -416,10 +466,15 @@
                 <div class="w-full flex items-center gap-x-1 justify-between dark:bg-gray-900 dark:text-gray-400 bg-gray-100 transition-all rounded-lg py-2 px-2 xl:px-3 font-DanaMedium text-sm xl:text-base">
                     <p>مجموع خرید :</p>
                     <p>
-                        <span class="total-price"><%= (product.priceSingle).toLocaleString('fa-IR') %></span>
+                        <span class="total-price"><%= (finalPrice).toLocaleString('fa-IR') %></span>
                         <span class="font-Dana text-sm text-500">تومان</span>
                     </p>
                 </div>
+                <% } else { %>
+                <div class="w-full flex items-center justify-center gap-x-2 rounded-lg border-2 border-dashed border-red-300 dark:border-red-500/40 bg-red-50 dark:bg-red-900/10 py-3 px-3">
+                    <p class="text-red-500 font-DanaDemiBold">این محصول در حال حاضر ناموجود است</p>
+                </div>
+                <% } %>
 
                 <% if (product.quantity > 0) { %>
                     <button id="addToCartBtn" data-product-id="<%= product._id %>"
@@ -502,8 +557,16 @@
                                     </span>
                                 </div>
                                 <div class="product-card_price">
-                                    <p><%= (productss.priceSingle).toLocaleString('fa-IR') %></p>
-                                    <span>تومان</span>
+                                    <% if (productss.quantity <= 0) { %>
+                                        <p class="text-gray-400 font-DanaMedium">ناموجود</p>
+                                    <% } else if (saleActive(productss)) { %>
+                                        <del class="text-gray-400 text-xs"><%= (productss.priceSingle).toLocaleString('fa-IR') %></del>
+                                        <p class="text-red-500"><%= (productss.salePrice).toLocaleString('fa-IR') %></p>
+                                        <span>تومان</span>
+                                    <% } else { %>
+                                        <p><%= (productss.priceSingle).toLocaleString('fa-IR') %></p>
+                                        <span>تومان</span>
+                                    <% } %>
                                 </div>
                             </div>
                         </div>
@@ -517,11 +580,33 @@
         <section class="relative mt-10 flex flex-col items-start gap-4 rounded-lg bg-white dark:bg-gray-800 shadow p-4">
             <div class="w-full py-3 flex items-center gap-x-6 child:font-DanaMedium tab-buttons z-10 border-b border-gray-600/20 dark:border-b-gray-200/20">
                 <button class="tab-btn text-blue-500" data-target="tab1">معرفی محصول</button>
+                <button class="tab-btn text-gray-500 dark:text-gray-300" data-target="tab3">نحوه مصرف</button>
                 <button class="tab-btn text-gray-500 dark:text-gray-300" data-target="tab2">مشخصات</button>
             </div>
             <div class="tab-content tab1 block">
                 <h2 class="font-DanaDemiBold border-b-2 border-blue-500 w-fit p-1 text-lg">معرفی</h2>
                 <p class="mt-4 leading-8"><%= product.description %></p>
+            </div>
+            <!-- نحوه مصرف -->
+            <div class="tab-content tab3 hidden w-full">
+                <h2 class="font-DanaDemiBold border-b-2 border-blue-500 w-fit p-1 text-lg">نحوه مصرف</h2>
+                <% if (product.howToUse || product.usage) { %>
+                    <p class="mt-4 leading-8"><%= product.howToUse || product.usage %></p>
+                <% } else { %>
+                    <p class="mt-4 leading-8 text-gray-500 dark:text-gray-400">راهنمای مصرف روی بسته‌بندی محصول درج شده است.</p>
+                <% } %>
+                <div class="mt-5 flex items-start gap-x-3 rounded-lg border-2 border-amber-400/60 bg-amber-50 dark:bg-amber-900/10 p-4">
+                    <svg class="size-6 shrink-0 text-amber-500 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                    <div class="flex flex-col gap-y-1">
+                        <p class="font-DanaDemiBold text-amber-600 dark:text-amber-400">توجه مهم</p>
+                        <p class="text-sm leading-7 text-gray-700 dark:text-gray-300">
+                            نحوه و میزان مصرف این محصول حتماً باید با <b>مربی</b> و یا <b>پزشک متخصص</b> بررسی و تأیید شود.
+                            دوز مناسب بسته به شرایط بدنی، هدف تمرینی و وضعیت سلامتی هر فرد متفاوت است؛ پیش از شروع مصرف با مربی یا پزشک خود مشورت کنید.
+                        </p>
+                    </div>
+                </div>
             </div>
             <div class="tab-content tab2 hidden w-full lg:w-[50%]">
                 <h2 class="font-DanaDemiBold border-b-2 border-blue-500 w-fit p-1 text-lg">مشخصات کلی</h2>
@@ -627,6 +712,38 @@
     });
 </script>
 
+<!-- شمارش معکوس تا پایان تخفیف -->
+<script>
+(function () {
+    function faD(s) { return String(s).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; }); }
+    function pad2(n) { return (n < 10 ? '0' : '') + n; }
+    function tick() {
+        var boxes = document.querySelectorAll('.sale-countdown');
+        boxes.forEach(function (el) {
+            var end = Number(el.dataset.end);
+            if (!end) return;
+            var diff = end - Date.now();
+            if (diff <= 0) {
+                el.innerHTML = '<span style="font-weight:800">تخفیف به پایان رسید</span>';
+                return;
+            }
+            var s = Math.floor(diff / 1000);
+            var days = Math.floor(s / 86400); s %= 86400;
+            var h = Math.floor(s / 3600); s %= 3600;
+            var m = Math.floor(s / 60); var sec = s % 60;
+            var d = el.querySelector('.cd-d'); if (d) d.textContent = faD(days);
+            var hh = el.querySelector('.cd-h'); if (hh) hh.textContent = faD(pad2(h));
+            var mm = el.querySelector('.cd-m'); if (mm) mm.textContent = faD(pad2(m));
+            var ss = el.querySelector('.cd-s'); if (ss) ss.textContent = faD(pad2(sec));
+        });
+    }
+    if (document.querySelectorAll('.sale-countdown').length) {
+        tick();
+        setInterval(tick, 1000);
+    }
+})();
+</script>
+
 <!-- Structured Data: Product + Breadcrumb -->
 <script type="application/ld+json">
 {
@@ -643,7 +760,7 @@
     "@type": "Offer",
     "url": "<%= siteUrl %>/product/<%= product.slug %>",
     "priceCurrency": "IRR",
-    "price": "<%= (product.priceSingle || 0) * 10 %>",
+    "price": "<%= ((product.onSale && product.salePrice ? product.salePrice : product.priceSingle) || 0) * 10 %>",
     "availability": "<%= product.quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' %>"
   }
 }

@@ -15,6 +15,8 @@ module.exports = class Helpers {
             auth: this.auth(),
             viewPath: this.viewPath,
             date: this.date,
+            saleActive: this.saleActive,
+            effPrice: this.effPrice,
             ...this.getGlobalVaribales(),
             req: this.req,
         };
@@ -38,5 +40,25 @@ module.exports = class Helpers {
 
     date(time) {
         return moment(time);
+    }
+
+    // آیا تخفیفِ محصول همین حالا فعال است؟
+    // (تخفیف تنظیم‌شده + داخل بازه‌ی تاریخ شروع/پایان)
+    saleActive(product) {
+        if (!product) return false;
+        if (!product.onSale || !product.salePrice || product.salePrice <= 0)
+            return false;
+        const now = new Date();
+        if (product.saleStartDate && new Date(product.saleStartDate) > now)
+            return false;
+        if (product.saleEndDate && new Date(product.saleEndDate) < now)
+            return false;
+        return true;
+    }
+
+    // قیمت مؤثر تکی محصول با در نظر گرفتن بازه‌ی تاریخ تخفیف
+    effPrice(product) {
+        if (!product) return 0;
+        return this.saleActive(product) ? product.salePrice : product.priceSingle;
     }
 };

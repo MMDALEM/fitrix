@@ -20,6 +20,19 @@ const BasketItemSchema = new Schema(
       required: true,
       min: 0,
     },
+    // قیمت کامل (قبل از تخفیف محصول) — برای گزارش حسابداری/تفکیک تخفیف‌ها
+    fullPrice: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    // درصد تخفیف محصول در لحظه‌ی افزودن به سبد
+    discountPercent: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+    },
     addedAt: {
       type: Date,
       default: Date.now,
@@ -130,7 +143,13 @@ BasketSchema.methods.calculateTotal = function () {
 };
 
 // افزودن محصول به سبد (یا افزایش تعداد در صورت وجود)
-BasketSchema.methods.addItem = function (productId, quantity = 1, price) {
+BasketSchema.methods.addItem = function (
+  productId,
+  quantity = 1,
+  price,
+  fullPrice = null,
+  discountPercent = 0,
+) {
   const index = this.items.findIndex(
     (item) => item.product.toString() === productId.toString(),
   );
@@ -138,11 +157,15 @@ BasketSchema.methods.addItem = function (productId, quantity = 1, price) {
   if (index > -1) {
     this.items[index].quantity += quantity;
     if (price != null) this.items[index].price = price; // آپدیت قیمت
+    if (fullPrice != null) this.items[index].fullPrice = fullPrice;
+    this.items[index].discountPercent = discountPercent || 0;
   } else {
     this.items.push({
       product: productId,
       quantity,
       price,
+      fullPrice: fullPrice != null ? fullPrice : price,
+      discountPercent: discountPercent || 0,
       addedAt: new Date(),
     });
   }

@@ -1,0 +1,401 @@
+<main class="container relative">
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <!-- SIDE MENU -->
+        <%- include(viewPath('layout/menu')) %>
+
+        <div class="flex flex-col gap-y-5 mt-5 lg:mt-0 w-full">
+
+            <span class="flex items-center gap-x-2 shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <svg class="size-7 text-blue-500"><use href="#tag" /></svg>
+                <h2 class="font-DanaMedium text-lg">مدیریت تخفیف‌ها</h2>
+                <span class="text-gray-400 text-sm">(<%= Number(discounted.length).toLocaleString('fa-IR') %> محصول دارای تخفیف)</span>
+            </span>
+
+            <!-- فرم ثبت / ویرایش تخفیف -->
+            <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white flex flex-col gap-y-4">
+                <h2 class="font-DanaMedium text-lg">ثبت / ویرایش تخفیف محصول</h2>
+                <p class="text-xs text-gray-400 -mt-2 leading-6">
+                    درصد تخفیف روی «قیمت تکی» محصول اعمال می‌شود. تاریخ شروع و پایان اختیاری‌اند؛
+                    اگر خالی بمانند تخفیف بلافاصله و بدون محدودیت زمانی فعال است.
+                    برای حذف تخفیف، درصد را ۰ وارد کنید.
+                </p>
+
+                <form action="/admin/discounts/save" method="POST"
+                      class="grid grid-cols-12 gap-3 items-end">
+                    <!-- محصول -->
+                    <div class="col-span-12 md:col-span-4">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">محصول</label>
+                        <div class="relative">
+                            <select name="productId" id="discountProduct" required
+                                class="block w-full p-2.5 text-sm text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent appearance-none rounded-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                                <option value="" disabled selected>یک محصول را انتخاب کنید</option>
+                                <% products.forEach(function (p) { %>
+                                    <option value="<%= p._id %>"
+                                        data-percent="<%= p.salePercent || 0 %>"
+                                        data-start="<%= p._startInput %>"
+                                        data-end="<%= p._endInput %>"
+                                        data-image="<%= p.image %>"
+                                        data-price="<%= p.priceSingle %>">
+                                        <%= p.title %><%= (p.onSale && p.salePercent > 0) ? ' (فعلی: ' + p.salePercent + '٪)' : '' %>
+                                    </option>
+                                <% }) %>
+                            </select>
+                            <div class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                <svg class="size-4"><use href="#chevron"></use></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- درصد تخفیف -->
+                    <div class="col-span-12 md:col-span-2">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">درصد تخفیف</label>
+                        <input name="salePercent" id="discountPercent" type="number" min="0" max="100" value="0" required
+                            class="block w-full p-2.5 text-sm text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+
+                    <!-- تاریخ شروع (شمسی) -->
+                    <div class="col-span-12 md:col-span-3">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">تاریخ شروع <span class="text-xs text-gray-400">(اختیاری)</span></label>
+                        <div class="jdp relative">
+                            <input type="text" class="jdp-display block w-full p-2.5 text-sm cursor-pointer text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400"
+                                placeholder="انتخاب تاریخ شمسی" readonly>
+                            <input type="hidden" name="startDate" id="discountStart" class="jdp-value">
+                            <button type="button" class="jdp-clear hidden absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 text-lg leading-none">&times;</button>
+                        </div>
+                    </div>
+
+                    <!-- تاریخ پایان (شمسی) -->
+                    <div class="col-span-12 md:col-span-3">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">تاریخ پایان <span class="text-xs text-gray-400">(اختیاری)</span></label>
+                        <div class="jdp relative">
+                            <input type="text" class="jdp-display block w-full p-2.5 text-sm cursor-pointer text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400"
+                                placeholder="انتخاب تاریخ شمسی" readonly>
+                            <input type="hidden" name="endDate" id="discountEnd" class="jdp-value">
+                            <button type="button" class="jdp-clear hidden absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 text-lg leading-none">&times;</button>
+                        </div>
+                    </div>
+
+                    <!-- پیش‌نمایش محصول انتخاب‌شده -->
+                    <div id="productPreview" class="col-span-12 hidden items-center gap-x-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 p-3">
+                        <img id="previewImg" src="" alt="تصویر محصول" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-700 bg-white">
+                        <div class="flex flex-col gap-y-1">
+                            <p id="previewTitle" class="font-DanaMedium text-gray-800 dark:text-gray-100"></p>
+                            <p id="previewPrice" class="text-xs text-gray-500"></p>
+                        </div>
+                    </div>
+
+                    <div class="col-span-12 flex justify-end">
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-6 py-2.5 text-sm font-DanaMedium">
+                            ذخیره تخفیف
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- جدول تخفیف‌های فعلی -->
+            <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <h2 class="font-DanaMedium text-lg mb-4">تخفیف‌های ثبت‌شده</h2>
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 bg-gray-100 dark:bg-gray-900 dark:text-gray-200">
+                            <tr>
+                                <th class="px-4 py-3">محصول</th>
+                                <th class="px-4 py-3">درصد</th>
+                                <th class="px-4 py-3">قیمت اصلی</th>
+                                <th class="px-4 py-3">قیمت با تخفیف</th>
+                                <th class="px-4 py-3">تاریخ شروع</th>
+                                <th class="px-4 py-3">تاریخ پایان</th>
+                                <th class="px-4 py-3">وضعیت</th>
+                                <th class="px-4 py-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (!discounted.length) { %>
+                                <tr><td colspan="8" class="px-4 py-6 text-center text-gray-400">هنوز تخفیفی ثبت نشده است.</td></tr>
+                            <% } %>
+                            <% discounted.forEach(function (p) { %>
+                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                    <th class="px-4 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap flex items-center gap-x-2">
+                                        <img src="<%= p.image %>" style="width:3rem;height:3rem;object-fit:cover" class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white" alt="<%= p.title %>">
+                                        <div class="flex flex-col">
+                                            <span class="line-clamp-1"><%= p.title %></span>
+                                            <% if (p.brand && p.brand.title) { %>
+                                                <span class="text-xs text-gray-400 font-Dana"><%= p.brand.title %></span>
+                                            <% } %>
+                                        </div>
+                                    </th>
+                                    <td class="px-4 py-3">
+                                        <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-DanaMedium"><%= Number(p.salePercent).toLocaleString('fa-IR') %>٪</span>
+                                    </td>
+                                    <td class="px-4 py-3"><del class="text-gray-400"><%= Number(p.priceSingle).toLocaleString('fa-IR') %></del></td>
+                                    <td class="px-4 py-3 text-red-500 font-DanaMedium"><%= Number(p.salePrice || 0).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <%= p.saleStartDate ? date(p.saleStartDate).format('jYYYY/jMM/jDD') : 'بدون محدودیت' %>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <%= p.saleEndDate ? date(p.saleEndDate).format('jYYYY/jMM/jDD') : 'بدون محدودیت' %>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <% var st = p._status; %>
+                                        <% var cls = st.key === 'active' ? 'text-green-600' : (st.key === 'scheduled' ? 'text-blue-500' : (st.key === 'expired' ? 'text-red-500' : 'text-gray-400')); %>
+                                        <span class="font-DanaMedium <%= cls %>"><%= st.label %></span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-x-3 justify-end">
+                                            <button type="button"
+                                                class="edit-discount text-blue-500 text-xs font-DanaMedium whitespace-nowrap"
+                                                data-id="<%= p._id %>">ویرایش</button>
+                                            <form action="/admin/discounts/<%= p._id %>/clear" method="POST">
+                                                <button type="submit" class="text-red-500 hover:text-red-700 flex items-center">
+                                                    <svg class="w-5 h-5"><use href="#trash" /></svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<script>
+(function () {
+    // ===== استایل مستقل تقویم (بدون وابستگی به Tailwind تا حتماً درست نمایش داده شود) =====
+    if (!document.getElementById('jdp-style')) {
+        var st = document.createElement('style');
+        st.id = 'jdp-style';
+        st.textContent =
+            '.jdp{position:relative}' +
+            '.jdp-pop{position:absolute;top:100%;right:0;margin-top:6px;width:18rem;max-width:90vw;z-index:60;background:#fff;border:1px solid #e5e7eb;border-radius:.6rem;box-shadow:0 12px 30px rgba(0,0,0,.18);padding:.75rem;color:#1f2937;direction:rtl}' +
+            'html.dark .jdp-pop{background:#0f172a;border-color:#334155;color:#e2e8f0}' +
+            '.jdp-pop.jdp-hidden{display:none}' +
+            '.jdp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}' +
+            '.jdp-title{font-weight:700;font-size:.9rem}' +
+            '.jdp-nav{background:none;border:none;cursor:pointer;padding:.3rem;border-radius:.4rem;color:inherit;display:flex;align-items:center;justify-content:center;line-height:1}' +
+            '.jdp-nav:hover{background:rgba(59,130,246,.12);color:#3b82f6}' +
+            '.jdp-nav svg{width:1.1rem;height:1.1rem}' +
+            '.jdp-week{display:grid;grid-template-columns:repeat(7,1fr);gap:.25rem;text-align:center;color:#9ca3af;font-size:.72rem;margin-bottom:.35rem}' +
+            '.jdp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.25rem;text-align:center}' +
+            '.jdp-day{height:2rem;display:flex;align-items:center;justify-content:center;border-radius:.45rem;cursor:pointer;border:none;background:none;color:inherit;font-size:.82rem;font-family:inherit}' +
+            '.jdp-day:hover{background:#3b82f6;color:#fff}' +
+            '.jdp-day.jdp-sel{background:#3b82f6;color:#fff;font-weight:700}' +
+            '.jdp-day.jdp-today{box-shadow:inset 0 0 0 1.5px #60a5fa}' +
+            '.jdp-empty{height:2rem}' +
+            '.jdp-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.5rem;padding-top:.5rem;border-top:1px solid #eef2f7}' +
+            'html.dark .jdp-foot{border-color:#1e293b}' +
+            '.jdp-foot button{background:none;border:none;cursor:pointer;font-size:.78rem;font-weight:700;font-family:inherit}' +
+            '.jdp-today-btn{color:#3b82f6}.jdp-clr-btn{color:#ef4444}';
+        document.head.appendChild(st);
+    }
+
+    // ===== تبدیل تاریخ میلادی ↔ شمسی (الگوریتم jalaali-js، بدون وابستگی خارجی) =====
+    function div(a, b) { return ~~(a / b); }
+    function mod(a, b) { return a - ~~(a / b) * b; }
+    function jalCal(jy) {
+        var breaks = [-61, 9, 38, 199, 426, 686, 756, 818, 1111, 1181, 1210, 1635, 2060, 2097, 2192, 2262, 2324, 2394, 2456, 3178];
+        var bl = breaks.length, gy = jy + 621, leapJ = -14, jp = breaks[0], jm, jump, leap, leapG, march, n, i;
+        for (i = 1; i < bl; i += 1) { jm = breaks[i]; jump = jm - jp; if (jy < jm) break; leapJ = leapJ + div(jump, 33) * 8 + div(mod(jump, 33), 4); jp = jm; }
+        n = jy - jp;
+        leapJ = leapJ + div(n, 33) * 8 + div(mod(n, 33) + 3, 4);
+        if (mod(jump, 33) === 4 && jump - n === 4) leapJ += 1;
+        leapG = div(gy, 4) - div((div(gy, 100) + 1) * 3, 4) - 150;
+        march = 20 + leapJ - leapG;
+        if (jump - n < 6) n = n - jump + div(jump + 4, 33) * 33;
+        leap = mod(mod(n + 1, 33) - 1, 4);
+        if (leap === -1) leap = 4;
+        return { leap: leap, gy: gy, march: march };
+    }
+    function g2d(gy, gm, gd) {
+        var d = div((gy + div(gm - 8, 6) + 100100) * 1461, 4) + div(153 * mod(gm + 9, 12) + 2, 5) + gd - 34840408;
+        d = d - div(div(gy + 100100 + div(gm - 8, 6), 100) * 3, 4) + 752;
+        return d;
+    }
+    function d2g(jdn) {
+        var j = 4 * jdn + 139361631;
+        j = j + div(div(4 * jdn + 183187720, 146097) * 3, 4) * 4 - 3908;
+        var i = div(mod(j, 1461), 4) * 5 + 308;
+        var gd = div(mod(i, 153), 5) + 1;
+        var gm = mod(div(i, 153), 12) + 1;
+        var gy = div(j, 1461) - 100100 + div(8 - gm, 6);
+        return { gy: gy, gm: gm, gd: gd };
+    }
+    function j2d(jy, jm, jd) { var r = jalCal(jy); return g2d(r.gy, 3, r.march) + (jm - 1) * 31 - div(jm, 7) * (jm - 7) + jd - 1; }
+    function d2j(jdn) {
+        var gy = d2g(jdn).gy, jy = gy - 621, r = jalCal(jy), jdn1f = g2d(gy, 3, r.march), jd, jm, k;
+        k = jdn - jdn1f;
+        if (k >= 0) { if (k <= 185) { jm = 1 + div(k, 31); jd = mod(k, 31) + 1; return { jy: jy, jm: jm, jd: jd }; } else k -= 186; }
+        else { jy -= 1; k += 179; if (r.leap === 1) k += 1; }
+        jm = 7 + div(k, 30); jd = mod(k, 30) + 1;
+        return { jy: jy, jm: jm, jd: jd };
+    }
+    function toJalaali(gy, gm, gd) { return d2j(g2d(gy, gm, gd)); }
+    function toGregorian(jy, jm, jd) { return d2g(j2d(jy, jm, jd)); }
+    function monthLen(jy, jm) { if (jm <= 6) return 31; if (jm <= 11) return 30; return jalCal(jy).leap === 0 ? 30 : 29; }
+
+    var MONTHS = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+    var WD = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
+    function faDigits(s) { return String(s).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; }); }
+    function pad2(n) { return (n < 10 ? '0' : '') + n; }
+    function isoToJ(iso) { var a = iso.split('-').map(Number); return toJalaali(a[0], a[1], a[2]); }
+    function jToIso(jy, jm, jd) { var g = toGregorian(jy, jm, jd); return g.gy + '-' + pad2(g.gm) + '-' + pad2(g.gd); }
+
+    // ===== راه‌اندازی هر ورودی تاریخ شمسی =====
+    function attach(wrapper) {
+        var display = wrapper.querySelector('.jdp-display');
+        var hidden = wrapper.querySelector('.jdp-value');
+        var clearBtn = wrapper.querySelector('.jdp-clear');
+        var view = null;
+
+        var pop = document.createElement('div');
+        pop.className = 'jdp-pop jdp-hidden';
+        wrapper.appendChild(pop);
+
+        function todayJ() { var n = new Date(); return toJalaali(n.getFullYear(), n.getMonth() + 1, n.getDate()); }
+
+        function refreshDisplay() {
+            if (hidden.value) {
+                var j = isoToJ(hidden.value);
+                display.value = faDigits(j.jy + '/' + pad2(j.jm) + '/' + pad2(j.jd));
+                clearBtn.classList.remove('hidden');
+            } else {
+                display.value = '';
+                clearBtn.classList.add('hidden');
+            }
+        }
+
+        function render() {
+            var selJ = hidden.value ? isoToJ(hidden.value) : null;
+            var tj = todayJ();
+            var len = monthLen(view.jy, view.jm);
+            var firstIso = jToIso(view.jy, view.jm, 1).split('-').map(Number);
+            var jsDay = new Date(firstIso[0], firstIso[1] - 1, firstIso[2]).getDay(); // 0=یکشنبه..6=شنبه
+            var col = (jsDay + 1) % 7; // شنبه=0
+
+            var chev = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"></path></svg>';
+            var html = '';
+            html += '<div class="jdp-head">';
+            html += '<button type="button" class="jdp-nav jdp-prev">' + chev + '</button>';
+            html += '<span class="jdp-title">' + MONTHS[view.jm - 1] + ' ' + faDigits(view.jy) + '</span>';
+            html += '<button type="button" class="jdp-nav jdp-next" style="transform:rotate(180deg)">' + chev + '</button>';
+            html += '</div>';
+            html += '<div class="jdp-week">';
+            for (var w = 0; w < 7; w++) html += '<span>' + WD[w] + '</span>';
+            html += '</div>';
+            html += '<div class="jdp-grid">';
+            for (var b = 0; b < col; b++) html += '<span class="jdp-empty"></span>';
+            for (var d = 1; d <= len; d++) {
+                var isSel = selJ && selJ.jy === view.jy && selJ.jm === view.jm && selJ.jd === d;
+                var isToday = tj.jy === view.jy && tj.jm === view.jm && tj.jd === d;
+                var cls = 'jdp-day';
+                if (isSel) cls += ' jdp-sel';
+                else if (isToday) cls += ' jdp-today';
+                html += '<button type="button" data-d="' + d + '" class="' + cls + '">' + faDigits(d) + '</button>';
+            }
+            html += '</div>';
+            html += '<div class="jdp-foot">';
+            html += '<button type="button" class="jdp-today jdp-today-btn">امروز</button>';
+            html += '<button type="button" class="jdp-clr jdp-clr-btn">پاک کردن</button>';
+            html += '</div>';
+            pop.innerHTML = html;
+        }
+
+        function open() {
+            var base = hidden.value ? isoToJ(hidden.value) : todayJ();
+            view = { jy: base.jy, jm: base.jm };
+            render();
+            closeOthers(pop);
+            pop.classList.remove('jdp-hidden');
+        }
+        function close() { pop.classList.add('jdp-hidden'); }
+
+        function pick(d) {
+            hidden.value = jToIso(view.jy, view.jm, d);
+            refreshDisplay();
+            close();
+        }
+
+        display.addEventListener('click', open);
+        clearBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            hidden.value = '';
+            refreshDisplay();
+        });
+        pop.addEventListener('click', function (e) {
+            var day = e.target.closest('.jdp-day');
+            if (day) { pick(Number(day.dataset.d)); return; }
+            if (e.target.closest('.jdp-prev')) { view.jm--; if (view.jm < 1) { view.jm = 12; view.jy--; } render(); return; }
+            if (e.target.closest('.jdp-next')) { view.jm++; if (view.jm > 12) { view.jm = 1; view.jy++; } render(); return; }
+            if (e.target.closest('.jdp-today')) { var t = todayJ(); hidden.value = jToIso(t.jy, t.jm, t.jd); refreshDisplay(); close(); return; }
+            if (e.target.closest('.jdp-clr')) { hidden.value = ''; refreshDisplay(); close(); return; }
+        });
+
+        // امکان تنظیم مقدار از بیرون (هنگام انتخاب محصول / ویرایش)
+        wrapper._setIso = function (iso) { hidden.value = iso || ''; refreshDisplay(); };
+        refreshDisplay();
+        return pop;
+    }
+
+    var openPops = [];
+    function closeOthers(except) { openPops.forEach(function (p) { if (p !== except) p.classList.add('jdp-hidden'); }); }
+
+    function init() {
+        // راه‌اندازی هر دو فیلد تاریخ
+        document.querySelectorAll('.jdp').forEach(function (w) { openPops.push(attach(w)); });
+
+        var startWrap = document.getElementById('discountStart').closest('.jdp');
+        var endWrap = document.getElementById('discountEnd').closest('.jdp');
+
+        // بستن پاپ‌آپ با کلیک بیرون
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.jdp')) openPops.forEach(function (p) { p.classList.add('jdp-hidden'); });
+        });
+
+        var sel = document.getElementById('discountProduct');
+        var percent = document.getElementById('discountPercent');
+        var preview = document.getElementById('productPreview');
+        var previewImg = document.getElementById('previewImg');
+        var previewTitle = document.getElementById('previewTitle');
+        var previewPrice = document.getElementById('previewPrice');
+
+        // با تغییر محصول: پرکردن درصد/تاریخ‌ها + نمایش عکس و مشخصات محصول
+        function fillFromOption() {
+            var opt = sel.options[sel.selectedIndex];
+            if (!opt || !opt.value) { preview.classList.add('hidden'); preview.classList.remove('flex'); return; }
+            percent.value = opt.dataset.percent || 0;
+            startWrap._setIso(opt.dataset.start || '');
+            endWrap._setIso(opt.dataset.end || '');
+
+            // عکس و مشخصات محصول
+            previewImg.src = opt.dataset.image || '';
+            previewTitle.textContent = opt.textContent.trim();
+            var price = Number(opt.dataset.price || 0).toLocaleString('fa-IR');
+            previewPrice.textContent = 'قیمت تکی: ' + price + ' تومان';
+            preview.classList.remove('hidden');
+            preview.classList.add('flex');
+        }
+        sel.addEventListener('change', fillFromOption);
+
+        // دکمه‌ی «ویرایش» در جدول → انتخاب محصول در فرم و اسکرول به بالا
+        document.querySelectorAll('.edit-discount').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                sel.value = btn.dataset.id;
+                fillFromOption();
+                document.querySelector('form[action="/admin/discounts/save"]')
+                    .scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        });
+    }
+
+    // اسکریپت در انتهای body تزریق می‌شود؛ اگر DOM آماده است فوری اجرا کن
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>

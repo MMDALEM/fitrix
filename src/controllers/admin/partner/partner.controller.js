@@ -5,6 +5,9 @@ const controller = require("../../.controller");
 
 const TAX_RATE = 0.1;
 
+// هزینه‌ی سایت: ۱۵٪ از مبلغ سودِ هر تک محصول
+const SITE_COST_RATE = 0.15;
+
 // نام نمایشی شرکا (در صورت نیاز این‌جا تغییر بده)
 const PARTNERS = {
   partner1: "علی",
@@ -20,19 +23,51 @@ class partnerController extends controller {
     return (Number(price) || 0) * (p / (100 + p));
   }
 
+  // اقتصاد هر آیتم سفارش:
+  //  - fullPrice = قیمت کامل (قبل از تخفیف محصول) — اگر روی آیتم ذخیره نشده بود
+  //    (سفارش‌های قدیمی) همان قیمت فروش در نظر گرفته می‌شود
+  //  - سود واقعی هر واحد = سود کاملِ قیمت بدون تخفیف − مبلغ تخفیف محصول
+  //  - هزینه سایت هر واحد = ۱۵٪ از سود واقعی (اگر سود مثبت باشد)
+  itemEconomics(it) {
+    const percent = it.product && it.product.darsad ? it.product.darsad.single : 0;
+    const price = it.price || 0;
+    const fullPrice = it.fullPrice && it.fullPrice > 0 ? it.fullPrice : price;
+    const qty = it.quantity || 0;
+
+    const unitDiscount = Math.max(0, fullPrice - price);
+    const unitProfitFull = Math.round(this.unitProfit(fullPrice, percent));
+    const unitProfitActual = unitProfitFull - unitDiscount;
+    const unitSiteCost =
+      unitProfitActual > 0 ? Math.round(unitProfitActual * SITE_COST_RATE) : 0;
+
+    return {
+      percent: percent || 0,
+      discountPercent: it.discountPercent || 0,
+      qty,
+      sale: price * qty,
+      fullSale: fullPrice * qty,
+      discount: unitDiscount * qty,
+      profit: unitProfitActual * qty,
+      siteCost: unitSiteCost * qty,
+    };
+  }
+
   async partners(req, res, next) {
     try {
       // همه‌ی سفارش‌های پرداخت‌شده
       const orders = await basketModel
         .find({ status: "paid" })
-        .populate("items.product", "title image darsad priceSingle");
+        .populate("items.product", "title image darsad priceSingle salePercent");
 
-      // تجمیع به تفکیک محصول
+      // تجمیع به تفکیک محصول + تفکیک درصدهای تخفیف
       const byProduct = new Map();
+      const byDiscountPercent = new Map();
       let totalSales = 0;
       let grossProfit = 0;
       let totalTax = 0;
-      let totalDiscount = 0;
+      let totalDiscount = 0; // تخفیفِ کدهای تخفیف (سطح سفارش)
+      let totalProductDiscount = 0; // تخفیف خود محصولات (سطح آیتم)
+      let totalSiteCost = 0; // هزینه سایت = ۱۵٪ سود هر تک محصول
 
       orders.forEach((order) => {
         totalDiscount += order.discountAmount || 0;
@@ -40,27 +75,51 @@ class partnerController extends controller {
 
         (order.items || []).forEach((it) => {
           if (!it.product) return;
-          const percent = it.product.darsad ? it.product.darsad.single : 0;
-          const sale = (it.price || 0) * it.quantity;
-          const profit = Math.round(this.unitProfit(it.price, percent)) * it.quantity;
+          const eco = this.itemEconomics(it);
 
-          totalSales += sale;
-          grossProfit += profit;
+          totalSales += eco.sale;
+          grossProfit += eco.profit;
+          totalProductDiscount += eco.discount;
+          totalSiteCost += eco.siteCost;
 
           const key = it.product._id.toString();
           const row = byProduct.get(key) || {
             productId: key,
             title: it.product.title,
             image: it.product.image,
-            percent: percent || 0,
+            percent: eco.percent,
+            discountPercent: eco.discountPercent,
             quantity: 0,
             sale: 0,
+            discount: 0,
+            profit: 0,
+            siteCost: 0,
+          };
+          row.quantity += eco.qty;
+          row.sale += eco.sale;
+          row.discount += eco.discount;
+          row.profit += eco.profit;
+          row.siteCost += eco.siteCost;
+          if (eco.discountPercent > row.discountPercent)
+            row.discountPercent = eco.discountPercent;
+          byProduct.set(key, row);
+
+          // تفکیک بر اساس درصد تخفیف (۰٪ = بدون تخفیف)
+          const dKey = eco.discountPercent;
+          const dRow = byDiscountPercent.get(dKey) || {
+            percent: dKey,
+            products: new Set(),
+            quantity: 0,
+            sale: 0,
+            discount: 0,
             profit: 0,
           };
-          row.quantity += it.quantity;
-          row.sale += sale;
-          row.profit += profit;
-          byProduct.set(key, row);
+          dRow.products.add(key);
+          dRow.quantity += eco.qty;
+          dRow.sale += eco.sale;
+          dRow.discount += eco.discount;
+          dRow.profit += eco.profit;
+          byDiscountPercent.set(dKey, dRow);
         });
       });
 
@@ -70,15 +129,29 @@ class partnerController extends controller {
       // مالیات هر محصول (اطلاعاتی)
       productRows.forEach((r) => (r.tax = Math.round(r.sale * TAX_RATE)));
 
+      // ردیف‌های تفکیک درصد تخفیف (مرتب از تخفیف بیشتر به کمتر)
+      const discountRows = Array.from(byDiscountPercent.values())
+        .map((d) => ({
+          percent: d.percent,
+          productsCount: d.products.size,
+          quantity: d.quantity,
+          sale: d.sale,
+          discount: d.discount,
+          profit: d.profit,
+        }))
+        .sort((a, b) => b.percent - a.percent);
+
       // هزینه‌های اضافه
       const expenses = await expenseModel.find().sort({ createdAt: -1 });
       const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
 
       // قیمت تمام‌شده‌ی کل محصولات (سرمایه) = کل فروش − سود ناخالص
+      // (سود ناخالص از قیمتِ واقعی فروش — بعد از تخفیف محصول — محاسبه شده)
       const costOfGoods = totalSales - grossProfit;
 
-      // سود خالص = سود ناخالص − تخفیف‌ها − هزینه‌های اضافه
-      const netProfit = grossProfit - totalDiscount - totalExpenses;
+      // سود خالص = سود ناخالص − تخفیف کدها − هزینه‌های اضافه − هزینه سایت (۱۵٪)
+      const netProfit =
+        grossProfit - totalDiscount - totalExpenses - totalSiteCost;
       // سهم سودِ هر شریک = نصف سود خالص
       const profitShare = Math.round(netProfit / 2);
 
@@ -106,10 +179,14 @@ class partnerController extends controller {
       return res.render("admin/partner/index", {
         partners: PARTNERS,
         productRows,
+        discountRows,
+        siteCostRate: SITE_COST_RATE,
         totals: {
           totalSales,
           grossProfit,
           totalDiscount,
+          totalProductDiscount,
+          totalSiteCost,
           totalExpenses,
           netProfit,
           totalTax,
@@ -158,10 +235,12 @@ class partnerController extends controller {
         );
 
         items.forEach((it) => {
-          const percent = it.product.darsad ? it.product.darsad.single : 0;
-          const sale = (it.price || 0) * it.quantity;
-          const profit = Math.round(this.unitProfit(it.price, percent)) * it.quantity;
+          const eco = this.itemEconomics(it);
+          const sale = eco.sale;
+          const profit = eco.profit;
           const profitHalf = Math.round(profit / 2);
+          // سهم هر شریک از هزینه سایت (۱۵٪ سود همین آیتم)
+          const siteCostHalf = Math.round(eco.siteCost / 2);
 
           if (pk === "partner1") {
             // علی: قیمت تمام‌شده‌ی محصول + نصف سود
@@ -200,6 +279,18 @@ class partnerController extends controller {
               sign: 1,
               amount: profitHalf,
               reason: "سهم سود",
+              product: it.product.title,
+              order: order.orderNumber,
+            });
+          }
+
+          // هزینه سایت (۱۵٪ از سود هر تک محصول) — نصف از هر شریک کسر می‌شود
+          if (siteCostHalf > 0) {
+            entries.push({
+              date: order.paidAt,
+              sign: -1,
+              amount: siteCostHalf,
+              reason: "سهم هزینه سایت (۱۵٪ سود)",
               product: it.product.title,
               order: order.orderNumber,
             });

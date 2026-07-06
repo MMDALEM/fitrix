@@ -5,7 +5,7 @@ const controller = require("../.controller");
 
 // فیلدهای محصول که برای نمایش سبد لازم داریم
 const PRODUCT_SELECT =
-  "title image slug priceSingle quantity flavor weight isActive";
+  "title image slug priceSingle salePrice salePercent onSale saleStartDate saleEndDate quantity flavor weight isActive";
 
 class basketController extends controller {
   // گرفتن سبد فعال با خودترمیمی: اگر ایندکس قدیمیِ unique روی user باعث
@@ -85,7 +85,20 @@ class basketController extends controller {
       }
 
       // قیمت همیشه سمت سرور تعیین می‌شود
-      await basket.addItem(productId, qty, product.priceSingle);
+      // اگر تخفیف محصول همین حالا فعال باشد (داخل بازه‌ی تاریخ) قیمت
+      // تخفیف‌خورده اعمال می‌شود و قیمت کامل + درصد تخفیف برای گزارش
+      // حسابداری روی آیتم ذخیره می‌شود
+      const hasSale = product.saleIsActive();
+      const effectivePrice = hasSale ? product.salePrice : product.priceSingle;
+      const discountPercent = hasSale ? product.salePercent || 0 : 0;
+
+      await basket.addItem(
+        productId,
+        qty,
+        effectivePrice,
+        product.priceSingle,
+        discountPercent,
+      );
 
       const totalItems = basket.items.reduce((s, i) => s + i.quantity, 0);
 

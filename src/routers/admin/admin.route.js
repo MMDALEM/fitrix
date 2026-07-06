@@ -14,6 +14,9 @@ const adminController = require("../../controllers/admin/admin.controller");
 router.get("/update-aed", verifyAdmin, adminController.updated_AED);
 router.get("/update-prices", verifyAdmin, adminController.updateAllPrices);
 
+// بک‌آپ کامل کل پایگاه داده (دانلود فایل — محافظت‌شده)
+router.get("/backup", verifyAdmin, adminController.backupDatabase);
+
 //master page
 router.use((req, res, next) => {
   res.locals.layout = "admin/master";

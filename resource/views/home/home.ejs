@@ -185,10 +185,18 @@
                                 <div class="product-card_price-wrapper">
                                     <!-- Price -->
                                     <div class="small-card_price justify-between">
-                                        <span class="pt-1">70%</span>
+                                        <% if (product.quantity <= 0) { %>
+                                        <h4 class="flex items-center gap-x-1 text-lg text-gray-400 font-DanaMedium">ناموجود</h4>
+                                        <% } else if (saleActive(product)) { %>
+                                        <span class="pt-1"><%= product.salePercent %>%</span>
+                                        <h4 class="flex items-center gap-x-1 text-lg"><%= (product.salePrice).toLocaleString() %> <p
+                                                class="text-xs font-DanaMedium">تومان</p>
+                                        </h4>
+                                        <% } else { %>
                                         <h4 class="flex items-center gap-x-1 text-lg"><%= (product.priceSingle).toLocaleString() %> <p
                                                 class="text-xs font-DanaMedium">تومان</p>
                                         </h4>
+                                        <% } %>
                                     </div>
                                 </div>
                             </div>

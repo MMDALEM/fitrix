@@ -1,0 +1,108 @@
+<main class="container relative">
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <!-- SIDE MENU -->
+        <%- include(viewPath('layout/menu')) %>
+
+        <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white mt-5 lg:mt-0 w-full">
+            <div class="flex items-center justify-between">
+                <h2 class="font-DanaMedium text-lg">فروش شگفت‌انگیز</h2>
+                <a href="/admin/product" class="flex items-center gap-x-1 text-blue-500 text-sm">
+                    <span class="font-DanaMedium">مشاهده همه محصولات</span>
+                </a>
+            </div>
+
+            <p class="text-xs text-gray-400 mt-2 leading-6">
+                محصولاتی که این‌جا «شگفت‌انگیز» می‌شوند در اسلایدر فروش شگفت‌انگیز صفحه اصلی نمایش داده می‌شوند.
+                فقط محصولات <b>دارای تخفیف فعال</b> و <b>موجود</b> در صفحه اصلی دیده می‌شوند؛
+                برای تعیین درصد تخفیف، محصول را ویرایش کنید.
+            </p>
+
+            <% var amazingCount = products.filter(function (p) { return p.amazing; }).length; %>
+            <div class="flex items-center gap-x-4 mt-4">
+                <span class="text-sm bg-blue-500/10 text-blue-500 rounded-lg px-3 py-1.5 font-DanaMedium">
+                    <%= Number(amazingCount).toLocaleString('fa-IR') %> محصول در فروش شگفت‌انگیز
+                </span>
+            </div>
+
+            <div class="relative mt-5 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 bg-gray-100 dark:bg-gray-900 dark:text-gray-200">
+                        <tr>
+                            <th class="px-4 py-3">محصول</th>
+                            <th class="px-4 py-3">قیمت</th>
+                            <th class="px-4 py-3">تخفیف</th>
+                            <th class="px-4 py-3">موجودی</th>
+                            <th class="px-4 py-3">وضعیت نمایش</th>
+                            <th class="px-4 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (!products.length) { %>
+                            <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">هنوز محصولی ثبت نشده است.</td></tr>
+                        <% } %>
+                        <% products.forEach(function (p) { %>
+                            <% var visible = p.amazing && p.onSale && p.isActive && p.quantity > 0; %>
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 <%= p.amazing ? 'bg-blue-50/50 dark:bg-blue-900/10' : '' %>">
+                                <th class="px-4 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap flex items-center gap-x-2">
+                                    <img src="<%= p.image %>" class="w-10 h-10 object-cover rounded" alt="">
+                                    <div class="flex flex-col">
+                                        <span class="line-clamp-1"><%= p.title %></span>
+                                        <% if (p.brand && p.brand.title) { %>
+                                            <span class="text-xs text-gray-400 font-Dana"><%= p.brand.title %></span>
+                                        <% } %>
+                                    </div>
+                                </th>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <% if (p.onSale && p.salePrice) { %>
+                                        <del class="text-gray-400 text-xs block"><%= Number(p.priceSingle).toLocaleString('fa-IR') %></del>
+                                        <span class="text-red-500 font-DanaMedium"><%= Number(p.salePrice).toLocaleString('fa-IR') %></span>
+                                    <% } else { %>
+                                        <span><%= Number(p.priceSingle).toLocaleString('fa-IR') %></span>
+                                    <% } %>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <% if (p.onSale && p.salePercent > 0) { %>
+                                        <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-DanaMedium"><%= Number(p.salePercent).toLocaleString('fa-IR') %>٪</span>
+                                    <% } else { %>
+                                        <span class="text-gray-400 text-xs">بدون تخفیف</span>
+                                    <% } %>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <% if (p.quantity > 0) { %>
+                                        <%= Number(p.quantity).toLocaleString('fa-IR') %>
+                                    <% } else { %>
+                                        <span class="text-red-500 font-DanaMedium">ناموجود</span>
+                                    <% } %>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <% if (visible) { %>
+                                        <span class="text-green-600 font-DanaMedium text-xs">در صفحه اصلی نمایش داده می‌شود</span>
+                                    <% } else if (p.amazing) { %>
+                                        <span class="text-orange-500 font-DanaMedium text-xs">
+                                            شگفت‌انگیز است اما نمایش داده نمی‌شود
+                                            (<%= !p.onSale ? 'تخفیف ندارد' : (p.quantity <= 0 ? 'ناموجود' : 'غیرفعال') %>)
+                                        </span>
+                                    <% } else { %>
+                                        <span class="text-gray-400 text-xs">—</span>
+                                    <% } %>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center gap-x-2 justify-end">
+                                        <form action="/admin/product/amazing/<%= p._id %>/toggle" method="POST">
+                                            <% if (p.amazing) { %>
+                                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white rounded-lg px-3 py-1.5 text-xs font-DanaMedium whitespace-nowrap">حذف از شگفت‌انگیز</button>
+                                            <% } else { %>
+                                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 text-xs font-DanaMedium whitespace-nowrap">افزودن به شگفت‌انگیز</button>
+                                            <% } %>
+                                        </form>
+                                        <a href="/admin/product/edit/<%= p._id %>" class="text-blue-500 text-xs font-DanaMedium whitespace-nowrap">ویرایش / تخفیف</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>

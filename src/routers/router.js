@@ -52,6 +52,9 @@ router.use("/admin/orders", verifyAdmin, adminOrderRouter);
 const adminPartnerRouter = require("./admin/partner.route");
 router.use("/admin/partners", verifyAdmin, adminPartnerRouter);
 
+const adminDiscountRouter = require("./admin/discount.route");
+router.use("/admin/discounts", verifyAdmin, adminDiscountRouter);
+
 router.use("/logout", logout);
 
 module.exports = { AllRouters: router };

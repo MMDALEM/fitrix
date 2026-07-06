@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const exchangeRateModel = require("../../models/exchangeRate.model");
 const basketModel = require("../../models/basket.model");
 const productModel = require("../../models/product.model");
@@ -47,7 +48,10 @@ class adminController extends controller {
       // درصدهای عمده‌ی ثابت — اگر خواستی عوض کنی فقط همین‌جا تغییر بده
       const HIGH = [5, 10, 15, 20];
 
-      const products = await productModel.find({}, "originalPrice darsad");
+      const products = await productModel.find(
+        {},
+        "originalPrice darsad salePercent",
+      );
 
       if (products.length === 0) {
         return res.json({
@@ -60,6 +64,7 @@ class adminController extends controller {
       const operations = products.map((product) => {
         const originalPrice = product.originalPrice || 0; // درهم خام (دست نمی‌خورد)
         const single = product.darsad?.single ?? 0; // درصد تکی فعلی محصول
+        const salePercent = product.salePercent || 0; // درصد تخفیف خود محصول
 
         const base = originalPrice * aedRate; // پایه به تومان
 
@@ -67,12 +72,22 @@ class adminController extends controller {
         const calc = (percent) =>
           Math.ceil((base * (1 + percent / 100)) / 10000) * 10000;
 
+        // بازمحاسبه‌ی قیمت تخفیف‌خورده با قیمت تکی جدید
+        const newPriceSingle = calc(single);
+        const salePrice =
+          salePercent > 0
+            ? Math.round((newPriceSingle * (1 - salePercent / 100)) / 1000) *
+              1000
+            : null;
+
         return {
           updateOne: {
             filter: { _id: product._id },
             update: {
               $set: {
-                priceSingle: calc(single),
+                priceSingle: newPriceSingle,
+                salePrice,
+                onSale: salePercent > 0,
                 priceHigh5: calc(HIGH[0]),
                 priceHigh10: calc(HIGH[1]),
                 priceHigh15: calc(HIGH[2]),
@@ -102,6 +117,64 @@ class adminController extends controller {
         timer = 9500;
       req.flash("sweetalert", { title, icon, timer });
       return res.redirect(req.header("Referer") || "/");
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // بک‌آپ کامل کل پایگاه داده — همه‌ی کالکشن‌ها با فرمت Extended JSON
+  // (ObjectId ،Date و ... حفظ می‌شوند و برای بازگردانی قابل استفاده‌اند)
+  async backupDatabase(req, res, next) {
+    try {
+      const db = mongoose.connection.db;
+      if (!db) {
+        return res
+          .status(500)
+          .json({ success: false, message: "اتصال به پایگاه داده برقرار نیست" });
+      }
+
+      // سریال‌سازی با EJSON درایور مونگو؛ اگر در دسترس نبود JSON معمولی
+      const EJSON =
+        (mongoose.mongo && mongoose.mongo.BSON && mongoose.mongo.BSON.EJSON) ||
+        null;
+      const serialize = (value) =>
+        EJSON
+          ? EJSON.stringify(value, { relaxed: false })
+          : JSON.stringify(value);
+
+      const collections = await db.listCollections().toArray();
+
+      const backup = {
+        meta: {
+          site: "fitrix",
+          database: db.databaseName,
+          createdAt: new Date().toISOString(),
+          format: EJSON ? "mongodb-extended-json" : "json",
+          collections: [],
+        },
+        data: {},
+      };
+
+      for (const coll of collections) {
+        // کالکشن‌های سیستمی را رد کن
+        if (coll.name.startsWith("system.")) continue;
+
+        const docs = await db.collection(coll.name).find({}).toArray();
+        backup.meta.collections.push({ name: coll.name, count: docs.length });
+        // هر کالکشن جداگانه سریال می‌شود تا نوع داده‌ها (ObjectId/Date) حفظ شود
+        backup.data[coll.name] = JSON.parse(serialize(docs));
+      }
+
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      const filename = `fitrix-db-backup-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.json`;
+
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
+      return res.send(JSON.stringify(backup, null, 2));
     } catch (err) {
       next(err);
     }
