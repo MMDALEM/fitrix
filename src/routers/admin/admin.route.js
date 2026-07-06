@@ -17,6 +17,10 @@ router.get("/update-prices", verifyAdmin, adminController.updateAllPrices);
 // بک‌آپ کامل کل پایگاه داده (دانلود فایل — محافظت‌شده)
 router.get("/backup", verifyAdmin, adminController.backupDatabase);
 
+// تنظیمات سایت (مالیات و ...)
+router.get("/settings", verifyAdmin, adminController.settingsPage);
+router.post("/settings/tax", verifyAdmin, adminController.updateTax);
+
 //master page
 router.use((req, res, next) => {
   res.locals.layout = "admin/master";

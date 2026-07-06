@@ -267,8 +267,9 @@
         });
         let totalCount = validItems.reduce(function (sum, it) { return sum + it.quantity; }, 0);
         let discount = 0;
-        // نرخ مالیات بر ارزش افزوده (۱۰٪)
-        let TAX_RATE = 0.1;
+        // نرخ مالیات از تنظیمات سایت — اگر ادمین خاموش کرده باشد ۰ می‌شود
+        let TAX_ENABLED = (typeof settings !== 'undefined' && settings) ? settings.taxEnabled !== false : true;
+        let TAX_RATE = TAX_ENABLED ? ((typeof settings !== 'undefined' && settings && settings.taxRate != null) ? settings.taxRate : 0.1) : 0;
         let taxableAmount = Math.max(itemsTotal - discount, 0);
         let taxPrice = Math.round(taxableAmount * TAX_RATE);
         let finalPrice = Math.max(itemsTotal - discount + taxPrice, 0);
@@ -371,12 +372,14 @@
                             <span id="discount"><%= Number(discount).toLocaleString('fa-IR') %></span> تومان
                         </p>
                     </li>
+                    <% if (TAX_ENABLED) { %>
                     <li class="pb-4" >
-                        <p>مالیات بر ارزش افزوده (۱۰٪)</p>
+                        <p>مالیات بر ارزش افزوده (<%= Number(Math.round(TAX_RATE * 100)).toLocaleString('fa-IR') %>٪)</p>
                         <p class="font-DanaMedium text-gray-700 dark:text-gray-200">
                             <span id="taxPrice"><%= Number(taxPrice).toLocaleString('fa-IR') %></span> تومان
                         </p>
                     </li >
+                    <% } %>
                     <li class="border-t-2 border-dashed border-gray-400 pt-4">
                         <p>مبلغ نهایی :</p>
                         <p><span id="finalPrice"><%= Number(finalPrice).toLocaleString('fa-IR') %></span> تومان</p>
@@ -384,14 +387,14 @@
                 </ul>
 
                 <!-- ===== فرم کد تخفیف ===== -->
-                <div class="flex flex-col gap-y-2 pt-2 border-t-2 border-dashed border-gray-400 dark:border-gray-500">
-                    <p class="font-DanaMedium text-sm">کد تخفیف :</p>
+                <div class="flex flex-col gap-y-2 pt-4 border-t-2 border-dashed border-gray-400 dark:border-gray-500">
                     <div class="flex items-stretch gap-x-2">
-                        <input type="text" id="discountCode" name="discountCode" autocomplete="off"
+                        <p class="font-DanaMedium pt-2 text-sm">کد تخفیف :</p>
+                        <input type="text" id="discountCode" style="width: 1rem;" name="discountCode" autocomplete="off"
                             placeholder="کد تخفیف را وارد کنید"
-                            class="flex-1 min-w-0 text-sm bg-transparent rounded-lg border-2 border-gray-200 dark:border-white/20 py-2 px-3 outline-none focus:border-blue-500">
+                            class="pt-2 flex-1 min-w-0 text-sm bg-transparent rounded-lg border-2 border-gray-200 dark:border-white/20 py-2 px-3 outline-none focus:border-blue-500">
                         <button type="button" id="applyDiscountBtn"
-                            class="shrink-0 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all rounded-lg px-4 text-sm font-DanaMedium">
+                            class=" shrink-0 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all rounded-lg px-4 text-sm font-DanaMedium">
                             اعمال
                         </button>
                     </div>
@@ -489,10 +492,11 @@
         // به‌روزرسانی مبالغ نمایش‌داده‌شده در جعبه‌ی قیمت
         function renderTotals(t) {
             if (!t) return;
-            if (t.itemsPrice != null) document.getElementById("itemsTotal").textContent = faNum(t.itemsPrice);
-            if (t.discountAmount != null) document.getElementById("discount").textContent = faNum(t.discountAmount);
-            if (t.taxPrice != null) document.getElementById("taxPrice").textContent = faNum(t.taxPrice);
-            if (t.finalPrice != null) document.getElementById("finalPrice").textContent = faNum(t.finalPrice);
+            var setTxt = function (id, val) { var el = document.getElementById(id); if (el) el.textContent = faNum(val); };
+            if (t.itemsPrice != null) setTxt("itemsTotal", t.itemsPrice);
+            if (t.discountAmount != null) setTxt("discount", t.discountAmount);
+            if (t.taxPrice != null) setTxt("taxPrice", t.taxPrice);
+            if (t.finalPrice != null) setTxt("finalPrice", t.finalPrice);
         }
 
         // ===== اعمال کد تخفیف =====

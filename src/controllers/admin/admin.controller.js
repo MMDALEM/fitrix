@@ -3,6 +3,7 @@ const exchangeRateModel = require("../../models/exchangeRate.model");
 const basketModel = require("../../models/basket.model");
 const productModel = require("../../models/product.model");
 const userModel = require("../../models/user.model");
+const settingModel = require("../../models/setting.model");
 const {
   updateExchangeRateNavasan,
   getExchangeRate,
@@ -117,6 +118,46 @@ class adminController extends controller {
         timer = 9500;
       req.flash("sweetalert", { title, icon, timer });
       return res.redirect(req.header("Referer") || "/");
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // صفحه‌ی تنظیمات سایت (مالیات و ...)
+  async settingsPage(req, res, next) {
+    try {
+      res.locals.layout = "admin/master";
+      const settings = await settingModel.getSingleton();
+      return res.render("admin/settings/index", { settings });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // روشن/خاموش کردن مالیات + تنظیم نرخ آن
+  async updateTax(req, res, next) {
+    try {
+      const settings = await settingModel.getSingleton();
+
+      // چک‌باکس فقط وقتی فرستاده می‌شود که تیک خورده باشد
+      settings.taxEnabled = req.body.taxEnabled === "on" || req.body.taxEnabled === "true";
+
+      // نرخ مالیات به‌صورت درصد از فرم می‌آید (مثلاً 10) → به کسر تبدیل می‌شود
+      if (req.body.taxPercent !== undefined && req.body.taxPercent !== "") {
+        const pct = Number(req.body.taxPercent);
+        if (Number.isFinite(pct) && pct >= 0 && pct <= 100) {
+          settings.taxRate = pct / 100;
+        }
+      }
+
+      await settings.save();
+
+      return this.alertAndBack(req, res, {
+        title: settings.taxEnabled
+          ? `مالیات فعال شد (${Math.round(settings.taxRate * 100)}٪)`
+          : "مالیات خاموش شد؛ از این پس روی سفارش‌های جدید مالیات حساب نمی‌شود",
+        icon: "success",
+      });
     } catch (err) {
       next(err);
     }

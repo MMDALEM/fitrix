@@ -46,17 +46,24 @@ class GlobalData {
   }
 
   static async settings(req, res, next) {
+    const base = {
+      siteName: "فیت ریکس شاپ",
+      siteNameEn: "FitRix",
+      logo: "/images/logo.png",
+      phone: "09373640517",
+      email: "info@fitrix.ir",
+      taxEnabled: true,
+      taxRate: 0.1,
+    };
     try {
-      res.locals.settings = {
-        siteName: "فیت ریکس شاپ",
-        siteNameEn: "FitRix",
-        logo: "/images/logo.png",
-        phone: "09373640517",
-        email: "info@fitrix.ir",
-      };
+      const settingModel = require("../models/setting.model");
+      const s = await settingModel.getSingleton();
+      base.taxEnabled = s.taxEnabled;
+      base.taxRate = s.taxRate;
     } catch {
-      res.locals.settings = {};
+      // در صورت خطا، مقادیر پیش‌فرض باقی می‌مانند
     }
+    res.locals.settings = base;
     next();
   }
 

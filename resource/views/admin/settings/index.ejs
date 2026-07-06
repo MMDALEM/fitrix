@@ -1,0 +1,60 @@
+<main class="container relative">
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <!-- SIDE MENU -->
+        <%- include(viewPath('layout/menu')) %>
+
+        <div class="flex flex-col gap-y-5 mt-5 lg:mt-0 w-full">
+
+            <span class="flex items-center gap-x-2 shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <svg class="size-7 text-blue-500"><use href="#cog" /></svg>
+                <h2 class="font-DanaMedium text-lg">تنظیمات سایت</h2>
+            </span>
+
+            <!-- مالیات -->
+            <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white flex flex-col gap-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-DanaMedium text-lg">مالیات بر ارزش افزوده</h2>
+                    <span style="padding:.25rem .75rem;border-radius:9999px;font-size:.8rem;font-weight:700;<%= settings.taxEnabled ? 'background:#dcfce7;color:#16a34a' : 'background:#fee2e2;color:#dc2626' %>">
+                        <%= settings.taxEnabled ? 'فعال' : 'خاموش' %>
+                    </span>
+                </div>
+                <p class="text-xs text-gray-400 leading-6">
+                    اگر مالیات را خاموش کنید، روی سفارش‌های جدید مالیات محاسبه نمی‌شود
+                    (مبلغ مالیات صفر می‌شود). سفارش‌های قبلی تغییری نمی‌کنند.
+                </p>
+
+                <form action="/admin/settings/tax" method="POST" class="flex flex-col gap-y-5">
+                    <!-- سوییچ روشن/خاموش -->
+                    <label class="flex items-center gap-x-3 cursor-pointer w-fit">
+                        <span class="relative inline-block" style="width:52px;height:28px;">
+                            <input type="checkbox" name="taxEnabled" id="taxToggle" <%= settings.taxEnabled ? 'checked' : '' %>
+                                   style="opacity:0;width:0;height:0;position:absolute" onchange="document.getElementById('taxTrack').style.background = this.checked ? '#22c55e' : '#cbd5e1'; document.getElementById('taxKnob').style.transform = this.checked ? 'translateX(-24px)' : 'translateX(0)';">
+                            <span id="taxTrack" style="position:absolute;inset:0;border-radius:9999px;transition:.2s;background:<%= settings.taxEnabled ? '#22c55e' : '#cbd5e1' %>"></span>
+                            <span id="taxKnob" style="position:absolute;top:3px;right:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3);transform:<%= settings.taxEnabled ? 'translateX(-24px)' : 'translateX(0)' %>"></span>
+                        </span>
+                        <span class="font-DanaMedium text-sm">محاسبه‌ی مالیات فعال باشد</span>
+                    </label>
+
+                    <!-- نرخ مالیات -->
+                    <div class="w-full sm:w-64">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">نرخ مالیات (درصد)</label>
+                        <div class="relative">
+                            <input name="taxPercent" type="number" min="0" max="100" step="0.5"
+                                   value="<%= Math.round((settings.taxRate || 0) * 1000) / 10 %>"
+                                   class="block w-full p-2.5 text-sm text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                            <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">٪</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">مثلاً ۱۰ برای مالیات ۱۰٪</p>
+                    </div>
+
+                    <div>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-6 py-2.5 text-sm font-DanaMedium">
+                            ذخیره تنظیمات
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</main>

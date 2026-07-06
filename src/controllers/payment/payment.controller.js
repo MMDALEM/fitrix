@@ -3,11 +3,12 @@ const basketModel = require("../../models/basket.model");
 const productModel = require("../../models/product.model");
 const addressModel = require("../../models/address.model");
 const discountModel = require("../../models/discount.model");
+const settingModel = require("../../models/setting.model");
 const paymentService = require("../../services/payment.service");
 const controller = require("../.controller");
 
-// نرخ مالیات بر ارزش افزوده (۱۰٪)
-const TAX_RATE = 0.1;
+// نرخ پیش‌فرض مالیات بر ارزش افزوده (۱۰٪) — اگر تنظیمات در دسترس نبود
+const DEFAULT_TAX_RATE = 0.1;
 
 class paymentController extends controller {
   // ساخت سبد فعالِ جدید با خودترمیمی:
@@ -90,9 +91,16 @@ class paymentController extends controller {
       }
     }
 
-    // مالیات روی مبلغ پس از کسر تخفیف محاسبه می‌شود
+    // مالیات روی مبلغ پس از کسر تخفیف محاسبه می‌شود.
+    // اگر ادمین مالیات را خاموش کرده باشد، اصلاً محاسبه نمی‌شود (۰).
+    let taxRate = DEFAULT_TAX_RATE;
+    try {
+      const settings = await settingModel.getSingleton();
+      taxRate = settings.taxEnabled ? (settings.taxRate ?? DEFAULT_TAX_RATE) : 0;
+    } catch (_) {}
+
     const taxableAmount = Math.max(itemsPrice - discountAmount, 0);
-    const taxPrice = Math.round(taxableAmount * TAX_RATE);
+    const taxPrice = Math.round(taxableAmount * taxRate);
     const finalPrice = Math.max(itemsPrice - discountAmount + taxPrice, 0);
 
     return {
@@ -275,15 +283,17 @@ class paymentController extends controller {
   async verifyPayment(req, res, next) {
     try {
       const { gateway } = req.params;
-      // بعضی درگاه‌ها نتیجه را با POST (در body) برمی‌گردانند؛
-      // پارامترهای body برای یکدستی روی query ادغام می‌شوند.
+      // بعضی درگاه‌ها نتیجه را با POST (در body) و بعضی با GET (در query)
+      // برمی‌گردانند. در Express 5 خودِ req.query فقط‌خواندنی (getter) است و
+      // نمی‌توان به آن مقدار داد؛ پس پارامترها را در یک شیء محلی ادغام می‌کنیم.
+      const params = { ...(req.query || {}) };
       if (req.method === "POST" && req.body && typeof req.body === "object") {
-        req.query = { ...req.body, ...req.query };
+        Object.assign(params, req.body);
       }
       // basketId از مسیر (path) خوانده می‌شود تا در URL تمیز بماند؛
       // برای سازگاری، query هم پشتیبانی می‌شود.
       const basketId =
-        req.params.basketId || req.query.basketId || req.query.orderId;
+        req.params.basketId || params.basketId || params.orderId;
 
       if (!basketId || !mongoose.Types.ObjectId.isValid(basketId)) {
         return res.render("shop/payment-result", {
@@ -311,19 +321,19 @@ class paymentController extends controller {
       let verified = false;
       let refId = basket.transactionId;
 
-      if (req.query.mock === "1") {
+      if (params.mock === "1") {
         verified = true; // حالت توسعه (بدون کلید درگاه)
       } else if (gateway === "zarinpal") {
-        if (req.query.Status === "OK") {
+        if (params.Status === "OK") {
           const result = await paymentService.zarinpalVerify({
             amount: basket.finalPrice,
-            authority: req.query.Authority || basket.transactionId,
+            authority: params.Authority || basket.transactionId,
           });
           verified = result.ok;
           refId = result.refId || refId;
         }
       } else if (gateway === "digipay") {
-        const trackingCode = req.query.trackingCode || basket.transactionId;
+        const trackingCode = params.trackingCode || basket.transactionId;
         const result = await paymentService.digipayVerify({ trackingCode });
         verified = result.ok;
         refId = result.refId || refId;
