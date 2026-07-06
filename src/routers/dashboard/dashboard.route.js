@@ -6,6 +6,7 @@ const dashboradController = require("../../controllers/dashborad/dashborad.contr
 
 // //home Rouer
 router.get("/", dashboradController.dashborad);
+router.post("/profile", dashboradController.updateProfile);
 router.get("/address", dashboradController.address);
 router.post("/address", dashboradController.addAddress);
 router.post("/address/:id", dashboradController.deleteAddress);

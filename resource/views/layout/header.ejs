@@ -108,7 +108,7 @@
                                 <% var p = item.product; %>
                                 <div class="grid grid-cols-12 gap-x-2 w-full py-4">
                                     <div class="col-span-4 w-24 h-20">
-                                        <img  src="<%= p.image %>" class="rounded-lg " style="object-fit: scale-down; width: 15vw; height: 15vh;" class="object-contain object-center h-full w-32 mx-auto transition-transform duration-300 group-hover:scale-105" alt="<%= p.title %>">
+                                        <img src="<%= p.image %>" class="rounded-lg w-full h-full mx-auto" style="object-fit: contain;" alt="<%= p.title %>">
                                     </div>
                                     <div class="col-span-8 flex flex-col justify-between">
                                         <a href="/product/<%= p.slug %>" class="font-DanaMedium line-clamp-2 hover:text-blue-500"><%= p.title %></a>

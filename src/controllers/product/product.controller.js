@@ -10,7 +10,8 @@ class productController extends controller {
         .populate("brand")
         .exec();
 
-      if (!product) {
+      // پراهورمون‌ها / محصولات مخفی در سایت اصلی قابل مشاهده نیستند (۴۰۴)
+      if (!product || product.siteHidden) {
         return next(); // به هندلر ۴۰۴ سپرده می‌شود
       }
 
@@ -20,7 +21,11 @@ class productController extends controller {
         .catch(() => {});
 
       const products = await productModel
-        .find({ category: product.category?._id, _id: { $ne: product._id } })
+        .find({
+          category: product.category?._id,
+          _id: { $ne: product._id },
+          siteHidden: { $ne: true },
+        })
         .sort({ createdAt: -1 })
         .limit(10);
 

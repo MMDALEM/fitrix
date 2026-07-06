@@ -4,18 +4,26 @@
         <div class="px-3 lg:container group w-full mt-4 lg:mt-10">
             <div dir="rtl" class="swiper header-slider h-52 md:h-96 cursor-pointer">
                 <div class="swiper-wrapper">
-                    <a href="/shop" class="swiper-slide">
-                        <img src="/images/slider/4.webp" class="rounded-xl" alt="فروشگاه مکمل ورزشی فیت ریکس شاپ">
-                    </a >
-                    <a href="/shop" class="swiper-slide">
-                        <img src="/images/slider/1.jpg" class="rounded-xl" alt="خرید مکمل ورزشی با تخفیف ویژه">
-                    </a >
-                    <a href="/shop" class="swiper-slide">
-                        <img src="/images/slider/2.jpg" class="rounded-xl" alt="جدیدترین مکمل‌های ورزشی">
-                    </a >
-                    <a href="/shop" class="swiper-slide">
-                        <img src="/images/slider/3.gif" class="rounded-xl" alt="پیشنهادهای شگفت‌انگیز فیت ریکس شاپ">
-                    </a >
+                    <% if (typeof slides !== 'undefined' && slides && slides.length) { %>
+                        <% slides.forEach(function (slide) { %>
+                        <a href="<%= slide.link || '/shop' %>" class="swiper-slide">
+                            <img src="<%= slide.image %>" class="rounded-xl" style="width:100%;height:100%;object-fit:cover" alt="<%= slide.alt || 'اسلاید فیت ریکس شاپ' %>">
+                        </a>
+                        <% }) %>
+                    <% } else { %>
+                        <a href="/shop" class="swiper-slide">
+                            <img src="/images/slider/4.webp" class="rounded-xl" alt="فروشگاه مکمل ورزشی فیت ریکس شاپ">
+                        </a>
+                        <a href="/shop" class="swiper-slide">
+                            <img src="/images/slider/1.jpg" class="rounded-xl" alt="خرید مکمل ورزشی با تخفیف ویژه">
+                        </a>
+                        <a href="/shop" class="swiper-slide">
+                            <img src="/images/slider/2.jpg" class="rounded-xl" alt="جدیدترین مکمل‌های ورزشی">
+                        </a>
+                        <a href="/shop" class="swiper-slide">
+                            <img src="/images/slider/3.gif" class="rounded-xl" alt="پیشنهادهای شگفت‌انگیز فیت ریکس شاپ">
+                        </a>
+                    <% } %>
                 </div>
                 <div class="swiper-pagination-wrapper">
                     <div class="swiper-pagination"></div>
@@ -127,14 +135,6 @@
                         آمینو
                     </p>
                 </a>
-                <a href="/shop?search=مولتی ویتامین" class="group hidden md:flex">
-                    <img src="/images/category/11.png"
-                        class="w-[120px] h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
-                        alt="مولتی ویتامین" />
-                    <p class="pt-1 text-sm lg:text-lg line-clamp-1">
-                        مولتی ویتامین
-                    </p>
-                </a>
             </div>
         </section>
 
@@ -176,7 +176,7 @@
                             </div>
                             <!-- product img -->
                             <a href="/product/<%= product.slug %>">
-                                <img style="object-fit: scale-down; width: 15vw; height: 15vh;" class="object-contain object-center h-full w-32 mx-auto transition-transform duration-300 group-hover:scale-105" loading="lazy" src="<%= product.image %>" alt="<%= product.title %>">
+                                <img style="object-fit: contain; width: 100%; max-width: 130px; height: 130px; margin-inline: auto;" class="transition-transform duration-300 group-hover:scale-105" loading="lazy" src="<%= product.image %>" alt="<%= product.title %>">
                             </a>
                             <!--  product footer -->
                             <div class="space-y-2">

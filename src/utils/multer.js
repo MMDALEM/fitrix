@@ -8,6 +8,8 @@ const storage = multer.diskStorage({
 
     if (req.baseUrl == "/admin/brand")
       uploadPath = path.join(__dirname, "../../public/uploads/files/brand");
+    else if (req.baseUrl == "/admin/slider")
+      uploadPath = path.join(__dirname, "../../public/uploads/files/slider");
     else
       uploadPath = path.join(__dirname, "../../public/uploads/files/product");
 

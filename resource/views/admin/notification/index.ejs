@@ -1,0 +1,50 @@
+<main class="container relative">
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <%- include(viewPath('layout/menu')) %>
+
+        <div class="flex flex-col gap-y-5 mt-5 lg:mt-0 w-full">
+
+            <div class="flex items-center justify-between shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <span class="flex items-center gap-x-2">
+                    <svg class="size-7 text-blue-500"><use href="#bell" /></svg>
+                    <h2 class="font-DanaMedium text-lg">اعلان‌ها و پیام‌ها</h2>
+                    <span class="text-gray-400 text-sm">(<%= Number(notifications.length).toLocaleString('fa-IR') %>)</span>
+                </span>
+                <% if (notifications.length) { %>
+                <form action="/admin/notifications/clear" method="POST">
+                    <button type="submit" class="text-xs font-DanaMedium text-red-500 hover:text-red-700">پاک کردن همه</button>
+                </form>
+                <% } %>
+            </div>
+
+            <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white flex flex-col gap-y-3 mb-8">
+                <% if (!notifications.length) { %>
+                    <p class="text-center text-gray-400 py-8">اعلانی وجود ندارد.</p>
+                <% } %>
+                <% notifications.forEach(function (n) { %>
+                    <div class="flex items-start justify-between gap-x-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3 <%= n.isRead ? '' : 'bg-blue-50/50 dark:bg-blue-900/10' %>">
+                        <div class="flex items-start gap-x-3">
+                            <span class="mt-1 shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-blue-500/10 text-blue-500">
+                                <svg class="size-5"><use href="#shopping-bag" /></svg>
+                            </span>
+                            <div class="flex flex-col gap-y-1">
+                                <p class="font-DanaMedium"><%= n.title %></p>
+                                <% if (n.message) { %><p class="text-sm text-gray-500 dark:text-gray-400 leading-6"><%= n.message %></p><% } %>
+                                <div class="flex items-center gap-x-3 text-xs text-gray-400 mt-1">
+                                    <span><%= date(n.createdAt).format('jYYYY/jMM/jDD - HH:mm') %></span>
+                                    <% if (n.order) { %>
+                                        <a href="/admin/orders" class="text-blue-500 font-DanaMedium">مشاهده سفارش‌ها</a>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <form action="/admin/notifications/<%= n._id %>/delete" method="POST">
+                            <button type="submit" class="text-gray-400 hover:text-red-500"><svg class="w-5 h-5"><use href="#trash" /></svg></button>
+                        </form>
+                    </div>
+                <% }) %>
+            </div>
+
+        </div>
+    </div>
+</main>

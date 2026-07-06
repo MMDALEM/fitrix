@@ -1,6 +1,7 @@
 const brandModel = require("../../models/brand.model");
 const productModel = require("../../models/product.model");
 const categoriesModel = require("../../models/categories.model");
+const slideModel = require("../../models/slide.model");
 const controller = require("../.controller");
 
 class homeController extends controller {
@@ -8,12 +9,19 @@ class homeController extends controller {
     try {
       const brands = await brandModel.find({ showInHomePage: true }).lean();
 
+      // اسلایدهای بنر صفحه اصلی (قابل مدیریت از پنل ادمین)
+      const slides = await slideModel
+        .find({ isActive: true })
+        .sort({ order: 1, createdAt: -1 })
+        .lean();
+
       // اسلایدر «فروش شگفت‌انگیز»: فقط محصولاتی که در پنل ادمین شگفت‌انگیز
-      // شده‌اند نمایش داده می‌شوند (بدون fallback به محصولات دیگر)
+      // شده‌اند نمایش داده می‌شوند (پراهورمون‌ها/مخفی‌ها نمایش داده نمی‌شوند)
       const products = await productModel
         .find({
           amazing: true,
           isActive: true,
+          siteHidden: { $ne: true },
           quantity: { $gt: 0 },
         })
         .sort({ updatedAt: -1 })
@@ -22,6 +30,7 @@ class homeController extends controller {
 
       return res.render("home/home", {
         brands,
+        slides,
         products,
         metaDescription:
           "فیت ریکس شاپ؛ فروشگاه اینترنتی مکمل ورزشی. خرید پروتئین وی، کراتین، گینر، آمینو و ویتامین از برندهای معتبر جهانی با قیمت مناسب و ارسال سریع به سراسر ایران.",
@@ -57,7 +66,7 @@ class homeController extends controller {
 
       const [products, categories] = await Promise.all([
         productModel
-          .find({ isActive: true }, "slug updatedAt")
+          .find({ isActive: true, siteHidden: { $ne: true } }, "slug updatedAt")
           .sort({ updatedAt: -1 })
           .lean(),
         categoriesModel.find({ isActive: true }, "slug updatedAt").lean(),

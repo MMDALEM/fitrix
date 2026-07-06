@@ -10,6 +10,16 @@
     <link rel="stylesheet" href="/styles/swiper-bundle.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.min.css" >
     <link rel="icon" type="image/png" href="/images/favicon.png" />
+    <!-- شبکه‌ی ایمنی تصاویر پنل ادمین -->
+    <style>
+        img { max-width: 100%; }
+        .product-card > a { display: block; width: 100% !important; height: 12rem !important; position: relative; }
+        .product-card_img { width: 100% !important; height: 12rem !important; object-fit: contain !important; }
+        @media (max-width: 480px) {
+            .product-card > a { height: 9.5rem !important; }
+            .product-card_img { height: 9.5rem !important; }
+        }
+    </style>
     <!-- ==========================  DARK MODE SCRIPT ============================= -->
     <script type="text/javascript">
         if (

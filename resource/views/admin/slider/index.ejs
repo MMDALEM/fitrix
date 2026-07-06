@@ -1,0 +1,83 @@
+<main class="container relative">
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <%- include(viewPath('layout/menu')) %>
+
+        <div class="flex flex-col gap-y-5 mt-5 lg:mt-0 w-full">
+
+            <span class="flex items-center gap-x-2 shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <svg class="size-7 text-blue-500"><use href="#squares" /></svg>
+                <h2 class="font-DanaMedium text-lg">اسلایدشو صفحه اصلی</h2>
+                <span class="text-gray-400 text-sm">(<%= Number(slides.length).toLocaleString('fa-IR') %> اسلاید)</span>
+            </span>
+
+            <!-- افزودن اسلاید -->
+            <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white flex flex-col gap-y-4">
+                <h2 class="font-DanaMedium text-lg">افزودن اسلاید جدید</h2>
+                <p class="text-xs text-gray-400 -mt-2">بهترین ابعاد پیشنهادی برای بنر: عرض ۱۲۰۰ در ارتفاع ۴۰۰ پیکسل.</p>
+                <form action="/admin/slider/create" method="POST" enctype="multipart/form-data" class="grid grid-cols-12 gap-3 items-end">
+                    <div class="col-span-12 md:col-span-4">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">تصویر اسلاید <span class="text-red-500">*</span></label>
+                        <input name="image" type="file" accept="image/*" required
+                            class="block w-full text-sm text-gray-600 dark:text-gray-300 file:mr-2 file:rounded-lg file:border-0 file:bg-blue-500 file:text-white file:px-4 file:py-2 file:font-DanaMedium file:cursor-pointer bg-slate-100 dark:bg-gray-900 rounded-md p-1">
+                    </div>
+                    <div class="col-span-12 md:col-span-4">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">لینک مقصد</label>
+                        <input name="link" type="text" value="/shop" placeholder="مثلاً /shop یا /product/slug"
+                            class="block w-full p-2.5 text-sm text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                    <div class="col-span-6 md:col-span-2">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">ترتیب</label>
+                        <input name="order" type="number" value="0"
+                            class="block w-full p-2.5 text-sm text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                    <div class="col-span-6 md:col-span-2">
+                        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-4 py-2.5 text-sm font-DanaMedium">افزودن</button>
+                    </div>
+                    <div class="col-span-12">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">متن جایگزین (alt)</label>
+                        <input name="alt" type="text" placeholder="توضیح کوتاه تصویر (برای سئو)"
+                            class="block w-full p-2.5 text-sm text-gray-800 dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+                </form>
+            </div>
+
+            <!-- لیست اسلایدها -->
+            <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white flex flex-col gap-y-4 mb-8">
+                <h2 class="font-DanaMedium text-lg">اسلایدهای فعلی</h2>
+                <% if (!slides.length) { %>
+                    <p class="text-center text-gray-400 py-6">هنوز اسلایدی اضافه نشده است.</p>
+                <% } %>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <% slides.forEach(function (s) { %>
+                        <div class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+                            <img src="<%= s.image %>" alt="<%= s.alt %>" style="width:100%;height:9rem;object-fit:cover">
+                            <div class="p-3 flex flex-col gap-y-2">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500">لینک:</span>
+                                    <span class="font-DanaMedium line-clamp-1 text-blue-500"><%= s.link %></span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500">ترتیب: <%= Number(s.order).toLocaleString('fa-IR') %></span>
+                                    <span class="font-DanaMedium <%= s.isActive ? 'text-green-600' : 'text-gray-400' %>">
+                                        <%= s.isActive ? 'فعال' : 'غیرفعال' %>
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-x-2 pt-1">
+                                    <form action="/admin/slider/<%= s._id %>/toggle" method="POST" class="flex-1">
+                                        <button type="submit" class="w-full text-xs font-DanaMedium rounded-lg px-3 py-2 <%= s.isActive ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' : 'bg-green-500 text-white' %>">
+                                            <%= s.isActive ? 'غیرفعال کن' : 'فعال کن' %>
+                                        </button>
+                                    </form>
+                                    <form action="/admin/slider/<%= s._id %>/delete" method="POST" class="flex-1">
+                                        <button type="submit" class="w-full text-xs font-DanaMedium rounded-lg px-3 py-2 bg-red-500 hover:bg-red-600 text-white">حذف</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>

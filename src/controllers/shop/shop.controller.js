@@ -18,7 +18,8 @@ class shopController extends controller {
         inStock,
       } = req.query;
 
-      const filter = {};
+      // پراهورمون‌ها / محصولات مخفی در سایت اصلی نمایش داده نمی‌شوند
+      const filter = { siteHidden: { $ne: true } };
 
       let selectedCategory = null;
       if (category) {

@@ -1,5 +1,7 @@
 const addressModel = require("../../models/address.model");
 const basketModel = require("../../models/basket.model");
+const userModel = require("../../models/user.model");
+const notificationModel = require("../../models/notification.model");
 const controller = require("../.controller");
 
 class dashboradController extends controller {
@@ -13,11 +15,56 @@ class dashboradController extends controller {
         .populate("items.product", "title image slug")
         .sort({ paidAt: -1 });
 
+      // پیام‌های کاربر (تشکر از خرید و ...)
+      const notifications = await notificationModel
+        .find({ audience: "user", user: req.user._id })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .lean();
+
+      // اطلاعات کامل کاربر (برای فرم ویرایش پروفایل)
+      const profile = await userModel
+        .findById(req.user._id, "firstName lastName email phone")
+        .lean();
+
       return res.render("dashborad/dashborad", {
         addresses,
         orders,
+        notifications,
+        profile: profile || {},
         pageTitle: "حساب کاربری",
         noindex: true,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // به‌روزرسانی اطلاعات حساب (نام، نام خانوادگی، ایمیل)
+  async updateProfile(req, res, next) {
+    try {
+      const { firstName, lastName, email } = req.body;
+
+      if (email && !/^\S+@\S+\.\S+$/.test(email))
+        return this.alertAndBack(req, res, {
+          title: "ایمیل معتبر نیست",
+          icon: "error",
+        });
+
+      await userModel.updateOne(
+        { _id: req.user._id },
+        {
+          $set: {
+            firstName: (firstName || "").trim().slice(0, 50),
+            lastName: (lastName || "").trim().slice(0, 50),
+            email: (email || "").trim().toLowerCase(),
+          },
+        },
+      );
+
+      return this.alertAndBack(req, res, {
+        title: "اطلاعات حساب با موفقیت ذخیره شد",
+        icon: "success",
       });
     } catch (err) {
       next(err);

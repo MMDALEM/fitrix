@@ -222,6 +222,8 @@ class productController extends controller {
         salePercent: sale.percent,
         salePrice: sale.price,
         onSale: sale.on,
+        siteHidden:
+          req.body.siteHidden === "on" || req.body.siteHidden === "true",
         AED: aedRate,
         type,
       });
@@ -361,6 +363,8 @@ class productController extends controller {
         salePercent: sale.percent,
         salePrice: sale.price,
         onSale: sale.on,
+        siteHidden:
+          req.body.siteHidden === "on" || req.body.siteHidden === "true",
         AED: aedRate,
         type,
       };

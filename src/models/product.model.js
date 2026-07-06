@@ -186,6 +186,12 @@ const ProductSchema = new Schema(
       default: true,
       index: true,
     },
+    // عدم نمایش در سایت (مثلاً پراهورمون‌ها) — فقط در پنل ادمین و PDF دیده می‌شوند
+    siteHidden: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,

@@ -7,6 +7,7 @@ const {
   clearAuthCookies,
   revokeRefreshToken,
   popReturnTo,
+  saveReturnToReferer,
   cookieOptions,
 } = require("../../utils/token");
 const JWT = require("jsonwebtoken");
@@ -14,6 +15,8 @@ const JWT = require("jsonwebtoken");
 class authController extends controller {
   async auth(req, res, next) {
     try {
+      // صفحه‌ای که کاربر از آن به ورود آمده را ذخیره کن تا بعد از ورود برگردد
+      saveReturnToReferer(req, res);
       return res.render("auth/auth", {
         pageTitle: "ورود | ثبت‌نام",
         noindex: true,

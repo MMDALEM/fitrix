@@ -4,6 +4,7 @@ const productModel = require("../../models/product.model");
 const addressModel = require("../../models/address.model");
 const discountModel = require("../../models/discount.model");
 const settingModel = require("../../models/setting.model");
+const notificationModel = require("../../models/notification.model");
 const paymentService = require("../../services/payment.service");
 const controller = require("../.controller");
 
@@ -361,6 +362,40 @@ class paymentController extends controller {
 
         // این سبد پرداخت‌شده می‌شود و به‌عنوان سفارش باقی می‌ماند
         await basket.markPaid(refId);
+
+        // وضعیت دوستانه: در دست اقدام
+        basket.statusLabel = "در دست اقدام";
+        await basket.save();
+
+        // اعلان‌ها: به ادمین‌ها (سفارش جدید) و به کاربر (تشکر از خرید)
+        try {
+          const amount = Number(
+            basket.finalPrice || basket.totalPrice || 0,
+          ).toLocaleString("fa-IR");
+          const itemsCount = (basket.items || []).reduce(
+            (s, it) => s + (it.quantity || 0),
+            0,
+          );
+          await notificationModel.create([
+            {
+              audience: "admin",
+              type: "order",
+              title: `سفارش جدید ثبت شد — ${basket.orderNumber || ""}`,
+              message: `مبلغ ${amount} تومان، ${itemsCount} کالا. لطفاً برای آماده‌سازی و ارسال اقدام کنید.`,
+              order: basket._id,
+              link: "/admin/orders",
+            },
+            {
+              audience: "user",
+              user: basket.user,
+              type: "order",
+              title: "از خرید شما سپاسگزاریم 🙏",
+              message: `سفارش شما با شماره ${basket.orderNumber || ""} با موفقیت ثبت شد و هم‌اکنون در دست اقدام است. به‌زودی برای شما ارسال می‌شود.`,
+              order: basket._id,
+              link: "/dashboard",
+            },
+          ]);
+        } catch (_) {}
 
         // یک سبد فعالِ خالی جدید برای کاربر ساخته می‌شود (با خودترمیمیِ ایندکس)
         await this.createActiveBasket(basket.user);

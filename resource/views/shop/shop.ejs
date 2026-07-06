@@ -284,7 +284,12 @@
             <% if (products.docs.length > 0) { %>
             <div class="grid grid-cols-1 xxs:grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 xs:gap-2 sm:gap-4">
                 <% products.docs.forEach((product) => { %>
-                <div class="product-card group">
+                <% var _onSale = saleActive(product); %>
+                <div class="product-card group" style="<%= _onSale ? 'position:relative;border:2px solid #ef4444;box-shadow:0 8px 22px rgba(239,68,68,.18) !important' : '' %>">
+                    <% if (_onSale) { %>
+                    <!-- ریبون پیشنهاد ویژه -->
+                    <span style="position:absolute;top:10px;right:-6px;z-index:5;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;font-size:11px;font-weight:800;padding:3px 10px 3px 8px;border-radius:4px 0 0 4px;box-shadow:0 4px 10px rgba(239,68,68,.4)">🔥 پیشنهاد ویژه</span>
+                    <% } %>
                     <div class="product-card_header">
                         <div class="flex items-center gap-x-2">
                             <div class="tooltip">
@@ -309,8 +314,8 @@
                             ناموجود
                         </span>
                         <% } else if (saleActive(product)) { %>
-                        <span class="product-card_badge">
-                            <%= product.salePercent %>% تخفیف
+                        <span class="product-card_badge" style="background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;font-weight:800;box-shadow:0 4px 10px rgba(239,68,68,.35)">
+                            <%= Number(product.salePercent).toLocaleString('fa-IR') %>٪ تخفیف
                         </span>
                         <% } %>
                     </div>

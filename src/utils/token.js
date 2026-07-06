@@ -125,3 +125,23 @@ exports.popReturnTo = function popReturnTo(req, res) {
   res.clearCookie(RETURN_COOKIE, cookieOptions());
   return isSafePath(target) ? target : null;
 };
+
+// اگر کاربر مستقیماً روی «ورود» کلیک کرده (نه ریدایرکت میدل‌ور)، صفحه‌ای که
+// از آن آمده (Referer) را ذخیره می‌کنیم تا بعد از ورود به همان‌جا برگردد.
+// اگر از قبل مقصدی ذخیره شده باشد، دست نمی‌زنیم.
+exports.saveReturnToReferer = function saveReturnToReferer(req, res) {
+  if (req.cookies && req.cookies[RETURN_COOKIE]) return;
+  const ref = req.get("Referer");
+  if (!ref) return;
+  let path;
+  try {
+    const url = new URL(ref);
+    // فقط اگر از همین دامنه آمده باشد
+    if (url.host !== req.get("host")) return;
+    path = url.pathname + url.search;
+  } catch {
+    return;
+  }
+  if (!isSafePath(path)) return;
+  res.cookie(RETURN_COOKIE, path, { ...cookieOptions(15 * 60 * 1000) });
+};

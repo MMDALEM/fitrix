@@ -79,6 +79,21 @@
     <link rel="stylesheet" href="/styles/swiper-bundle.css">
     <link rel="stylesheet" href="/styles/sweetalert2.min.css" >
     <link rel="icon" type="image/png" href="/images/favicon.png" />
+    <!-- شبکه‌ی ایمنی تصاویر: عکس‌ها روی همه ابعاد (موبایل و دسکتاپ) یکدست بمانند و چیدمان را نریزند -->
+    <style>
+        img { max-width: 100%; }
+        /* اسلایدر عکس اصلی صفحه محصول: کل عکس دیده شود */
+        .ProductDetailsSlider img,
+        .MobileProductSlider img { max-width: 100%; height: auto; }
+        /* کارت محصول: کادر عکس همیشه یک‌اندازه و کل عکس (بدون بریدگی) نمایش داده شود
+           — این باعث می‌شود عکس‌ها با ابعاد مختلف، در موبایل و کامپیوتر یکسان دیده شوند */
+        .product-card > a { display: block; width: 100% !important; height: 12rem !important; position: relative; }
+        .product-card_img { width: 100% !important; height: 12rem !important; object-fit: contain !important; }
+        @media (max-width: 480px) {
+            .product-card > a { height: 9.5rem !important; }
+            .product-card_img { height: 9.5rem !important; }
+        }
+    </style>
     <!-- ==========================  DARK MODE SCRIPT ============================= -->
     <script type="text/javascript">
         if (

@@ -303,7 +303,7 @@
                     <!-- IMAGE -->
                     <div class="w-2/4 hidden md:flex flex-col justify-center items-center gap-y-4">
                         <span class="open-sliderModal">
-                            <img src="<%= product.image %>" class="cursor-pointer object-cover" alt="<%= product.title %>">
+                            <img src="<%= product.image %>" style="width:100%;max-height:22rem;object-fit:contain;" class="cursor-pointer" alt="<%= product.title %>">
                         </span>
                         <div class="grid grid-cols-12 child:col-span-3 child:app-border gap-x-4 child:size-16 child:rounded-lg child:cursor-pointer">
                             <div class="p-1 open-sliderModal">
@@ -391,11 +391,6 @@
                         </div>
                         <% } %>
 
-                        <div class="flex flex-col gap-y-3">
-                            <p class="text-lg font-DanaDemiBold dark:text-gray-300">نحوه مصرف</p>
-                            <p class="text-sm text-gray-300 dark:text-gray-500"><%= product.howToUse %></p>
-                        </div>
-
                         <!-- Features -->
                         <div class="w-full flex flex-col gap-y-4">
                             <h2 class="font-DanaDemiBold text-lg dark:text-gray-200">ویژگی‌ها</h2>
@@ -406,7 +401,7 @@
                                 </div>
                                 <div class="col-span-12 md:col-span-6 xl:col-span-4" style="display:flex;flex-direction:row;">
                                     <p class="text-sm text-gray-500">برند محصول</p>
-                                    <img style="object-fit:scale-down;height:7vh !important;width:6vw !important;" src="<%= product.brand.image %>" alt="brand">
+                                    <img style="object-fit:contain;height:2.5rem;max-width:5rem;" src="<%= product.brand.image %>" alt="brand">
                                 </div>
                                 <div class="col-span-12 md:col-span-6 xl:col-span-4">
                                     <p class="text-sm text-gray-500">اصالت</p>
@@ -457,6 +452,14 @@
                         <p class="font-Dana text-sm text-500">تومان</p>
                     </div>
                 </div>
+
+                <!-- هشدار موجودی کم (کمتر از ۳ عدد) -->
+                <% if (product.quantity > 0 && product.quantity < 3) { %>
+                <div style="display:flex;align-items:center;justify-content:center;gap:.4rem;background:#fff7ed;color:#c2410c;border:1px solid #fdba74;border-radius:.6rem;padding:.5rem .75rem;font-weight:700;font-size:.85rem" class="dark:!bg-orange-900/20">
+                    <svg class="size-5" style="flex-shrink:0"><use href="#fire"></use></svg>
+                    <span>فقط <%= Number(product.quantity).toLocaleString('fa-IR') %> عدد در انبار باقی مانده — عجله کنید!</span>
+                </div>
+                <% } %>
 
                 <% if (product.quantity > 0) { %>
                 <div class="w-full flex items-center justify-between gap-x-1 rounded-lg border border-gray-200 dark:border-white/20 py-2 px-3">
@@ -692,7 +695,7 @@
                             toast: true,
                             position: 'top-end',
                             showConfirmButton: false,
-                            timer: 1200,
+                            timer: 2200,
                             timerProgressBar: true,
                             didClose: () => location.reload()   // بعد از بسته شدن پیام، رفرش
                         });
