@@ -18,6 +18,21 @@ const sha256 = (t) => crypto.createHash("sha256").update(t).digest("hex");
 
 const isProd = () => process.env.NODE_ENV === "production";
 
+// COOKIE_DOMAIN را پاک‌سازی می‌کنیم: پروتکل/مسیر/پورت حذف و اعتبارسنجی می‌شود.
+// اگر مقدار نامعتبر بود، domain اصلاً ست نمی‌شود تا express خطای
+// «option domain is invalid» ندهد (در این حالت دامنه‌ی درخواست استفاده می‌شود).
+const sanitizeDomain = (raw) => {
+  if (!raw) return null;
+  const d = String(raw)
+    .trim()
+    .replace(/^https?:\/\//i, "") // حذف پروتکل
+    .replace(/\/.*$/, "") // حذف مسیر
+    .replace(/:\d+$/, ""); // حذف پورت
+  // دامنه‌ی معتبر: حروف/عدد/خط‌تیره، حداقل یک نقطه، با نقطه‌ی ابتدایی اختیاری
+  if (/^\.?[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(d)) return d;
+  return null;
+};
+
 const cookieOptions = (maxAge) => {
   const opts = {
     httpOnly: true, // همیشه؛ توکن نباید از JS خوانده شود
@@ -25,8 +40,10 @@ const cookieOptions = (maxAge) => {
     sameSite: "lax", // strict کوکی را در بازگشت از درگاه پرداخت نمی‌فرستد
     path: "/",
   };
-  if (isProd() && process.env.COOKIE_DOMAIN)
-    opts.domain = process.env.COOKIE_DOMAIN;
+  if (isProd()) {
+    const d = sanitizeDomain(process.env.COOKIE_DOMAIN);
+    if (d) opts.domain = d;
+  }
   if (maxAge) opts.maxAge = maxAge;
   return opts;
 };
@@ -115,16 +132,28 @@ exports.saveReturnTo = function saveReturnTo(req, res) {
   if (req.method !== "GET") return;
   const target = req.originalUrl;
   if (!isSafePath(target)) return;
-  res.cookie(RETURN_COOKIE, target, {
-    ...cookieOptions(15 * 60 * 1000),
-  });
+  // ست‌کردن کوکی نباید هرگز باعث کرش صفحه شود
+  try {
+    res.cookie(RETURN_COOKIE, target, { ...cookieOptions(15 * 60 * 1000) });
+  } catch {}
 };
 
 exports.popReturnTo = function popReturnTo(req, res) {
   const target = req.cookies && req.cookies[RETURN_COOKIE];
-  res.clearCookie(RETURN_COOKIE, cookieOptions());
+  try {
+    res.clearCookie(RETURN_COOKIE, cookieOptions());
+  } catch {}
   return isSafePath(target) ? target : null;
 };
+
+// خواندن مقصدِ بازگشت بدون پاک‌کردن کوکی (برای انتقال آن به مرحله‌ی OTP)
+exports.peekReturnTo = function peekReturnTo(req) {
+  const target = req.cookies && req.cookies[RETURN_COOKIE];
+  return isSafePath(target) ? target : null;
+};
+
+// اعتبارسنجی مسیر بازگشت (برای استفاده در کنترلر)
+exports.isSafeReturnPath = isSafePath;
 
 // اگر کاربر مستقیماً روی «ورود» کلیک کرده (نه ریدایرکت میدل‌ور)، صفحه‌ای که
 // از آن آمده (Referer) را ذخیره می‌کنیم تا بعد از ورود به همان‌جا برگردد.
@@ -143,5 +172,8 @@ exports.saveReturnToReferer = function saveReturnToReferer(req, res) {
     return;
   }
   if (!isSafePath(path)) return;
-  res.cookie(RETURN_COOKIE, path, { ...cookieOptions(15 * 60 * 1000) });
+  // ست‌کردن کوکی نباید هرگز باعث کرش صفحه‌ی ورود شود
+  try {
+    res.cookie(RETURN_COOKIE, path, { ...cookieOptions(15 * 60 * 1000) });
+  } catch {}
 };

@@ -7,14 +7,11 @@ const settingModel = require("../../models/setting.model");
 const notificationModel = require("../../models/notification.model");
 const paymentService = require("../../services/payment.service");
 const controller = require("../.controller");
+const { manager, successpayment } = require("../../utils/sms");
 
-// نرخ پیش‌فرض مالیات بر ارزش افزوده (۱۰٪) — اگر تنظیمات در دسترس نبود
 const DEFAULT_TAX_RATE = 0.1;
 
 class paymentController extends controller {
-  // ساخت سبد فعالِ جدید با خودترمیمی:
-  // اگر ایندکس قدیمیِ unique روی user باعث خطای duplicate شد،
-  // همان‌جا (در کنترلر) آن را حذف و دوباره تلاش می‌کنیم.
   async createActiveBasket(userId) {
     try {
       return await basketModel.create({
@@ -37,8 +34,6 @@ class paymentController extends controller {
     }
   }
 
-  // محاسبه‌ی مبالغ سبدِ فعال به‌صورت سمت سرور (مرجع حقیقت)
-  // قیمت‌ها هیچ‌وقت از کلاینت گرفته نمی‌شوند.
   async calcBasketTotals(userId, discountCodeRaw) {
     const basket = await basketModel
       .findOne({ user: userId, status: "active" })
@@ -92,12 +87,12 @@ class paymentController extends controller {
       }
     }
 
-    // مالیات روی مبلغ پس از کسر تخفیف محاسبه می‌شود.
-    // اگر ادمین مالیات را خاموش کرده باشد، اصلاً محاسبه نمی‌شود (۰).
     let taxRate = DEFAULT_TAX_RATE;
     try {
       const settings = await settingModel.getSingleton();
-      taxRate = settings.taxEnabled ? (settings.taxRate ?? DEFAULT_TAX_RATE) : 0;
+      taxRate = settings.taxEnabled
+        ? (settings.taxRate ?? DEFAULT_TAX_RATE)
+        : 0;
     } catch (_) {}
 
     const taxableAmount = Math.max(itemsPrice - discountAmount, 0);
@@ -116,7 +111,6 @@ class paymentController extends controller {
     };
   }
 
-  // اعتبارسنجی زنده‌ی کد تخفیف (برای فرم سبد خرید) — پاسخ JSON
   async validateDiscount(req, res, next) {
     try {
       const userId = req.user._id;
@@ -293,8 +287,7 @@ class paymentController extends controller {
       }
       // basketId از مسیر (path) خوانده می‌شود تا در URL تمیز بماند؛
       // برای سازگاری، query هم پشتیبانی می‌شود.
-      const basketId =
-        req.params.basketId || params.basketId || params.orderId;
+      const basketId = req.params.basketId || params.basketId || params.orderId;
 
       if (!basketId || !mongoose.Types.ObjectId.isValid(basketId)) {
         return res.render("shop/payment-result", {
@@ -363,6 +356,13 @@ class paymentController extends controller {
         // این سبد پرداخت‌شده می‌شود و به‌عنوان سفارش باقی می‌ماند
         await basket.markPaid(refId);
 
+        await successpayment(
+          basket.shippingDetails?.phone + "",
+          basket.orderNumber + "",
+        );
+        await manager("09167728327", basket.orderNumber + "");
+        await manager("09373640517", basket.orderNumber + "");
+
         // وضعیت دوستانه: در دست اقدام
         basket.statusLabel = "در دست اقدام";
         await basket.save();
@@ -389,7 +389,7 @@ class paymentController extends controller {
               audience: "user",
               user: basket.user,
               type: "order",
-              title: "از خرید شما سپاسگزاریم 🙏",
+              title: "از خرید شما سپاسگزاریم",
               message: `سفارش شما با شماره ${basket.orderNumber || ""} با موفقیت ثبت شد و هم‌اکنون در دست اقدام است. به‌زودی برای شما ارسال می‌شود.`,
               order: basket._id,
               link: "/dashboard",

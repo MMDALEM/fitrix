@@ -1,7 +1,7 @@
 
 const controller = require("../../.controller");
 const userModel = require("../../../models/user.model");
-const { generateOtp, randomString, hashPassword, comparePassword } = require("../../../utils/function");
+const { randomString, hashPassword, comparePassword } = require("../../../utils/function");
 const { issueTokens, setAuthCookies } = require("../../../utils/token");
 const { authAdminSchema } = require("../../../validations/auth.validation");
 

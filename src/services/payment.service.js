@@ -31,11 +31,15 @@ const zarinpal = zarinpalConfigured
   ? new ZarinPal({ merchantId: ZARINPAL_MERCHANT, sandbox: ZARINPAL_SANDBOX })
   : null;
 
-const ZARINPAL_STARTPAY = ZARINPAL_SANDBOX
-  ? ZARINPAL_BASE_URL_TEST
-  : ZARINPAL_BASE_URL;
+const ZARINPAL_STARTPAY =
+  process.env.NODE_ENV === "production"
+    ? ZARINPAL_BASE_URL
+    : ZARINPAL_BASE_URL_TEST;
 
-const DIGIPAY_BASE = DIGIPAY_SANDBOX ? DIGIPAY_BASE_URL : DIGIPAY_BASE_URL_TEST;
+const DIGIPAY_BASE =
+  process.env.NODE_ENV === "production"
+    ? DIGIPAY_BASE_URL
+    : DIGIPAY_BASE_URL_TEST;
 
 const DIGIPAY_VERSION = "2022-02-02";
 const DIGIPAY_TYPE = process.env.DIGIPAY_TICKET_TYPE || "0";

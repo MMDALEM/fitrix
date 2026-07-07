@@ -16,6 +16,9 @@ const { updateExchangeRate } = require("./services/exchangeRate.service");
 const { startExchangeRateCron } = require("./jobs/exchangeRate.job");
 const GlobalData = require("./middlewares/globalData");
 const flash = require("./middlewares/flash.middleware");
+const MongoStore = require("connect-mongo");
+const create =
+  MongoStore.create || (MongoStore.default && MongoStore.default.create);
 
 module.exports = class Application {
   constructor() {
@@ -44,11 +47,18 @@ module.exports = class Application {
     app.use(express.json({ limit: "100mb" }));
     app.use(express.urlencoded({ limit: "100mb", extended: true }));
     app.use(cookieParser());
+
     app.use(
       session({
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: true,
+        store: create
+          ? create({ mongoUrl: process.env.DATABASE_MONGODB_URL, ttl: 86400 })
+          : new (MongoStore(session))({
+              url: process.env.DATABASE_MONGODB_URL,
+              ttl: 86400,
+            }),
         cookie: { maxAge: 24 * 60 * 60 * 1000 },
       }),
     );
@@ -84,8 +94,6 @@ module.exports = class Application {
     mongoose.set("strictQuery", true);
     mongoose.connection.on("connected", async () => {
       console.log(`connect to mongodb `);
-      // حذف ایندکس قدیمیِ unique روی baskets.user
-      // (هر کاربر حالا چند سبد دارد: یک active + چند paid)
       try {
         const coll = mongoose.connection.db.collection("baskets");
         const indexes = await coll.indexes();
