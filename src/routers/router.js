@@ -28,9 +28,6 @@ router.use("/", paymentRouter);
 const dashboardRouter = require("./dashboard/dashboard.route");
 router.use("/dashboard", verifyUser, dashboardRouter);
 
-//admin routers
-// نکته: صفحه‌ی ورود ادمین (/admin/auth) داخل adminRouter باز می‌ماند؛
-// بقیه‌ی روت‌های adminRouter داخل خودش با verifyAdmin محافظت می‌شوند.
 const adminRouter = require("./admin/admin.route");
 router.use("/admin", adminRouter);
 

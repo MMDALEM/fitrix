@@ -7,17 +7,15 @@ const {
   clearAuthCookies,
   revokeRefreshToken,
   popReturnTo,
-  peekReturnTo,
-  isSafeReturnPath,
   saveReturnToReferer,
   cookieOptions,
 } = require("../../utils/token");
 const JWT = require("jsonwebtoken");
+const { authSchema } = require("../../validations/auth.validation");
 
 class authController extends controller {
   async auth(req, res, next) {
     try {
-      // صفحه‌ای که کاربر از آن به ورود آمده را ذخیره کن تا بعد از ورود برگردد
       saveReturnToReferer(req, res);
       return res.render("auth/auth", {
         pageTitle: "ورود | ثبت‌نام",
@@ -30,18 +28,18 @@ class authController extends controller {
 
   async verifyAuth(req, res, next) {
     try {
-      // await getotpSchema.validateAsync(req.body);
+      await authSchema.validateAsync(req.body);
       const { phone } = req.body;
       const code = generateOtp();
       const user = await this.checkExistUser(phone);
 
       const date = Date.now();
       if (user) {
-        // if (date <= user?.otp?.expiresIn)
-        //   return this.alertAndBack(req, res, {
-        //     title: "کد تایید به تازگی برای شماارسال شده، لطفا صبر کنید",
-        //     icon: "error",
-        //   });
+        if (date <= user?.otp?.expiresIn)
+          return this.alertAndBack(req, res, {
+            title: "کد تایید به تازگی برای شماارسال شده، لطفا صبر کنید",
+            icon: "error",
+          });
 
         await this.updateOtpForUser(phone, code);
       } else await this.register(phone, code);
@@ -50,9 +48,6 @@ class authController extends controller {
       const cookie_otp = {
         phone: phone,
         expiresIn: user?.otp?.expiresIn,
-        // مقصدِ بازگشت را همراه کوکیِ OTP حمل می‌کنیم تا مستقل از کوکیِ
-        // جداگانه‌ی returnTo، تا پایان فرایند ورود حفظ شود
-        returnTo: peekReturnTo(req) || "",
       };
 
       res.cookie(
@@ -103,8 +98,7 @@ class authController extends controller {
           icon: "error",
         });
 
-      const parsedOtp = JSON.parse(req.cookies.fitrix_otp);
-      const { phone, expiresIn } = parsedOtp;
+      const { phone, expiresIn } = JSON.parse(req.cookies.fitrix_otp);
       const code = `${req.body.num1}${req.body.num2}${req.body.num3}${req.body.num4}${req.body.num5}`;
       if (!code)
         return this.alertAndBack(req, res, {
@@ -136,13 +130,8 @@ class authController extends controller {
       setAuthCookies(res, tokens);
       res.clearCookie("fitrix_otp", cookieOptions());
 
-      // اگر کاربر از صفحه‌ای به ورود هدایت شده بود، به همان‌جا برمی‌گردد.
-      // اول کوکیِ اختصاصیِ returnTo، سپس مقصدِ حمل‌شده در کوکیِ OTP.
-      let returnTo = popReturnTo(req, res);
-      if (!returnTo && isSafeReturnPath(parsedOtp.returnTo)) {
-        returnTo = parsedOtp.returnTo;
-      }
-      returnTo = returnTo || "/";
+      // اگر کاربر از صفحه‌ای به ورود هدایت شده بود، به همان‌جا برمی‌گردد
+      const returnTo = popReturnTo(req, res) || "/";
 
       return this.alertAndReview(
         req,

@@ -16,7 +16,6 @@ const DIGIPAY_USERNAME = process.env.DIGIPAY_USERNAME || "";
 const DIGIPAY_PASSWORD = process.env.DIGIPAY_PASSWORD || "";
 const DIGIPAY_CLIENT_ID = process.env.DIGIPAY_CLIENT_ID || "";
 const DIGIPAY_CLIENT_SECRET = process.env.DIGIPAY_CLIENT_SECRET || "";
-const DIGIPAY_SANDBOX = process.env.DIGIPAY_SANDBOX;
 const DIGIPAY_BASE_URL = process.env.DIGIPAY_BASE_URL;
 const DIGIPAY_BASE_URL_TEST = process.env.DIGIPAY_BASE_URL_TEST;
 

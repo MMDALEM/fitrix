@@ -1,15 +1,12 @@
 const JWT = require("jsonwebtoken");
 const crypto = require("crypto");
 
-// require تنبل برای جلوگیری از وابستگی حلقوی و لود نشدن بی‌مورد mongoose
 const getUserModel = () => require("../models/user.model");
 
-// اکسس‌توکن کوتاه‌عمر + رفرش‌توکن بلندعمر با چرخش (rotation)
 const ACCESS_TTL = "1h";
-const REFRESH_TTL_MS = 30 * 24 * 60 * 60 * 1000; // ۳۰ روز
+const REFRESH_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const accessSecret = () => process.env.JWT_ACCESS_TOKEN_SECRET_USER;
-// اگر سکرت جدا برای رفرش تعریف نشده بود، از سکرت اصلی مشتق می‌شود
 const refreshSecret = () =>
   process.env.JWT_REFRESH_TOKEN_SECRET_USER ||
   process.env.JWT_ACCESS_TOKEN_SECRET_USER + ".refresh";
@@ -18,26 +15,22 @@ const sha256 = (t) => crypto.createHash("sha256").update(t).digest("hex");
 
 const isProd = () => process.env.NODE_ENV === "production";
 
-// COOKIE_DOMAIN را پاک‌سازی می‌کنیم: پروتکل/مسیر/پورت حذف و اعتبارسنجی می‌شود.
-// اگر مقدار نامعتبر بود، domain اصلاً ست نمی‌شود تا express خطای
-// «option domain is invalid» ندهد (در این حالت دامنه‌ی درخواست استفاده می‌شود).
 const sanitizeDomain = (raw) => {
   if (!raw) return null;
   const d = String(raw)
     .trim()
-    .replace(/^https?:\/\//i, "") // حذف پروتکل
-    .replace(/\/.*$/, "") // حذف مسیر
-    .replace(/:\d+$/, ""); // حذف پورت
-  // دامنه‌ی معتبر: حروف/عدد/خط‌تیره، حداقل یک نقطه، با نقطه‌ی ابتدایی اختیاری
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/.*$/, "")
+    .replace(/:\d+$/, "");
   if (/^\.?[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(d)) return d;
   return null;
 };
 
 const cookieOptions = (maxAge) => {
   const opts = {
-    httpOnly: true, // همیشه؛ توکن نباید از JS خوانده شود
+    httpOnly: true,
     secure: isProd(),
-    sameSite: "lax", // strict کوکی را در بازگشت از درگاه پرداخت نمی‌فرستد
+    sameSite: "lax",
     path: "/",
   };
   if (isProd()) {
@@ -50,13 +43,10 @@ const cookieOptions = (maxAge) => {
 
 exports.cookieOptions = cookieOptions;
 
-// صدور جفت توکن + ذخیره‌ی هش رفرش‌توکن برای امکان ابطال
 exports.issueTokens = async function issueTokens(user) {
-  const access = JWT.sign(
-    { id: user._id, phone: user.phone },
-    accessSecret(),
-    { expiresIn: ACCESS_TTL },
-  );
+  const access = JWT.sign({ id: user._id, phone: user.phone }, accessSecret(), {
+    expiresIn: ACCESS_TTL,
+  });
   const refresh = JWT.sign({ id: user._id, typ: "refresh" }, refreshSecret(), {
     expiresIn: Math.floor(REFRESH_TTL_MS / 1000),
   });
@@ -77,8 +67,6 @@ exports.clearAuthCookies = function clearAuthCookies(res) {
   res.clearCookie("fitrix_refresh", cookieOptions());
 };
 
-// تلاش برای تمدید نشست با رفرش‌توکن؛ در موفقیت توکن‌ها چرخانده می‌شوند
-// خروجی: سند کاربر یا null
 exports.refreshSession = async function refreshSession(req, res) {
   try {
     const refresh = req.cookies && req.cookies.fitrix_refresh;
@@ -117,7 +105,6 @@ exports.revokeRefreshToken = async function revokeRefreshToken(userId) {
 
 const RETURN_COOKIE = "fitrix_return_to";
 
-// فقط مسیرهای داخلی امن؛ جلوگیری از open redirect
 const isSafePath = (p) =>
   typeof p === "string" &&
   p.length > 1 &&
@@ -146,18 +133,13 @@ exports.popReturnTo = function popReturnTo(req, res) {
   return isSafePath(target) ? target : null;
 };
 
-// خواندن مقصدِ بازگشت بدون پاک‌کردن کوکی (برای انتقال آن به مرحله‌ی OTP)
 exports.peekReturnTo = function peekReturnTo(req) {
   const target = req.cookies && req.cookies[RETURN_COOKIE];
   return isSafePath(target) ? target : null;
 };
 
-// اعتبارسنجی مسیر بازگشت (برای استفاده در کنترلر)
 exports.isSafeReturnPath = isSafePath;
 
-// اگر کاربر مستقیماً روی «ورود» کلیک کرده (نه ریدایرکت میدل‌ور)، صفحه‌ای که
-// از آن آمده (Referer) را ذخیره می‌کنیم تا بعد از ورود به همان‌جا برگردد.
-// اگر از قبل مقصدی ذخیره شده باشد، دست نمی‌زنیم.
 exports.saveReturnToReferer = function saveReturnToReferer(req, res) {
   if (req.cookies && req.cookies[RETURN_COOKIE]) return;
   const ref = req.get("Referer");
@@ -165,9 +147,9 @@ exports.saveReturnToReferer = function saveReturnToReferer(req, res) {
   let path;
   try {
     const url = new URL(ref);
-    // فقط اگر از همین دامنه آمده باشد
     if (url.host !== req.get("host")) return;
     path = url.pathname + url.search;
+    console.log("saveReturnToReferer", path);
   } catch {
     return;
   }

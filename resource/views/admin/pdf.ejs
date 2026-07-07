@@ -243,6 +243,10 @@
     }
     .product-price { font-size: 13px; font-weight: 800; color: #0284c7; }
     .product-price .currency { font-size: 9px; color: #64748b; font-weight: 500; margin-right: 2px; }
+    /* حالت «بدون قیمت»: قیمت‌ها و ابزارهای مربوط به قیمت پنهان شوند (در چاپ هم اعمال می‌شود) */
+    body.no-prices .product-price,
+    body.no-prices .custom-percent,
+    body.no-prices .price-tier { display: none !important; }
 
     .product-stock { font-size: 9px; padding: 2px 6px; border-radius: 5px; font-weight: 600; }
     .stock-in { background: #dcfce7; color: #16a34a; }
@@ -357,6 +361,12 @@
         <span class="percent-suffix">٪</span>
         <button type="button" class="btn btn-primary" onclick="applyCustomPercent()">اعمال</button>
       </div>
+
+      <!-- عدم نمایش قیمت‌ها (لیست بدون قیمت) -->
+      <label class="hide-prices-toggle" style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;user-select:none;">
+        <input type="checkbox" id="hidePrices" onchange="togglePrices()" style="width:16px;height:16px;cursor:pointer;">
+        بدون قیمت
+      </label>
 
       <button class="btn btn-secondary" onclick="resetFilters()">پاک کردن فیلتر</button>
       <button class="btn btn-primary" onclick="window.print()">📄 ذخیره به PDF / چاپ</button>
@@ -532,6 +542,12 @@
     var searchInput = document.getElementById('searchInput');
     var brandFilter = document.getElementById('brandFilter');
     var percentInput = document.getElementById('percentInput');
+
+    // نمایش/عدم‌نمایش قیمت‌ها — برای گرفتن لیست بدون قیمت
+    function togglePrices(){
+      var cb = document.getElementById('hidePrices');
+      document.body.classList.toggle('no-prices', cb && cb.checked);
+    }
 
     // اعمال درصد روی پایه + گرد کردن به بالا به نزدیک‌ترین ۱۰۰۰۰ (همان منطق سرور)
     function calcPrice(base, percent){

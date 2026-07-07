@@ -17,6 +17,7 @@ const { startExchangeRateCron } = require("./jobs/exchangeRate.job");
 const GlobalData = require("./middlewares/globalData");
 const flash = require("./middlewares/flash.middleware");
 const MongoStore = require("connect-mongo");
+const helmet = require("helmet");
 const create =
   MongoStore.create || (MongoStore.default && MongoStore.default.create);
 
@@ -30,18 +31,15 @@ module.exports = class Application {
   }
 
   configServer() {
-    // پشت reverse proxy (nginx) با SSL اجرا می‌شویم؛ با این تنظیم
-    // req.protocol مقدار واقعی (https) را از هدر X-Forwarded-Proto می‌خواند.
-    // در غیر این صورت callbackUrl درگاه با http ساخته می‌شود و مرورگر
-    // هنگام بازگشت از درگاه هشدار «اتصال ناامن» می‌دهد.
     app.set("trust proxy", true);
-    // هدرهای امنیتی (CSP خاموش تا اسکریپت‌های inline قالب نشکنند)
-    const helmet = require("helmet");
     app.use(
       helmet({
         contentSecurityPolicy: false,
         crossOriginEmbedderPolicy: false,
         crossOriginResourcePolicy: { policy: "cross-origin" },
+        referrerPolicy: {
+          policy: "same-origin",
+        },
       }),
     );
     app.use(express.json({ limit: "100mb" }));
