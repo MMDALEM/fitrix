@@ -24,6 +24,10 @@
     return false;
   }
 
+  // کمینه‌ی زمانِ نمایشِ حالتِ لودینگ (میلی‌ثانیه) تا حتی عکس‌های سریع هم
+  // یک لحظه حالت «در حال بارگذاری» را نشان بدهند و پرش ناگهانی نداشته باشند
+  var MIN_SHOW_MS = 320;
+
   function markLoaded(img) {
     img.classList.add("is-loaded");
   }
@@ -33,12 +37,19 @@
     img.dataset.blurInit = "1";
     img.classList.add("img-blur-load");
 
-    // اگر عکس از قبل (کش) لود شده، بدون چشمک‌زدن مستقیم نمایش بده
+    // اگر عکس از قبل (کش) لود شده، مستقیم و بدون تأخیر نمایش بده
     if (img.complete && img.naturalWidth > 0) {
       markLoaded(img);
       return;
     }
-    img.addEventListener("load", function () { markLoaded(img); }, { once: true });
+
+    var start = Date.now();
+    function done() {
+      var wait = MIN_SHOW_MS - (Date.now() - start);
+      if (wait > 0) setTimeout(function () { markLoaded(img); }, wait);
+      else markLoaded(img);
+    }
+    img.addEventListener("load", done, { once: true });
     // در صورت خطای لود هم شیمر را متوقف کن تا گیر نکند
     img.addEventListener("error", function () { markLoaded(img); }, { once: true });
   }

@@ -4,6 +4,7 @@ const userModel = require("../../../models/user.model");
 const { randomString, hashPassword, comparePassword } = require("../../../utils/function");
 const { issueTokens, setAuthCookies } = require("../../../utils/token");
 const { authAdminSchema } = require("../../../validations/auth.validation");
+const { rateLimit, resetRateLimit } = require("../../../utils/rateLimiter");
 
 class authAdminController extends controller {
   async auth(req, res, next) {
@@ -16,6 +17,16 @@ class authAdminController extends controller {
 
   async verifyAuth(req, res, next) {
     try {
+      // جلوگیری از brute-force: حداکثر ۱۰ تلاش در هر ۱۵ دقیقه برای هر IP
+      const ip = req.ip || req.socket?.remoteAddress || "unknown";
+      const rlKey = `admin_login:${ip}`;
+      if (rateLimit(rlKey, { max: 10, windowMs: 15 * 60 * 1000 }).limited) {
+        return this.alertAndBack(req, res, {
+          title: "تعداد تلاش‌های ناموفق زیاد است. چند دقیقه بعد دوباره تلاش کنید.",
+          icon: "error",
+        });
+      }
+
       await authAdminSchema.validateAsync(req.body);
       const { username, password } = req.body;
       const user = await this.checkExistUser(username);
@@ -47,6 +58,7 @@ class authAdminController extends controller {
       // اکسس‌توکن کوتاه‌عمر + رفرش‌توکن بلندعمر
       const tokens = await issueTokens(user);
       setAuthCookies(res, tokens);
+      resetRateLimit(rlKey); // ورودِ موفق → شمارنده صفر می‌شود
 
       return this.alertAndReview(
         req,

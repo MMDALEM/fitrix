@@ -41,7 +41,7 @@ router.get("/", verifyAdmin, adminController.admin);
 //auth (باز — صفحه‌ی ورود ادمین)
 router.get("/auth", authAdminController.auth);
 router.post("/auth", authAdminController.verifyAuth);
-router.get("/hashPassword", authAdminController.hashPassword);
+router.get("/hashPassword", verifyAdmin, authAdminController.hashPassword);
 
 // router.get("/logout", authAdminController.logout);
 // router.get("/", adminController.admin);

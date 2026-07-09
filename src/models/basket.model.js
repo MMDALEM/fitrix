@@ -98,6 +98,9 @@ const BasketSchema = new Schema(
     // مبلغ نهایی قابل پرداخت (اقلام - تخفیف + مالیات)
     finalPrice: { type: Number, default: 0, min: 0 },
     transactionId: { type: String, default: null },
+    // شناسه‌ی یکتای تراکنش که هنگام ساخت تیکت به درگاه داده می‌شود
+    // (دیجی‌پی هنگام verify به این providerId نیاز دارد)
+    providerId: { type: String, default: null },
     isPaid: { type: Boolean, default: false, index: true },
     paidAt: { type: Date, default: null },
     // ───── وضعیت ارسال (پنل ادمین) ─────

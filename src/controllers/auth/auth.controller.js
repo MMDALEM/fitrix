@@ -13,6 +13,7 @@ const {
 const JWT = require("jsonwebtoken");
 const { sendCode } = require("../../utils/sms");
 const { authSchema } = require("../../validations/auth.validation");
+const { rateLimit, resetRateLimit } = require("../../utils/rateLimiter");
 
 class authController extends controller {
   async auth(req, res, next) {
@@ -81,7 +82,6 @@ class authController extends controller {
 
   async otp(req, res, next) {
     try {
-
       if (!req.cookies.fitrix_otp)
         return this.alertAndBack(req, res, {
           title: "خطا در اعتبارسنجی کاربر",
@@ -109,6 +109,16 @@ class authController extends controller {
         });
 
       const { phone, expiresIn } = JSON.parse(req.cookies.fitrix_otp);
+
+      // جلوگیری از brute-forceِ کد OTP: حداکثر ۶ تلاش در هر ۱۰ دقیقه برای هر شماره
+      const rlKey = `otp_verify:${phone}`;
+      if (rateLimit(rlKey, { max: 6, windowMs: 10 * 60 * 1000 }).limited) {
+        return this.alertAndBack(req, res, {
+          title: "تعداد تلاش‌های زیاد. لطفاً چند دقیقه بعد دوباره تلاش کنید.",
+          icon: "error",
+        });
+      }
+
       const code = `${req.body.num1}${req.body.num2}${req.body.num3}${req.body.num4}${req.body.num5}`;
       if (!code)
         return this.alertAndBack(req, res, {
@@ -138,6 +148,7 @@ class authController extends controller {
       // اکسس‌توکن کوتاه‌عمر + رفرش‌توکن بلندعمر
       const tokens = await issueTokens(user);
       setAuthCookies(res, tokens);
+      resetRateLimit(rlKey); // تأیید موفق → شمارنده صفر می‌شود
       res.clearCookie("fitrix_otp", cookieOptions());
 
       // اگر کاربر از صفحه‌ای به ورود هدایت شده بود، به همان‌جا برمی‌گردد

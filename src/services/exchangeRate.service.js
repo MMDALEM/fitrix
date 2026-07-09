@@ -18,20 +18,37 @@ async function saveRateAndRespond(req, res, rateInRials) {
 
 async function updateExchangeRate(req, res, next) {
   try {
-    const response = await fetch(
-      `https://nerkh-api.ir/api/${NERKH_API_KEY}/currency/?filter=AED`,
-    );
-    if (!response.ok) throw new Error(`nerkh-api status ${response.status}`);
-
-    const json = await response.json();
-    const rateInRials = Number(json?.data?.prices?.AED?.current);
-    if (!Number.isFinite(rateInRials) || rateInRials <= 0) {
-      throw new Error("پاسخ نامعتبر از nerkh-api: " + JSON.stringify(json));
-    }
-    return await saveRateAndRespond(req, res, rateInRials);
+    const rateInRials = await refreshExchangeRate();
+    req.flash("sweetalert", {
+      title: `قیمت درهم بروز شد ریال: ${rateInRials}`,
+      icon: "info",
+      timer: 5500,
+    });
+    return res.redirect(req.header("Referer") || "/");
   } catch (error) {
     next(new Error("خطا در آپدیت نرخ ارز"));
   }
+}
+
+// نسخه‌ی بدونِ req/res — نرخ درهم را از nerkh-api می‌گیرد و در دیتابیس ذخیره
+// می‌کند. برای استفاده در کرون و بوتِ اپ (نه فقط درخواستِ HTTP).
+async function refreshExchangeRate() {
+  if (!NERKH_API_KEY) throw new Error("NERKH_API_KEY تنظیم نشده است");
+  const response = await fetch(
+    `https://nerkh-api.ir/api/${NERKH_API_KEY}/currency/?filter=AED`,
+  );
+  if (!response.ok) throw new Error(`nerkh-api status ${response.status}`);
+
+  const json = await response.json();
+  const rateInRials = Number(json?.data?.prices?.AED?.current);
+  if (!Number.isFinite(rateInRials) || rateInRials <= 0) {
+    throw new Error("پاسخ نامعتبر از nerkh-api");
+  }
+  await ExchangeRate.findOneAndUpdate(
+    { currency: "AED" },
+    { rateInRials, rateInToman: rateInRials, updatedAt: new Date() },
+  );
+  return rateInRials;
 }
 
 async function updateExchangeRateNavasan(req, res, next) {
@@ -61,5 +78,6 @@ async function getExchangeRate() {
 module.exports = {
   updateExchangeRate,
   updateExchangeRateNavasan,
+  refreshExchangeRate,
   getExchangeRate,
 };

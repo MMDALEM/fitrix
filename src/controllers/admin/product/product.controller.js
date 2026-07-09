@@ -241,8 +241,9 @@ class productController extends controller {
         });
       }
       if (req.file) fs.unlink(req.file.path, () => {});
+      console.error("create product error:", err);
       return this.alertAndBack(req, res, {
-        title: "خطا در ذخیره محصول",
+        title: err.userSafe ? err.message : "خطا در ذخیره محصول",
         icon: "error",
       });
     }
@@ -323,6 +324,8 @@ class productController extends controller {
       }
 
       // محاسبه‌ی قیمت‌ها از روی درهم خام (همان منطق ساخت محصول)
+      // نرخِ ذخیره‌شده‌ی همین محصول (product.AED) به‌عنوان fallback پاس داده
+      // می‌شود تا اگر نرخ زنده در دسترس نبود، ویرایش شکست نخورد.
       const {
         priceSingle,
         priceHigh5,
@@ -330,7 +333,11 @@ class productController extends controller {
         priceHigh15,
         priceHigh20,
         aedRate,
-      } = await this.convertToIRR(Number(originalPrice), Number(single));
+      } = await this.convertToIRR(
+        Number(originalPrice),
+        Number(single),
+        product.AED,
+      );
 
       const sale = this.calcSale(priceSingle, salePercent);
 
@@ -399,8 +406,9 @@ class productController extends controller {
         });
       }
       if (req.file) fs.unlink(req.file.path, () => {});
+      console.error("edit product error:", err);
       return this.alertAndBack(req, res, {
-        title: "خطا در ویرایش محصول",
+        title: err.userSafe ? err.message : "خطا در ویرایش محصول",
         icon: "error",
       });
     }
@@ -422,9 +430,19 @@ class productController extends controller {
     return { percent, price, on: true };
   }
 
-  async convertToIRR(originalPrice, single) {
-    const aedRate = await getExchangeRate();
-    if (!aedRate) throw new Error("نرخ ارز موجود نیست");
+  async convertToIRR(originalPrice, single, fallbackAED = null) {
+    // نرخ زنده‌ی درهم؛ اگر موجود نبود (سرویس نرخ خاموش/تنظیم‌نشده) و نرخِ
+    // ذخیره‌شده‌ی خودِ محصول در دست بود، از آن استفاده می‌کنیم تا ویرایش
+    // به‌خاطر نبودِ لحظه‌ایِ نرخ کاملاً شکست نخورد.
+    let aedRate = await getExchangeRate();
+    if (!aedRate) aedRate = Number(fallbackAED) || 0;
+    if (!aedRate) {
+      const e = new Error(
+        "نرخ درهم تنظیم نشده است. ابتدا از پنل، «به‌روزرسانی قیمت‌ها» را بزنید یا نرخ درهم را ثبت کنید.",
+      );
+      e.userSafe = true;
+      throw e;
+    }
 
     const base = originalPrice * aedRate;
 

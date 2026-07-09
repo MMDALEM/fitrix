@@ -94,8 +94,9 @@ class PaymentService {
       body: form,
     });
     const data = await res.json().catch(() => null);
-    console.log(data);
+    // توکن حساس است و لاگ نمی‌شود؛ فقط در صورت خطا وضعیت را ثبت می‌کنیم
     if (!data || !data.access_token) {
+      console.error("DigiPay token error:", res.status, JSON.stringify(data));
       const msg =
         (data && data.result && data.result.message) ||
         (data && data.error_description) ||
@@ -137,22 +138,85 @@ class PaymentService {
     return { url: data.redirectUrl, ticket: data.ticket };
   }
 
-  async digipayVerify({ trackingCode }) {
+  // آیا این نوعِ تیکت (قسطی/اعتباری) بعد از verify نیاز به deliver دارد؟
+  // طبق مستندات UPG: deliver فقط برای CREDIT(5) و BNPL(13) لازم است.
+  // نوع را از callback می‌گیریم چون کاربر ممکن است روی صفحه‌ی دیجی‌پی روشِ
+  // پرداخت (کیف‌پول/اقساطی) را عوض کند و نوعِ واقعی با .env فرق کند.
+  digipayNeedsDeliver(type) {
+    const t = String(type || DIGIPAY_TYPE);
+    return t === "5" || t === "13";
+  }
+
+  async digipayVerify({ trackingCode, providerId, type }) {
     const token = await this.digipayToken();
+    // ‼️ type باید همانی باشد که دیجی‌پی در callback برگردانده (نه type ثابتِ .env)
+    const t = type || DIGIPAY_TYPE;
+    // طبق مستندات رسمی UPG: verify با بدنه‌ی {trackingCode, providerId} و
+    // type در query string. (نه trackingCode در مسیرِ URL)
     const res = await fetch(
-      `${DIGIPAY_BASE}/digipay/api/purchases/verify/${trackingCode}?type=${DIGIPAY_TYPE}`,
+      `${DIGIPAY_BASE}/digipay/api/purchases/verify?type=${t}`,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
           "Digipay-Version": DIGIPAY_VERSION,
           Agent: "WEB",
         },
+        body: JSON.stringify({ trackingCode, providerId }),
       },
     );
     const data = await res.json().catch(() => null);
+    // لاگِ تشخیصی: عینِ پاسخِ verifyِ دیجی‌پی (status=0 یعنی موفق)
+    console.log(
+      "DigiPay verify raw →",
+      "http:", res.status,
+      "body:", JSON.stringify(data),
+    );
     const ok = !!data && data.result && data.result.status === 0;
-    return { ok, refId: ok ? trackingCode : null };
+    return {
+      ok,
+      refId: ok ? trackingCode : null,
+      status: data && data.result ? data.result.status : null,
+      message: data && data.result ? data.result.message : null,
+    };
+  }
+
+  // مرحله‌ی تحویل — فقط برای تیکت‌های قسطی/اعتباری (CREDIT/BNPL) لازم است.
+  async digipayDeliver({ trackingCode, invoiceNumber, products, amount, type }) {
+    const token = await this.digipayToken();
+    const t = type || DIGIPAY_TYPE;
+    const res = await fetch(
+      `${DIGIPAY_BASE}/digipay/api/purchases/deliver?type=${t}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Digipay-Version": DIGIPAY_VERSION,
+          Agent: "WEB",
+        },
+        body: JSON.stringify({
+          trackingCode,
+          invoiceNumber: String(invoiceNumber || trackingCode),
+          deliveryDate: Date.now(),
+          amount: Math.round((Number(amount) || 0) * 10), // ریال
+          products: Array.isArray(products) && products.length ? products : ["order"],
+        }),
+      },
+    );
+    const data = await res.json().catch(() => null);
+    console.log(
+      "DigiPay deliver raw →",
+      "http:", res.status,
+      "body:", JSON.stringify(data),
+    );
+    const ok = !!data && data.result && data.result.status === 0;
+    return {
+      ok,
+      status: data && data.result ? data.result.status : null,
+      message: data && data.result ? data.result.message : null,
+    };
   }
 }
 

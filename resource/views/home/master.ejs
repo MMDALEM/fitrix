@@ -103,30 +103,42 @@
            می‌شود تا کاربر منتظرِ دیدنِ لودِ خالی نماند.
            (اسکریپت /scripts/img-blur.js کلاس‌ها را مدیریت می‌کند)
            ========================================================== */
+        /* حالتِ در حال بارگذاری: یک شیمرِ مات و واضح (اسکلت لودینگ) */
         img.img-blur-load {
-            background: linear-gradient(100deg, #e9edf1 30%, #f4f7fa 50%, #e9edf1 70%);
+            background-color: #e6eaef;
+            background-image: linear-gradient(100deg,
+                rgba(255,255,255,0) 30%,
+                rgba(255,255,255,.75) 50%,
+                rgba(255,255,255,0) 70%);
             background-size: 200% 100%;
-            animation: imgShimmer 1.25s ease-in-out infinite;
-            filter: blur(8px);
-            opacity: .55;
-            transition: filter .45s ease, opacity .45s ease;
+            background-repeat: no-repeat;
+            background-position: 150% 0;
+            animation: imgShimmer 1.2s ease-in-out infinite;
         }
         .dark img.img-blur-load {
-            background: linear-gradient(100deg, #1f2937 30%, #273244 50%, #1f2937 70%);
-            background-size: 200% 100%;
+            background-color: #273244;
+            background-image: linear-gradient(100deg,
+                rgba(255,255,255,0) 30%,
+                rgba(255,255,255,.14) 50%,
+                rgba(255,255,255,0) 70%);
         }
+        /* پس از آماده‌شدن: شیمر حذف و عکس با بلورِ نرم ظاهر می‌شود (blur-in) */
         img.img-blur-load.is-loaded {
-            background: none;
-            animation: none;
-            filter: none;
-            opacity: 1;
+            background-image: none;
+            background-color: transparent;
+            animation: imgBlurIn .5s ease-out forwards;
         }
         @keyframes imgShimmer {
-            0%   { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0%   { background-position: 150% 0; }
+            100% { background-position: -150% 0; }
+        }
+        @keyframes imgBlurIn {
+            from { filter: blur(12px); opacity: .35; }
+            to   { filter: blur(0);    opacity: 1; }
         }
         @media (prefers-reduced-motion: reduce) {
             img.img-blur-load { animation: none; }
+            img.img-blur-load.is-loaded { animation: none; }
         }
     </style>
     <!-- ==========================  DARK MODE SCRIPT ============================= -->

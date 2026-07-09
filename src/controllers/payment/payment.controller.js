@@ -231,6 +231,15 @@ class paymentController extends controller {
 
       try {
         if (!paymentService.isConfigured(gateway)) {
+          // در production پرداختِ آزمایشی (mock) مجاز نیست؛ اگر کلید درگاه
+          // تنظیم نشده باشد، به‌جای صدور سفارشِ رایگان خطا برمی‌گردانیم
+          if (process.env.NODE_ENV === "production") {
+            return res.status(503).json({
+              success: false,
+              message:
+                "درگاه پرداخت در حال حاضر در دسترس نیست. لطفاً بعداً تلاش کنید.",
+            });
+          }
           paymentUrl = `/payment/verify/${gateway}/${basket._id}?mock=1`;
         } else if (gateway === "zarinpal") {
           const result = await paymentService.zarinpalRequest({
@@ -244,15 +253,18 @@ class paymentController extends controller {
           await basket.save();
           paymentUrl = result.url;
         } else {
+          // providerId باید در هر تلاش یکتا باشد تا دیجی‌پی تیکت تازه بسازد
+          // (در غیر این صورت تیکتِ منقضی‌شده‌ی قبلی برگردانده می‌شود). این مقدار
+          // را ذخیره می‌کنیم چون دیجی‌پی هنگام verify هم به آن نیاز دارد.
+          const providerId = `${basket.orderNumber}-${Date.now()}`;
           const result = await paymentService.digipayRequest({
             amount: basket.finalPrice,
             callbackUrl,
             cellNumber: req.user.phone,
-            // providerId باید در هر تلاش یکتا باشد تا دیجی‌پی تیکت تازه بسازد
-            // (در غیر این صورت تیکتِ منقضی‌شده‌ی قبلی برگردانده می‌شود)
-            providerId: `${basket.orderNumber}-${Date.now()}`,
+            providerId,
           });
           basket.transactionId = result.ticket;
+          basket.providerId = providerId;
           await basket.save();
           paymentUrl = result.url;
         }
@@ -285,6 +297,18 @@ class paymentController extends controller {
       if (req.method === "POST" && req.body && typeof req.body === "object") {
         Object.assign(params, req.body);
       }
+
+      // ── لاگِ کاملِ تشخیصیِ بازگشت از درگاه (برای عیب‌یابیِ دیجی‌پی) ──
+      // این خط دقیقاً نشان می‌دهد درگاه چه چیزی و با چه متدی برگردانده است.
+      console.log(
+        "PAYRETURN-DEBUG →",
+        "gateway:", gateway,
+        "| method:", req.method,
+        "| url:", req.originalUrl,
+        "| content-type:", req.headers["content-type"] || "-",
+        "| query:", JSON.stringify(req.query || {}),
+        "| body:", JSON.stringify(req.body || {}),
+      );
       // basketId از مسیر (path) خوانده می‌شود تا در URL تمیز بماند؛
       // برای سازگاری، query هم پشتیبانی می‌شود.
       const basketId = req.params.basketId || params.basketId || params.orderId;
@@ -314,9 +338,10 @@ class paymentController extends controller {
       // ───────── تأیید پرداخت با درگاه ─────────
       let verified = false;
       let refId = basket.transactionId;
+      let failReason = null; // دلیلِ ناموفق‌بودن (برای نمایش به کاربر)
 
-      if (params.mock === "1") {
-        verified = true; // حالت توسعه (بدون کلید درگاه)
+      if (params.mock === "1" && process.env.NODE_ENV !== "production") {
+        verified = true; // فقط در حالت توسعه (بدون کلید درگاه) — در production غیرفعال
       } else if (gateway === "zarinpal") {
         if (params.Status === "OK") {
           const result = await paymentService.zarinpalVerify({
@@ -327,10 +352,76 @@ class paymentController extends controller {
           refId = result.refId || refId;
         }
       } else if (gateway === "digipay") {
-        const trackingCode = params.trackingCode || basket.transactionId;
-        const result = await paymentService.digipayVerify({ trackingCode });
-        verified = result.ok;
-        refId = result.refId || refId;
+        // دیجی‌پی همه‌ی اطلاعات لازم را در callback می‌فرستد: trackingCode،
+        // providerId، نوعِ واقعیِ تراکنش (type) و نتیجه (result).
+        // ‼️ verify باید با همین type و providerIdِ callback انجام شود، نه با
+        //    مقادیرِ ثابتِ .env؛ چون کاربر ممکن است روی صفحه‌ی دیجی‌پی روشِ
+        //    پرداخت را عوض کند (مثلاً کیف‌پول → اقساطی).
+        const cbResult = String(params.result || "").toUpperCase();
+        const cbType = params.type || undefined;
+        const trackingCode =
+          params.trackingCode ||
+          params.trackingcode ||
+          params.tracking_code ||
+          "";
+        const providerId = params.providerId || basket.providerId || undefined;
+
+        console.log(
+          "DigiPay callback →",
+          "method:", req.method,
+          "result:", cbResult,
+          "type:", cbType,
+          "trackingCode:", trackingCode,
+          "providerId:", providerId,
+        );
+
+        if (cbResult && cbResult !== "SUCCESS") {
+          // کاربر لغو کرد یا پرداخت ناموفق بود — اصلاً verify نمی‌کنیم
+          verified = false;
+          failReason =
+            cbResult === "CANCEL"
+              ? "پرداخت توسط شما لغو شد"
+              : "پرداخت ناموفق بود";
+        } else if (!trackingCode) {
+          verified = false;
+          failReason = "کد پیگیری از درگاه دریافت نشد";
+        } else {
+          const result = await paymentService.digipayVerify({
+            trackingCode,
+            providerId,
+            type: cbType,
+          });
+          console.log("DigiPay verify result →", JSON.stringify(result));
+          verified = result.ok;
+          refId = result.refId || refId;
+          if (!verified) failReason = result.message || null;
+
+          // تیکت‌های قسطی/اعتباری (بر اساس نوعِ واقعیِ callback) بعد از verify
+          // نیاز به مرحله‌ی deliver دارند. اما چون verifyِ موفق یعنی پرداخت
+          // تأیید شده، خطای احتمالیِ deliver را «مسدودکننده» نمی‌کنیم تا سفارشِ
+          // پرداخت‌شده از دست نرود؛ فقط لاگ می‌کنیم تا در صورت نیاز ادمین دستی
+          // در پنل دیجی‌پی تحویل را ثبت کند.
+          if (verified && paymentService.digipayNeedsDeliver(cbType)) {
+            try {
+              const del = await paymentService.digipayDeliver({
+                trackingCode,
+                type: cbType,
+                invoiceNumber: basket.orderNumber,
+                amount: basket.finalPrice,
+                products: (basket.items || []).map((it) => String(it.product)),
+              });
+              if (!del.ok) {
+                console.error(
+                  "DigiPay deliver FAILED (سفارش پرداخت‌شده — نیاز به تحویلِ دستی):",
+                  basket.orderNumber,
+                  del.message,
+                );
+              }
+            } catch (delErr) {
+              console.error("DigiPay deliver error:", delErr.message);
+            }
+          }
+        }
       }
 
       if (verified) {
@@ -356,12 +447,18 @@ class paymentController extends controller {
         // این سبد پرداخت‌شده می‌شود و به‌عنوان سفارش باقی می‌ماند
         await basket.markPaid(refId);
 
-        await successpayment(
-          basket.shippingDetails?.phone + "",
-          basket.orderNumber + "",
-        );
-        await manager("09167728327", basket.orderNumber + "");
-        await manager("09373640517", basket.orderNumber + "");
+        // پیامک‌ها نباید در صورت خطای سرویسِ پیامک، نمایشِ نتیجه‌ی پرداختِ
+        // موفق را بشکنند (سفارش قبلاً ثبت شده است)
+        try {
+          await successpayment(
+            basket.shippingDetails?.phone + "",
+            basket.orderNumber + "",
+          );
+          await manager("09167728327", basket.orderNumber + "");
+          await manager("09373640517", basket.orderNumber + "");
+        } catch (smsErr) {
+          console.error("SMS notify failed:", smsErr.message);
+        }
 
         // وضعیت دوستانه: در دست اقدام
         basket.statusLabel = "در دست اقدام";
@@ -405,7 +502,13 @@ class paymentController extends controller {
       }
 
       // پرداخت ناموفق — سبد همچنان فعال می‌ماند تا کاربر دوباره تلاش کند
-      if (req.flash) req.flash("payMessage", "پرداخت ناموفق بود");
+      if (req.flash)
+        req.flash(
+          "payMessage",
+          failReason
+            ? `پرداخت ناموفق بود: ${failReason}`
+            : "پرداخت ناموفق بود",
+        );
       return res.redirect("/payment/result/" + basket._id);
     } catch (err) {
       next(err);
