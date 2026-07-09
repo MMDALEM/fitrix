@@ -56,7 +56,11 @@
           </div>
         </form>
         <p class="login-timer_text">
-          مانده تا دریافت مجدد کد <span class="login-timer text-blue-500">2:00</span>
+          مانده تا دریافت مجدد کد 
+          <span 
+            class="login-timer text-blue-500"
+            data-expire="<%= expiresIn %>">
+          </span>
         </p>
         <button class="resend-code">
           دریافت مجدد کد
@@ -67,3 +71,61 @@
       </div>
     </div>
   </section>
+<script>
+(() => {
+
+  const timerElement = document.querySelector(".login-timer");
+
+  if (!timerElement) return;
+
+
+  const expireTime = Number(timerElement.dataset.expire);
+
+
+  function updateTimer() {
+
+    const now = Date.now();
+
+    const distance = expireTime - now;
+
+
+    console.log({
+      expireTime,
+      now,
+      seconds: Math.floor(distance / 1000)
+    });
+
+
+    if (distance <= 0) {
+      timerElement.textContent = "00:00";
+      return;
+    }
+
+
+    const totalSeconds = Math.floor(distance / 1000);
+
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+
+    timerElement.textContent =
+      `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+  }
+
+
+  updateTimer();
+
+
+  const interval = setInterval(() => {
+
+    updateTimer();
+
+    if (Date.now() >= expireTime) {
+      clearInterval(interval);
+    }
+
+  },1000);
+
+
+})();
+</script>

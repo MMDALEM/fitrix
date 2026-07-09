@@ -12,7 +12,8 @@ module.exports = class controller {
 
   review(req, res, url) {
     req.flash("formData", req.body);
-    return res.redirect(`${String(url)}`);
+    const target = url.startsWith("/") ? url : `/${url}`;
+    return res.redirect(target);
   }
 
   alert(req, data) {

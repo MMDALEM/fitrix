@@ -37,9 +37,7 @@ module.exports = class Application {
         contentSecurityPolicy: false,
         crossOriginEmbedderPolicy: false,
         crossOriginResourcePolicy: { policy: "cross-origin" },
-        referrerPolicy: {
-          policy: "same-origin",
-        },
+        referrerPolicy: { policy: "strict-origin-when-cross-origin" },
       }),
     );
     app.use(express.json({ limit: "100mb" }));

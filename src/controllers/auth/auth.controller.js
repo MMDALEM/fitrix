@@ -1,6 +1,6 @@
 const controller = require("../.controller");
 const userModel = require("../../models/user.model");
-const { generateOtp, sendCode } = require("../../utils/function");
+const { generateOtp } = require("../../utils/function");
 const {
   issueTokens,
   setAuthCookies,
@@ -11,6 +11,7 @@ const {
   cookieOptions,
 } = require("../../utils/token");
 const JWT = require("jsonwebtoken");
+const { sendCode } = require("../../utils/sms");
 const { authSchema } = require("../../validations/auth.validation");
 
 class authController extends controller {
@@ -34,6 +35,9 @@ class authController extends controller {
       const user = await this.checkExistUser(phone);
 
       const date = Date.now();
+
+      let expiresIn;
+
       if (user) {
         if (date <= user?.otp?.expiresIn)
           return this.alertAndBack(req, res, {
@@ -41,13 +45,14 @@ class authController extends controller {
             icon: "error",
           });
 
-        await this.updateOtpForUser(phone, code);
-      } else await this.register(phone, code);
-      // await sendCode(phone, code + "");
+        expiresIn = await this.updateOtpForUser(phone, code);
+      } else expiresIn = await this.register(phone, code);
+
+      await sendCode(phone, code + "");
 
       const cookie_otp = {
-        phone: phone,
-        expiresIn: user?.otp?.expiresIn,
+        phone,
+        expiresIn,
       };
 
       res.cookie(
@@ -63,15 +68,21 @@ class authController extends controller {
           title: "کد یک بار مصرف برای شماارسال شد ",
           icon: "success",
         },
-        `auth/otp`,
+        "/auth/otp",
       );
     } catch (err) {
+      if (err.isJoi) {
+        req.flash("errors", err.details[0].message);
+        return res.redirect("/auth");
+      }
       next(err);
     }
   }
 
   async otp(req, res, next) {
     try {
+      console.log("OTP COOKIE:", req.cookies.fitrix_otp);
+
       if (!req.cookies.fitrix_otp)
         return this.alertAndBack(req, res, {
           title: "خطا در اعتبارسنجی کاربر",
@@ -148,8 +159,17 @@ class authController extends controller {
   }
 
   async register(phone, code) {
-    const otp = { code, expiresIn: Date.now() + 120000 };
-    return await userModel.create({ phone, otp, roles: "USER" });
+    const expiresIn = Date.now() + 120000;
+    const otp = {
+      code,
+      expiresIn,
+    };
+    await userModel.create({
+      phone,
+      otp,
+      roles: "USER",
+    });
+    return expiresIn;
   }
 
   async checkExistUser(phone) {
@@ -157,11 +177,13 @@ class authController extends controller {
   }
 
   async updateOtpForUser(phone, code) {
-    const otp = { code, expiresIn: Date.now() + 120000 };
-    return (
-      (await userModel.updateOne({ phone }, { $set: { otp } })).modifiedCount >
-      0
-    );
+    const expiresIn = Date.now() + 120000;
+    const otp = {
+      code,
+      expiresIn,
+    };
+    await userModel.updateOne({ phone }, { $set: { otp } });
+    return expiresIn;
   }
 
   async logout(req, res, next) {
