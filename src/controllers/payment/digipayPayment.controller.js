@@ -29,7 +29,6 @@ class digipayPaymentController extends controller {
     // return data?.redirectUrl;
 
     // فعلاً placeholder:
-    console.log("DIGIPAY placeholder for order", order.orderNumber);
     return `/payment/verify/digipay?orderId=${order._id}&mock=1`;
   }
 

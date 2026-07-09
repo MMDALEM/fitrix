@@ -270,22 +270,10 @@ class consultController extends controller {
         if (response.ok) break;
         // خطای کلید/دسترسی با مدل بعدی حل نمی‌شود — بی‌جهت تکرار نکن
         if (response.status === 401 || response.status === 403) break;
-        console.error(
-          `AI model failed (${response.status}): ${model} — trying next`,
-        );
       }
 
       if (!response.ok) {
         const errText = await response.text().catch(() => "");
-        console.error(
-          "AI API error:",
-          response.status,
-          "url:",
-          AI_API_URL,
-          "model:",
-          usedModel,
-          errText.slice(0, 300),
-        );
         const byStatus = {
           401: "کلید سرویس هوش مصنوعی نامعتبر است — AI_API_KEY را در .env بررسی کنید.",
           402: "اعتبار حساب سرویس هوش مصنوعی تمام شده است.",

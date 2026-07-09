@@ -81,7 +81,6 @@ class authController extends controller {
 
   async otp(req, res, next) {
     try {
-      console.log("OTP COOKIE:", req.cookies.fitrix_otp);
 
       if (!req.cookies.fitrix_otp)
         return this.alertAndBack(req, res, {

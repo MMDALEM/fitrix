@@ -89,13 +89,6 @@
     const distance = expireTime - now;
 
 
-    console.log({
-      expireTime,
-      now,
-      seconds: Math.floor(distance / 1000)
-    });
-
-
     if (distance <= 0) {
       timerElement.textContent = "00:00";
       return;

@@ -76,7 +76,7 @@ class GlobalData {
     res.locals.canonicalUrl = siteUrl + req.path;
     res.locals.pageTitle = null;
     res.locals.metaDescription =
-      "فروشگاه اینترنتی فیت ریکس شاپ؛ خرید انواع مکمل ورزشی، پروتئین وی، کراتین، گینر و ویتامین از برندهای معتبر جهانی با قیمت مناسب و ارسال سریع.";
+      "فروشگاه اینترنتی فیت ریکس (FitRix | fitrix.ir)؛ خرید انواع مکمل ورزشی، پروتئین وی، کراتین، گینر و ویتامین از برندهای معتبر جهانی با قیمت مناسب و ارسال سریع.";
     res.locals.ogImage = siteUrl + "/images/logo.png";
     res.locals.ogType = "website";
     res.locals.noindex = false;
@@ -102,14 +102,19 @@ class GlobalData {
 
       next();
     } catch (err) {
-      console.log("LOCALS ERROR:", err.message);
       res.locals.basket = { items: [] };
       next();
     }
   }
 
   static init() {
-    return [this.auth, this.categories, this.settings, this.seo, this.setLocals];
+    return [
+      this.auth,
+      this.categories,
+      this.settings,
+      this.seo,
+      this.setLocals,
+    ];
   }
 }
 

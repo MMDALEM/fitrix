@@ -1,0 +1,16 @@
+commit 73dc8a0505fd248f034313dedc219f95b1c03141
+Author: Claude <noreply@anthropic.com>
+Date:   Thu Jul 9 09:38:55 2026 +0000
+
+    seo: add Latin brand (FitRix/fitrix.ir) to title, description and JSON-LD
+    
+    - برند لاتین به تایتل و توضیحات پیش‌فرض اضافه شد تا سرچ «fitrix» هم برند را پیدا کند
+    - alternateName در structured data برای شناخت برند توسط گوگل
+    
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_013THoEh9wHdFuKfkpQ4AyhW
+
+ resource/views/home/master.ejs          | 7 +++++--
+ src/controllers/home/home.controller.js | 2 +-
+ src/middlewares/globalData.js           | 2 +-
+ 3 files changed, 7 insertions(+), 4 deletions(-)
