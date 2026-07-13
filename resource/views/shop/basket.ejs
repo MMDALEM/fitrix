@@ -409,14 +409,13 @@
 
                 <!-- ===== فرم کد تخفیف ===== -->
                 <div class="flex flex-col gap-y-2 pt-2 border-t-2 border-dashed border-gray-400 dark:border-gray-500">
-                    
+                    <p class="font-DanaMedium text-sm">کد تخفیف :</p>
                     <div class="flex items-stretch gap-x-2">
-                    <p class="font-DanaMedium text-sm pt-2">کد تخفیف :</p>
-                        <input type="text" id="discountCode" name="discountCode" autocomplete="off" style="width: 10%;"
+                        <input type="text" id="discountCode" name="discountCode" autocomplete="off"
                             placeholder="کد تخفیف را وارد کنید"
-                            class="flex-1 min-w-0 text-sm bg-transparent rounded-lg border-2 border-gray-200 dark:border-white/20 py-2 px-4 outline-none focus:border-blue-500">
+                            class="flex-1 min-w-0 text-sm bg-transparent rounded-lg border-2 border-gray-200 dark:border-white/20 py-2 px-3 outline-none focus:border-blue-500">
                         <button type="button" id="applyDiscountBtn"
-                            class="shrink-0 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all rounded-lg px-2 text-sm font-DanaMedium">
+                            class="shrink-0 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all rounded-lg px-4 text-sm font-DanaMedium">
                             اعمال
                         </button>
                     </div>
@@ -428,12 +427,7 @@
                 
                     <div class="flex items-center justify-between">
                         <p class="font-DanaMedium text-sm">انتخاب آدرس :</p>
-                            <button id="openModalBtn" class="flex items-center gap-x-1 text-blue-500 hover:text-blue-600 transition-colors">
-                                <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                <h2 class="font-DanaMedium text-xs text-blue-500 font-DanaMedium" >افزودن آدرس</h2>
-                            </button>
+                        <a href="/dashboard/address" class="text-xs text-blue-500 font-DanaMedium">+ افزودن آدرس</a>
                     </div>
 
                     <% if (user && addresses && addresses.length) {  %>
@@ -693,67 +687,3 @@ gatewayLabels.forEach(function (label) {
 });
 refreshGateways();
 </script>
-
-  <script>
-    // Elements
-    const modal = document.getElementById('addressModal');
-    const openBtn = document.getElementById('openModalBtn');
-    const closeBtn = document.getElementById('closeModalBtn');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const form = document.getElementById('addressForm');
-    const addressList = document.getElementById('addressList');
-    const emptyState = document.getElementById('emptyState');
-    const submitBtn = document.getElementById('submitBtn');
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toastMessage');
-
-    // نمایش Toast
-    function showToast(message, isError = false) {
-      toastMessage.textContent = message;
-      toast.classList.remove('bg-green-500', 'bg-red-500');
-      toast.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
-      toast.classList.remove('translate-y-20', 'opacity-0');
-
-      setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
-      }, 3000);
-    }
-
-    // باز کردن modal
-    function openModal() {
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      document.body.style.overflow = 'hidden';
-    }
-
-    // بستن modal
-    function closeModal() {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      document.body.style.overflow = '';
-      form.reset();
-    }
-
-    // Event Listeners
-    openBtn.addEventListener('click', () => {
-      editingIndex = -1;
-      openModal();
-    });
-
-    closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
-
-    // بستن با کلیک روی backdrop
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-
-    // بستن با Escape
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-        closeModal();
-      }
-    });
-
-  </script>
