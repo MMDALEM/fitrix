@@ -36,16 +36,18 @@
 
 <body>
 
-    <%- include(viewPath('layout/svg')) %> <%- body %> 
+    <%- include(viewPath('layout/header')) %><%- include(viewPath('layout/svg')) %> <%- body %> <%- include(viewPath('layout/footer')) %>
+    <%- include(viewPath('layout/consult-widget')) %>
     <div class="overlay"></div>
     <div class="search-overlay"></div>
     
+    <script src="/scripts/img-blur.js"></script>
     <script src="/scripts/swiper-bundle.min.js"></script>
     <script src="/scripts/app.js"></script>
     <script src="/scripts/slider.js" type="module"></script>
     <script src="/scripts/timer.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.all.min.js"></script>
+    <script src="/scripts/sweetalert2.all.min.js"></script>
+    
     <script src="/js/conf.js"></script>
     <script src="/js/jquery-3.2.1.slim.min.js"></script>
     <script src="/js/1.12.9.popper.min.js"></script>

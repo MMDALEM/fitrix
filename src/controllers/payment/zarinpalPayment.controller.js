@@ -80,7 +80,6 @@ class zarinpalPaymentController extends controller {
         referrer_id: "affiliate123",
       });
 
-      console.log(response);
     } catch (error) {
       console.error(error);
     }

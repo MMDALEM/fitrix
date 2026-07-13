@@ -1,154 +1,160 @@
-    <main class="container relative">
-       
-        <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
-            <!-- SIDE MENU -->
-            <%- include(viewPath('layout/menu')) %>
-               <div class="grid grid-cols-12 child:col-span-12 mt-5 lg:mt-0 md:child:col-span-4 gap-4 child:rounded-lg child:bg-white child:dark:bg-gray-800 child:w-full child:flex
-               child:shadow child:p-4">
-                   <div class="flex items-center gap-x-4">
-                        <svg class="size-9 text-blue-500">
-                             <use href="#wallet" />
-                        </svg>
-                        <div class="flex flex-col gap-y-1">
-                            <h2 class="font-DanaDemiBold">محصولات</h2>
-                            <p class="text-gray-500">محصول : <span><%= products.length %> </span></p>
-                     </div>
-                   </div>
-                   <div class="flex items-center gap-x-4">
-                        <svg class="size-9 text-blue-500">
-                             <use href="#shopping-bag" />
-                        </svg>
-                        <div class="flex flex-col gap-y-1">
-                            <h2 class="font-DanaDemiBold">سفارش‌ها</h2>
-                            <p class="text-gray-500"><%= orders %> سفارش</p>
-                     </div>
-                   </div>
-                   <div class="flex items-center gap-x-4">
-                        <svg class="size-9 text-blue-500">
-                             <use href="#ticket" />
-                        </svg>
-                        <div class="flex flex-col gap-y-1">
-                            <h2 class="font-DanaDemiBold">کاربران</h2>
-                            <p class="text-gray-500"><%= users %> کاربر</p>
-                     </div>
-                   </div>
-               </div>
-               <br>
-               <div class="grid grid-cols-12 child:col-span-12 mt-5 lg:mt-0 md:child:col-span-4 gap-4 child:rounded-lg child:bg-white child:dark:bg-gray-800 child:w-full child:flex
-               child:shadow child:p-4">
-                   <div class="flex items-center gap-x-4">
-                        <svg class="size-9 text-blue-500">
-                             <use href="#wallet" />
-                        </svg>
-                        <div class="flex flex-col gap-y-1">
-                            <h2 class="font-DanaDemiBold">قیمت بروز درهم</h2>
-                            <p class="text-gray-500">اخرین اپدیت : <span><%= (ExchangeRates.rateInRials).toLocaleString('fa-IR') %></span></p>
-                            <a href="/admin/update-aed" style="border-radius: 0.25rem; background-color: #3b82f6; color: white; padding: 0.5rem 1rem;" class="text-blue-500 hover:text-blue-700">برای اپدیت کلیک کنید</a>
-                     </div>
-                   </div>
-                    <div class="flex items-center gap-x-4">
-                        <svg class="size-9 text-blue-500">
-                             <use href="#wallet" />
-                        </svg>
-                        <div class="flex flex-col gap-y-1">
-                            <h2 class="font-DanaDemiBold">بروز رسانی قیمت همه محصولات</h2>
-                            <p class="text-gray-500">اخرین اپدیت با درهم : <span><%= (products[0].AED).toLocaleString('fa-IR') %></span></p>
-                            <a href="/admin/update-prices" style="border-radius: 0.25rem; background-color: #3b82f6; color: white; padding: 0.5rem 1rem;" class="text-blue-500 hover:text-blue-700">برای اپدیت کلیک کنید</a>
-                     </div>
-                   </div>
-                    <div class="flex items-center gap-x-4">
-                        <svg class="size-9 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                             <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
-                        </svg>
-                        <div class="flex flex-col gap-y-1">
-                            <h2 class="font-DanaDemiBold">بک‌آپ کامل پایگاه داده</h2>
-                            <p class="text-gray-500 text-sm">دانلود نسخه پشتیبان از همه اطلاعات سایت (محصولات، سفارش‌ها، کاربران و ...)</p>
-                            <a href="/admin/backup" id="dbBackupBtn" style="border-radius: 0.25rem; background-color: #16a34a; color: white; padding: 0.5rem 1rem; text-align:center;" class="hover:opacity-90">دانلود بک‌آپ کامل دیتابیس</a>
-                     </div>
-                   </div>
-               </div>
-               <!-- اعلان‌های خرید (اطلاع‌رسانی به مدیریت) -->
-               <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white mt-5">
-                <div class="flex items-center justify-between">
-                    <span class="flex items-center gap-x-2">
-                        <svg class="size-7 text-blue-500"><use href="#bell" /></svg>
-                        <h2 class="font-DanaMedium text-lg">اعلان‌های خرید</h2>
-                        <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
-                            <span class="text-xs bg-red-500 text-white rounded-full px-2 py-0.5"><%= Number(unreadCount).toLocaleString('fa-IR') %> جدید</span>
-                        <% } %>
-                    </span>
-                    <a href="/admin/notifications" class="text-sm text-blue-500 font-DanaMedium">مشاهده همه</a>
+<main class="container relative">
+    
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <!-- SIDE MENU -->
+        <%- include(viewPath('layout/menu')) %>
+            <div class="grid grid-cols-12 child:col-span-12 mt-5 lg:mt-0 md:child:col-span-4 gap-4 child:rounded-lg child:bg-white child:dark:bg-gray-800 child:w-full child:flex
+            child:shadow child:p-4">
+                <div class="flex items-center gap-x-4">
+                    <svg class="size-9 text-blue-500">
+                            <use href="#wallet" />
+                    </svg>
+                    <div class="flex flex-col gap-y-1">
+                        <h2 class="font-DanaDemiBold">محصولات</h2>
+                        <p class="text-gray-500">محصول : <span><%= products.length %> </span></p>
+                    </div>
                 </div>
-                <div class="mt-4 flex flex-col gap-y-2">
-                    <% if (typeof notifications !== 'undefined' && notifications.length) { %>
-                        <% notifications.forEach(function (n) { %>
-                            <div class="flex items-start gap-x-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3 <%= n.isRead ? '' : 'bg-blue-50/50 dark:bg-blue-900/10' %>">
-                                <span class="mt-0.5 shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-blue-500/10 text-blue-500">
-                                    <svg class="size-5"><use href="#shopping-bag" /></svg>
-                                </span>
-                                <div class="flex flex-col gap-y-1 min-w-0">
-                                    <p class="font-DanaMedium text-sm"><%= n.title %></p>
-                                    <% if (n.message) { %><p class="text-xs text-gray-500 dark:text-gray-400 leading-6 line-clamp-2"><%= n.message %></p><% } %>
-                                    <span class="text-xs text-gray-400"><%= date(n.createdAt).format('jYYYY/jMM/jDD - HH:mm') %></span>
-                                </div>
-                            </div>
-                        <% }) %>
-                    <% } else { %>
-                        <p class="text-center text-gray-400 py-6 text-sm">هنوز خریدی ثبت نشده است.</p>
-                    <% } %>
+                <div class="flex items-center gap-x-4">
+                    <svg class="size-9 text-blue-500">
+                            <use href="#shopping-bag" />
+                    </svg>
+                    <div class="flex flex-col gap-y-1">
+                        <h2 class="font-DanaDemiBold">سفارش‌ها</h2>
+                        <p class="text-gray-500"><%= orders %> سفارش</p>
+                    </div>
                 </div>
-               </div>
-
-               <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white mt-5">
+                <div class="flex items-center gap-x-4">
+                    <svg class="size-9 text-blue-500">
+                            <use href="#ticket" />
+                    </svg>
+                    <div class="flex flex-col gap-y-1">
+                        <h2 class="font-DanaDemiBold">کاربران</h2>
+                        <p class="text-gray-500"><%= users %> کاربر</p>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="grid grid-cols-12 child:col-span-12 mt-5 lg:mt-0 md:child:col-span-4 gap-4 child:rounded-lg child:bg-white child:dark:bg-gray-800 child:w-full child:flex
+            child:shadow child:p-4">
+                <div class="flex items-center gap-x-4">
+                    <svg class="size-9 text-blue-500">
+                            <use href="#wallet" />
+                    </svg>
+                    <div class="flex flex-col gap-y-1">
+                        <h2 class="font-DanaDemiBold">قیمت بروز درهم</h2>
+                        <p class="text-gray-500">اخرین اپدیت : <span><%= (ExchangeRates.rateInRials).toLocaleString('fa-IR') %></span></p>
+                        <a href="/admin/update-aed" style="border-radius: 0.25rem; background-color: #3b82f6; color: white; padding: 0.5rem 1rem;" class="text-blue-500 hover:text-blue-700">برای اپدیت کلیک کنید</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-x-4">
+                    <svg class="size-9 text-blue-500">
+                            <use href="#wallet" />
+                    </svg>
+                    <div class="flex flex-col gap-y-1">
+                        <h2 class="font-DanaDemiBold">بروز رسانی قیمت همه محصولات</h2>
+                        <p class="text-gray-500">اخرین اپدیت با درهم : <span><%= (products[0].AED).toLocaleString('fa-IR') %></span></p>
+                        <a href="/admin/update-prices" style="border-radius: 0.25rem; background-color: #3b82f6; color: white; padding: 0.5rem 1rem;" class="text-blue-500 hover:text-blue-700">برای اپدیت کلیک کنید</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-x-4">
+                    <svg class="size-9 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                    </svg>
+                    <div class="flex flex-col gap-y-1">
+                        <h2 class="font-DanaDemiBold">بک‌آپ کامل پایگاه داده</h2>
+                        <p class="text-gray-500 text-sm">دانلود نسخه پشتیبان از همه اطلاعات سایت (محصولات، سفارش‌ها، کاربران و ...)</p>
+                        <a href="/admin/backup" id="dbBackupBtn" style="border-radius: 0.25rem; background-color: #16a34a; color: white; padding: 0.5rem 1rem; text-align:center;" class="hover:opacity-90">دانلود بک‌آپ کامل دیتابیس</a>
+                    </div>
+                </div>
+            </div>
+            <!-- اعلان‌های خرید (اطلاع‌رسانی به مدیریت) -->
+            <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white mt-5">
+            <div class="flex items-center justify-between">
                 <span class="flex items-center gap-x-2">
-                    <img src="./images/svg/status-delivered.svg" class="w-10" alt="">
-                    <h2 class="font-DanaMedium text-lg">سفارش های اخیر :</h2>
+                    <svg class="size-7 text-blue-500"><use href="#bell" /></svg>
+                    <h2 class="font-DanaMedium text-lg">اعلان‌های خرید</h2>
+                    <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
+                        <span class="text-xs bg-red-500 text-white rounded-full px-2 py-0.5"><%= Number(unreadCount).toLocaleString('fa-IR') %> جدید</span>
+                    <% } %>
                 </span>
-                <div class="relative mt-5 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                    <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700  bg-gray-100 dark:bg-gray-900 dark:text-gray-200">
-                              <tr>
+                <a href="/admin/notifications" class="text-sm text-blue-500 font-DanaMedium">مشاهده همه</a>
+            </div>
+            <div class="mt-4 flex flex-col gap-y-2">
+                <% if (typeof notifications !== 'undefined' && notifications.length) { %>
+                    <% notifications.forEach(function (n) { %>
+                        <div class="flex items-start gap-x-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3 <%= n.isRead ? '' : 'bg-blue-50/50 dark:bg-blue-900/10' %>">
+                            <span class="mt-0.5 shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-blue-500/10 text-blue-500">
+                                <svg class="size-5"><use href="#shopping-bag" /></svg>
+                            </span>
+                            <div class="flex flex-col gap-y-1 min-w-0">
+                                <p class="font-DanaMedium text-sm"><%= n.title %></p>
+                                <% if (n.message) { %><p class="text-xs text-gray-500 dark:text-gray-400 leading-6 line-clamp-2"><%= n.message %></p><% } %>
+                                <span class="text-xs text-gray-400"><%= date(n.createdAt).format('jYYYY/jMM/jDD - HH:mm') %></span>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p class="text-center text-gray-400 py-6 text-sm">هنوز خریدی ثبت نشده است.</p>
+                <% } %>
+            </div>
+            </div>
+
+            <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white mt-5">
+            <span class="flex items-center gap-x-2">
+                <img src="./images/svg/status-delivered.svg" class="w-10" alt="">
+                <h2 class="font-DanaMedium text-lg">سفارش های اخیر :</h2>
+            </span>
+            <div class="relative mt-5 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700  bg-gray-100 dark:bg-gray-900 dark:text-gray-200">
+                            <tr>
+                                <th scope="col" class="px-6 py-3.5">
+                                        نام محصول
+                                </th>
                                     <th scope="col" class="px-6 py-3.5">
-                                            نام محصول
-                                    </th>
-                                     <th scope="col" class="px-6 py-3.5">
-                                            تاریخ
-                                    </th>
-                                    <th scope="col" class="px-6 py-3.5">
-                                            قیمت
-                                    </th>
-                                    <th scope="col" class="px-6 py-3.5">
-                                            وضعیت
-                                    </th>
-                              </tr>
-                        </thead>
-                            <tbody>
-                                <% if (typeof recentOrders !== 'undefined' && recentOrders.length) { %>
-                                    <% recentOrders.forEach(function (order) { %>
-                                        <% var firstItem = (order.items || []).find(function (it) { return it.product; }); %>
-                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-                                            <th scope="row" class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
-                                                <% if (firstItem) { %>
-                                                    <img class="w-10 h-10 object-cover rounded" src="<%= firstItem.product.image %>" alt="">
-                                                    <span class="flex flex-col gap-y-0.5">
-                                                        <span class="line-clamp-1"><%= firstItem.product.title %></span>
-                                                        <% if (order.items.length > 1) { %><span class="text-xs text-gray-400">و <%= Number(order.items.length - 1).toLocaleString('fa-IR') %> قلم دیگر</span><% } %>
-                                                        <span class="text-xs text-gray-400">کد: <%= order.orderNumber || '-' %></span>
-                                                    </span>
-                                                <% } else { %><span class="text-gray-400">—</span><% } %>
-                                            </th>
-                                            <td class="px-6 py-5"><%= order.paidAt ? date(order.paidAt).format('jYYYY/jMM/jDD') : '-' %></td>
-                                            <td class="px-6 py-5 whitespace-nowrap"><%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString('fa-IR') %> تومان</td>
-                                            <td class="px-6 py-5 text-green-500 font-DanaDemiBold whitespace-nowrap"><%= order.statusLabel || 'پرداخت شده' %></td>
-                                        </tr>
-                                    <% }) %>
-                                <% } else { %>
-                                    <tr class="bg-white dark:bg-gray-800"><td colspan="4" class="px-6 py-8 text-center text-gray-400">هنوز سفارشی ثبت نشده است.</td></tr>
-                                <% } %>
-                            </tbody>
-                    </table>
-                </div>
-               </div>
+                                        تاریخ
+                                </th>
+                                <th scope="col" class="px-6 py-3.5">
+                                        قیمت
+                                </th>
+                                <th scope="col" class="px-6 py-3.5">
+                                        وضعیت
+                                </th>
+                            </tr>
+                    </thead>
+                        <tbody>
+                            <% if (typeof recentOrders !== 'undefined' && recentOrders.length) { %>
+                                <% recentOrders.forEach(function (order) { %>
+                                    <% var firstItem = (order.items || []).find(function (it) { return it.product; }); %>
+                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                                        <th scope="row" class="px-6 py-5 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center gap-x-2">
+                                            <% if (firstItem) { %>
+                                                <img class="w-10 h-10 object-cover rounded" src="<%= firstItem.product.image %>" alt="">
+                                                <span class="flex flex-col gap-y-0.5">
+                                                    <span class="line-clamp-1"><%= firstItem.product.title %></span>
+                                                    <% if (order.items.length > 1) { %><span class="text-xs text-gray-400">و <%= Number(order.items.length - 1).toLocaleString('fa-IR') %> قلم دیگر</span><% } %>
+                                                    <span class="text-xs text-gray-400">کد: <%= order.orderNumber || '-' %></span>
+                                                </span>
+                                            <% } else { %><span class="text-gray-400">—</span><% } %>
+                                        </th>
+                                        <td class="px-6 py-5"><%= order.paidAt ? date(order.paidAt).format('jYYYY/jMM/jDD') : '-' %></td>
+                                        <td class="px-6 py-5 whitespace-nowrap"><%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString('fa-IR') %> تومان</td>
+                                        <td class="px-6 py-5 text-green-500 font-DanaDemiBold whitespace-nowrap"><%= order.statusLabel || 'پرداخت شده' %></td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr class="bg-white dark:bg-gray-800"><td colspan="4" class="px-6 py-8 text-center text-gray-400">هنوز سفارشی ثبت نشده است.</td></tr>
+                            <% } %>
+                        </tbody>
+                </table>
+            </div>
             </div>
         </div>
-    </main>
+    </div>
+</main>
+
+<!-- Overlay -->
+<div class="overlay"></div>
+<div class="search-overlay"></div>
+
+<script src="/scripts/dashboard.js"></script>

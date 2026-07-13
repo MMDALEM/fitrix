@@ -96,7 +96,6 @@ class PaymentService {
     const data = await res.json().catch(() => null);
     // توکن حساس است و لاگ نمی‌شود؛ فقط در صورت خطا وضعیت را ثبت می‌کنیم
     if (!data || !data.access_token) {
-      console.error("DigiPay token error:", res.status, JSON.stringify(data));
       const msg =
         (data && data.result && data.result.message) ||
         (data && data.error_description) ||
@@ -167,6 +166,8 @@ class PaymentService {
       },
     );
     const data = await res.json().catch(() => null);
+    // لاگِ تشخیصی: عینِ پاسخِ verifyِ دیجی‌پی (status=0 یعنی موفق)
+
     const ok = !!data && data.result && data.result.status === 0;
     return {
       ok,

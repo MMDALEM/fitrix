@@ -8,7 +8,6 @@ const notificationModel = require("../../models/notification.model");
 const paymentService = require("../../services/payment.service");
 const controller = require("../.controller");
 const { manager, successpayment } = require("../../utils/sms");
-const { logError } = require("../../utils/logError");
 
 const DEFAULT_TAX_RATE = 0.1;
 
@@ -299,6 +298,7 @@ class paymentController extends controller {
         Object.assign(params, req.body);
       }
 
+
       // basketId از مسیر (path) خوانده می‌شود تا در URL تمیز بماند؛
       // برای سازگاری، query هم پشتیبانی می‌شود.
       const basketId = req.params.basketId || params.basketId || params.orderId;
@@ -374,16 +374,7 @@ class paymentController extends controller {
           });
           verified = result.ok;
           refId = result.refId || refId;
-          if (!verified) {
-            failReason = result.message || null;
-            // ثبتِ خطای تأییدِ دیجی‌پی در تبِ خطاهای ادمین
-            logError(new Error("DigiPay verify failed: " + (result.message || result.status)), {
-              source: "digipay-verify",
-              req,
-              status: 502,
-              meta: { orderNumber: basket.orderNumber, type: cbType, trackingCode, status: result.status },
-            });
-          }
+          if (!verified) failReason = result.message || null;
 
           // تیکت‌های قسطی/اعتباری (بر اساس نوعِ واقعیِ callback) بعد از verify
           // نیاز به مرحله‌ی deliver دارند. اما چون verifyِ موفق یعنی پرداخت
@@ -400,21 +391,14 @@ class paymentController extends controller {
                 products: (basket.items || []).map((it) => String(it.product)),
               });
               if (!del.ok) {
-                logError(
-                  new Error("DigiPay deliver failed: " + (del.message || del.status)),
-                  {
-                    source: "digipay-deliver",
-                    req,
-                    status: 502,
-                    meta: {
-                      orderNumber: basket.orderNumber,
-                      note: "سفارش پرداخت شده ولی deliver ناموفق — نیاز به تحویلِ دستی در پنل دیجی‌پی",
-                    },
-                  },
+                console.error(
+                  "DigiPay deliver FAILED (سفارش پرداخت‌شده — نیاز به تحویلِ دستی):",
+                  basket.orderNumber,
+                  del.message,
                 );
               }
             } catch (delErr) {
-              logError(delErr, { source: "digipay-deliver", req });
+              console.error("DigiPay deliver error:", delErr.message);
             }
           }
         }
@@ -453,11 +437,7 @@ class paymentController extends controller {
           await manager("09167728327", basket.orderNumber + "");
           await manager("09373640517", basket.orderNumber + "");
         } catch (smsErr) {
-          logError(smsErr, {
-            source: "sms",
-            req,
-            meta: { orderNumber: basket.orderNumber },
-          });
+          console.error("SMS notify failed:", smsErr.message);
         }
 
         // وضعیت دوستانه: در دست اقدام

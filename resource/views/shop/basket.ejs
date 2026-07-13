@@ -408,10 +408,10 @@
                 </ul>
 
                 <!-- ===== فرم کد تخفیف ===== -->
-                <div class="flex flex-col gap-y-2 pt-2 border-t-2 border-dashed border-gray-400 dark:border-gray-500">
-                    <p class="font-DanaMedium text-sm">کد تخفیف :</p>
+                <div class="flex flex-col gap-y-2 pt-4 border-t-2 border-dashed border-gray-400 dark:border-gray-500">
                     <div class="flex items-stretch gap-x-2">
-                        <input type="text" id="discountCode" name="discountCode" autocomplete="off"
+                    <p class="font-DanaMedium text-sm pt-2">کد تخفیف :</p>
+                        <input type="text" id="discountCode" name="discountCode" autocomplete="off" style="width: 50%"
                             placeholder="کد تخفیف را وارد کنید"
                             class="flex-1 min-w-0 text-sm bg-transparent rounded-lg border-2 border-gray-200 dark:border-white/20 py-2 px-3 outline-none focus:border-blue-500">
                         <button type="button" id="applyDiscountBtn"
@@ -427,9 +427,10 @@
                 
                     <div class="flex items-center justify-between">
                         <p class="font-DanaMedium text-sm">انتخاب آدرس :</p>
-                        <a href="/dashboard/address" class="text-xs text-blue-500 font-DanaMedium">+ افزودن آدرس</a>
+                        <a href="/dashboard/address" class="js-open-addr-modal text-xs text-blue-500 font-DanaMedium">+ افزودن آدرس</a>
                     </div>
 
+                    <div id="cartAddressList" class="flex flex-col gap-y-2">
                     <% if (user && addresses && addresses.length) {  %>
                         <% addresses.forEach(function (addr, i) { %>
                             <label class="flex items-start gap-x-2 cursor-pointer">
@@ -441,8 +442,9 @@
                             </label>
                         <% }) %>
                     <% } else { %>
-                        <p class="text-xs text-gray-400">هنوز آدرسی ثبت نکرده‌اید. <a href="/dashboard/address" class="text-blue-500">افزودن آدرس</a></p>
+                        <p id="cartNoAddrMsg" class="text-xs text-gray-400">هنوز آدرسی ثبت نکرده‌اید. <a href="/dashboard/address" class="js-open-addr-modal text-blue-500">افزودن آدرس</a></p>
                     <% } %>
+                    </div>
                 </div>
 
                 <!-- ===== انتخاب درگاه پرداخت ===== -->
@@ -686,4 +688,224 @@ gatewayLabels.forEach(function (label) {
     });
 });
 refreshGateways();
+</script>
+
+<!-- ============================================================
+     مودالِ «افزودن آدرس» برای صفحه‌ی سبد خرید
+     ظاهر و رفتار دقیقاً مطابق مودالِ داشبورد (آدرس‌های من).
+     پیش‌فرض مخفی است و هیچ تغییری در ظاهرِ سبد ایجاد نمی‌کند؛ فقط با
+     کلیک روی «+ افزودن آدرس» باز می‌شود و بدون ترکِ صفحه، آدرس را از
+     طریق /dashboard/address/ajax ثبت و به لیستِ انتخابِ آدرس اضافه می‌کند.
+     ============================================================ -->
+<div id="cartAddrModal" style="display:none">
+  <div id="cartAddrCard">
+    <div class="caddr-head">
+      <h3 class="caddr-title font-DanaMedium">افزودن آدرس جدید</h3>
+      <button type="button" id="cartAddrClose" class="caddr-close" aria-label="بستن">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <form id="cartAddrForm" method="post" action="/dashboard/address">
+      <div class="caddr-field">
+        <label class="caddr-label font-DanaMedium">عنوان آدرس</label>
+        <input class="caddr-input" type="text" name="title" placeholder="مثلاً: منزل، محل کار" required>
+      </div>
+
+      <div class="caddr-field">
+        <label class="caddr-label font-DanaMedium">آدرس کامل</label>
+        <textarea class="caddr-input caddr-textarea" name="address" rows="3" placeholder="استان، شهر، خیابان، کوچه، پلاک..." required></textarea>
+      </div>
+
+      <div class="caddr-field">
+        <label class="caddr-label font-DanaMedium">کد پستی</label>
+        <input class="caddr-input" type="text" name="postalCode" placeholder="کد پستی ۱۰ رقمی" maxlength="10" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+      </div>
+
+      <div class="caddr-field">
+        <label class="caddr-label font-DanaMedium">نام گیرنده</label>
+        <input class="caddr-input" type="text" name="receiver" placeholder="نام و نام خانوادگی گیرنده" required>
+      </div>
+
+      <div class="caddr-field">
+        <label class="caddr-label font-DanaMedium">شماره تماس</label>
+        <input class="caddr-input" type="tel" name="phone" placeholder="شماره موبایل گیرنده" maxlength="11" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+      </div>
+
+      <div class="caddr-actions">
+        <button type="submit" id="cartAddrSubmit" class="caddr-btn caddr-btn-save font-DanaMedium">
+          <span>ذخیره آدرس</span>
+          <svg id="cartAddrSpinner" class="caddr-spinner" style="display:none" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.25"></circle>
+            <path fill="currentColor" style="opacity:.75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </button>
+        <button type="button" id="cartAddrCancel" class="caddr-btn caddr-btn-cancel font-DanaMedium">انصراف</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var modal = document.getElementById("cartAddrModal");
+    if (!modal) return;
+
+    // این صفحه از app.css (بیلدِ purge‌شده) استفاده می‌کند و برخی کلاس‌های
+    // ابزاریِ لازم برای مودال در آن نیستند؛ پس استایلِ مودال را — کاملاً محدود
+    // به #cartAddrModal — در head تزریق می‌کنیم تا ظاهر دقیقاً مثل داشبورد شود
+    // و هیچ اثری روی بقیه‌ی صفحه نگذارد.
+    var css =
+      "#cartAddrModal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}" +
+      "#cartAddrCard{width:100%;max-width:28rem;margin:0 1rem;padding:1.5rem;background:#fff;color:#1f2937;border-radius:.75rem;box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);font-family:'Dana',sans-serif;box-sizing:border-box;max-height:90vh;overflow-y:auto;animation:caddrFade .2s ease-out}" +
+      "html.dark #cartAddrCard{background:#1f2937;color:#fff}" +
+      "#cartAddrModal .caddr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}" +
+      "#cartAddrModal .caddr-title{font-size:1.125rem;margin:0}" +
+      "#cartAddrModal .caddr-close{background:none;border:none;padding:0;line-height:0;cursor:pointer;color:#9ca3af;transition:color .15s}" +
+      "#cartAddrModal .caddr-close:hover{color:#4b5563}" +
+      "html.dark #cartAddrModal .caddr-close:hover{color:#e5e7eb}" +
+      "#cartAddrModal .caddr-close svg{width:1.5rem;height:1.5rem}" +
+      "#cartAddrModal .caddr-field{margin-bottom:1rem}" +
+      "#cartAddrModal .caddr-label{display:block;font-size:.875rem;margin-bottom:.375rem}" +
+      "#cartAddrModal .caddr-input{width:100%;padding:.625rem 1rem;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;color:#1f2937;outline:none;font-family:inherit;font-size:1rem;box-sizing:border-box;transition:border-color .15s,box-shadow .15s}" +
+      "#cartAddrModal .caddr-input::placeholder{color:#9ca3af}" +
+      "#cartAddrModal .caddr-input:focus{border-color:transparent;box-shadow:0 0 0 2px #3b82f6}" +
+      "html.dark #cartAddrModal .caddr-input{background:#374151;border-color:#4b5563;color:#fff}" +
+      "#cartAddrModal .caddr-textarea{resize:none;min-height:5.5rem}" +
+      "#cartAddrModal .caddr-actions{display:flex;gap:.75rem;padding-top:.75rem}" +
+      "#cartAddrModal .caddr-btn{flex:1 1 0%;padding:.625rem;border-radius:.5rem;border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:background-color .15s}" +
+      "#cartAddrModal .caddr-btn-save{background:#3b82f6;color:#fff}" +
+      "#cartAddrModal .caddr-btn-save:hover{background:#2563eb}" +
+      "#cartAddrModal .caddr-btn-save:disabled{opacity:.7;cursor:default}" +
+      "#cartAddrModal .caddr-btn-cancel{background:#e5e7eb;color:#1f2937}" +
+      "#cartAddrModal .caddr-btn-cancel:hover{background:#d1d5db}" +
+      "html.dark #cartAddrModal .caddr-btn-cancel{background:#374151;color:#fff}" +
+      "html.dark #cartAddrModal .caddr-btn-cancel:hover{background:#4b5563}" +
+      "#cartAddrModal .caddr-spinner{width:1.25rem;height:1.25rem;animation:caddrSpin 1s linear infinite}" +
+      "@keyframes caddrFade{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}" +
+      "@keyframes caddrSpin{to{transform:rotate(360deg)}}";
+    var styleEl = document.createElement("style");
+    styleEl.setAttribute("data-cart-addr", "");
+    styleEl.textContent = css;
+    document.head.appendChild(styleEl);
+
+    var form = document.getElementById("cartAddrForm");
+    var submitBtn = document.getElementById("cartAddrSubmit");
+    var spinner = document.getElementById("cartAddrSpinner");
+    var closeBtn = document.getElementById("cartAddrClose");
+    var cancelBtn = document.getElementById("cartAddrCancel");
+    var listEl = document.getElementById("cartAddressList");
+    var openLinks = document.querySelectorAll(".js-open-addr-modal");
+
+    function openModal() {
+      modal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+      var f = form.elements["title"];
+      if (f) setTimeout(function () { f.focus(); }, 50);
+    }
+    function closeModal() {
+      modal.style.display = "none";
+      document.body.style.overflow = "";
+      form.reset();
+    }
+
+    openLinks.forEach(function (el) {
+      el.addEventListener("click", function (e) { e.preventDefault(); openModal(); });
+    });
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
+    // بستن با کلیک روی پس‌زمینه
+    modal.addEventListener("click", function (e) { if (e.target === modal) closeModal(); });
+    // بستن با Escape
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && modal.style.display === "flex") closeModal();
+    });
+
+    function toast(title, icon) {
+      if (window.Swal) {
+        window.Swal.mixin({
+          toast: true, position: "top-end", showConfirmButton: false,
+          timer: 2500, timerProgressBar: true,
+        }).fire({ title: title, icon: icon || "success" });
+      }
+    }
+
+    // افزودنِ آدرسِ تازه‌ساخته‌شده به لیستِ انتخابِ آدرس و انتخابِ آن
+    function addRadio(addr) {
+      var noMsg = document.getElementById("cartNoAddrMsg");
+      if (noMsg) noMsg.remove();
+
+      var label = document.createElement("label");
+      label.className = "flex items-start gap-x-2 cursor-pointer";
+
+      var radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = "address";
+      radio.value = addr._id;
+      radio.className = "accent-blue-500 mt-1";
+      radio.checked = true;
+
+      var wrap = document.createElement("span");
+      wrap.className = "flex flex-col";
+
+      var t = document.createElement("span");
+      t.className = "font-DanaMedium text-sm";
+      t.textContent = addr.title || "آدرس جدید";
+
+      var a = document.createElement("span");
+      a.className = "text-xs text-gray-500 dark:text-gray-400";
+      a.textContent = addr.address || "";
+
+      wrap.appendChild(t);
+      wrap.appendChild(a);
+      label.appendChild(radio);
+      label.appendChild(wrap);
+      if (listEl) listEl.appendChild(label);
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var body = {
+        title: (form.elements["title"].value || "").trim(),
+        address: (form.elements["address"].value || "").trim(),
+        postalCode: (form.elements["postalCode"].value || "").trim(),
+        receiver: (form.elements["receiver"].value || "").trim(),
+        phone: (form.elements["phone"].value || "").trim(),
+      };
+      if (!body.title || !body.address || !body.postalCode || !body.receiver || !body.phone) {
+        toast("لطفاً همه‌ی فیلدها را کامل کنید", "error");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      if (spinner) spinner.style.display = "inline-block";
+
+      fetch("/dashboard/address/ajax", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+        .then(function (res) {
+          if (res.redirected) { window.location.href = res.url; return null; }
+          return res.json();
+        })
+        .then(function (data) {
+          if (!data) return;
+          if (data.success && data.address) {
+            addRadio(data.address);
+            closeModal();
+            toast(data.message || "آدرس با موفقیت اضافه شد", "success");
+          } else {
+            toast(data.message || "خطا در ثبت آدرس", "error");
+          }
+        })
+        .catch(function () { toast("خطا در ارتباط با سرور", "error"); })
+        .finally(function () {
+          submitBtn.disabled = false;
+          if (spinner) spinner.style.display = "none";
+        });
+    });
+  })();
 </script>
