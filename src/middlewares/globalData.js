@@ -102,19 +102,14 @@ class GlobalData {
 
       next();
     } catch (err) {
+      require("../utils/logError").logError(err, { source: "globalData", req });
       res.locals.basket = { items: [] };
       next();
     }
   }
 
   static init() {
-    return [
-      this.auth,
-      this.categories,
-      this.settings,
-      this.seo,
-      this.setLocals,
-    ];
+    return [this.auth, this.categories, this.settings, this.seo, this.setLocals];
   }
 }
 

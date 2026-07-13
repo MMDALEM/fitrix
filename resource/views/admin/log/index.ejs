@@ -1,0 +1,94 @@
+<main class="container relative">
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <%- include(viewPath('layout/menu')) %>
+
+        <div class="lg:w-3/4 flex flex-col gap-y-5 mt-5 lg:mt-0">
+
+            <div class="flex items-center justify-between shadow rounded-lg p-4 dark:bg-gray-800 bg-white flex-wrap gap-2">
+                <span class="flex items-center gap-x-2">
+                    <svg class="size-7 text-red-500"><use href="#bell" /></svg>
+                    <h2 class="font-DanaMedium text-lg">خطاها و لاگ سرور</h2>
+                    <span class="text-gray-400 text-sm">(<%= Number(total).toLocaleString('fa-IR') %> مورد)</span>
+                    <% if (unread > 0) { %>
+                        <span class="text-xs bg-red-500 text-white rounded-full px-2 py-0.5"><%= Number(unread).toLocaleString('fa-IR') %> جدید</span>
+                    <% } %>
+                </span>
+                <div class="flex items-center gap-x-2">
+                    <a href="/admin/logs<%= onlyUnread ? '' : '?unread=1' %>" class="text-xs <%= onlyUnread ? 'text-blue-500' : 'text-gray-500' %> hover:underline">
+                        <%= onlyUnread ? 'نمایش همه' : 'فقط خوانده‌نشده‌ها' %>
+                    </a>
+                    <% if (unread > 0) { %>
+                        <form method="post" action="/admin/logs/read-all" class="inline">
+                            <button type="submit" class="text-xs text-blue-500 hover:underline">علامت‌گذاری همه به‌عنوان خوانده‌شده</button>
+                        </form>
+                    <% } %>
+                    <% if (total > 0) { %>
+                        <form method="post" action="/admin/logs/clear" class="inline" onsubmit="return confirm('همه‌ی خطاها پاک شوند؟')">
+                            <button type="submit" class="text-xs text-red-500 hover:underline">پاک کردن همه</button>
+                        </form>
+                    <% } %>
+                </div>
+            </div>
+
+            <% if (!logs.length) { %>
+                <div class="shadow rounded-lg p-8 dark:bg-gray-800 bg-white text-center text-gray-400">
+                    🎉 هیچ خطایی ثبت نشده است.
+                </div>
+            <% } %>
+
+            <div class="flex flex-col gap-y-3">
+                <% logs.forEach(function (log) {
+                    var status = log.status || 500;
+                    var badge = status >= 500
+                        ? 'bg-red-500/10 text-red-600'
+                        : (status >= 400 ? 'bg-orange-500/10 text-orange-500' : 'bg-gray-500/10 text-gray-500');
+                %>
+                    <div class="shadow rounded-lg dark:bg-gray-800 bg-white overflow-hidden <%= log.isRead ? '' : 'ring-1 ring-red-300 dark:ring-red-500/40' %>">
+                        <div class="flex items-start gap-x-3 p-4">
+                            <span class="shrink-0 mt-0.5 text-xs <%= badge %> rounded-md px-2 py-1 font-DanaMedium"><%= status %></span>
+                            <div class="flex flex-col gap-y-1 min-w-0 flex-1">
+                                <p class="font-DanaMedium text-sm break-words"><%= log.message %></p>
+                                <div class="flex items-center gap-x-3 flex-wrap text-xs text-gray-500">
+                                    <span class="bg-gray-500/10 rounded px-1.5 py-0.5"><%= log.source %></span>
+                                    <% if (log.method || log.url) { %>
+                                        <span dir="ltr"><%= log.method %> <%= log.url %></span>
+                                    <% } %>
+                                    <% if (log.user) { %>
+                                        <span>کاربر: <span dir="ltr"><%= log.user.phone || '' %></span></span>
+                                    <% } %>
+                                    <span><%= date(log.createdAt).format('jYYYY/jMM/jDD - HH:mm') %></span>
+                                </div>
+                                <% if (log.meta) { %>
+                                    <pre class="text-xs text-gray-500 dark:text-gray-400 bg-slate-50 dark:bg-gray-900 rounded p-2 mt-1 overflow-x-auto" dir="ltr"><%= log.meta %></pre>
+                                <% } %>
+                                <% if (log.stack) { %>
+                                    <details class="text-xs text-gray-500 mt-1">
+                                        <summary class="cursor-pointer select-none">جزئیات فنی (stack)</summary>
+                                        <pre class="bg-slate-50 dark:bg-gray-900 rounded p-2 mt-1 overflow-x-auto whitespace-pre-wrap" dir="ltr"><%= log.stack %></pre>
+                                    </details>
+                                <% } %>
+                            </div>
+                            <form method="post" action="/admin/logs/<%= log._id %>/delete" class="shrink-0">
+                                <button type="submit" class="text-gray-400 hover:text-red-500" title="حذف">
+                                    <svg class="size-5"><use href="#x-mark" /></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+
+            <% if (pages > 1) { %>
+                <div class="flex items-center justify-center gap-x-2 flex-wrap">
+                    <% for (var p = 1; p <= pages; p++) { %>
+                        <a href="/admin/logs?page=<%= p %><%= onlyUnread ? '&unread=1' : '' %>"
+                           class="w-9 h-9 flex items-center justify-center rounded-lg text-sm <%= p === current ? 'bg-blue-500 text-white' : 'bg-white dark:bg-gray-800 shadow hover:text-blue-500' %>">
+                            <%= p.toLocaleString('fa-IR') %>
+                        </a>
+                    <% } %>
+                </div>
+            <% } %>
+
+        </div>
+    </div>
+</main>

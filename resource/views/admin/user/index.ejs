@@ -1,0 +1,133 @@
+<main class="container relative">
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <%- include(viewPath('layout/menu')) %>
+
+        <div class="lg:w-3/4 flex flex-col gap-y-5 mt-5 lg:mt-0">
+
+            <!-- عنوان -->
+            <span class="flex items-center gap-x-2 shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <svg class="size-7 text-blue-500"><use href="#ticket" /></svg>
+                <h2 class="font-DanaMedium text-lg">مدیریت کاربران</h2>
+                <span class="text-gray-400 text-sm">(<%= Number(total).toLocaleString('fa-IR') %> کاربر)</span>
+            </span>
+
+            <!-- کارت‌های خلاصه -->
+            <div class="grid grid-cols-12 gap-4 child:col-span-6 md:child:col-span-4 child:rounded-lg child:bg-white child:dark:bg-gray-800 child:shadow child:p-4">
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">کل کاربران</p>
+                    <p class="font-DanaDemiBold text-lg"><%= Number(counts.totalUsers).toLocaleString('fa-IR') %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">فعال</p>
+                    <p class="font-DanaDemiBold text-lg text-green-600"><%= Number(counts.activeUsers).toLocaleString('fa-IR') %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">مدیران</p>
+                    <p class="font-DanaDemiBold text-lg text-blue-600"><%= Number(counts.adminUsers).toLocaleString('fa-IR') %></p>
+                </div>
+            </div>
+
+            <!-- جستجو -->
+            <form method="get" action="/admin/users" class="flex items-center gap-x-2 shadow rounded-lg p-3 dark:bg-gray-800 bg-white">
+                <input type="text" name="q" value="<%= q %>" placeholder="جستجو: نام، شماره، ایمیل یا نام‌کاربری"
+                    class="flex-1 p-2.5 text-sm rounded-md bg-slate-100 dark:bg-gray-900 outline-none focus:ring-2 focus:ring-indigo-200 dark:focus:ring-blue-400">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-DanaMedium">جستجو</button>
+                <% if (q) { %>
+                    <a href="/admin/users" class="text-gray-500 text-sm px-2">حذف فیلتر</a>
+                <% } %>
+            </form>
+
+            <!-- جدول کاربران -->
+            <div class="shadow rounded-lg dark:bg-gray-800 bg-white overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-right whitespace-nowrap">
+                        <thead class="text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                            <tr>
+                                <th class="px-4 py-3">#</th>
+                                <th class="px-4 py-3">نام</th>
+                                <th class="px-4 py-3">شماره موبایل</th>
+                                <th class="px-4 py-3">نقش</th>
+                                <th class="px-4 py-3">وضعیت</th>
+                                <th class="px-4 py-3">سفارش</th>
+                                <th class="px-4 py-3">مبلغ خرید</th>
+                                <th class="px-4 py-3">عضویت</th>
+                                <th class="px-4 py-3">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody class="child:border-b child:border-gray-50 dark:child:border-gray-700/50">
+                            <% if (!users.length) { %>
+                                <tr><td colspan="9" class="px-4 py-8 text-center text-gray-400">کاربری یافت نشد.</td></tr>
+                            <% } %>
+                            <% users.forEach(function (u, i) {
+                                var roles = Array.isArray(u.roles) ? u.roles : [u.roles];
+                                var isSuperRow = roles.indexOf('SUPER_ADMIN') !== -1;
+                                var isAdminRow = isSuperRow || roles.indexOf('ADMIN') !== -1;
+                                var name = ((u.firstName||'') + ' ' + (u.lastName||'')).trim() || '—';
+                            %>
+                                <tr class="hover:bg-slate-50 dark:hover:bg-gray-700/30">
+                                    <td class="px-4 py-3 text-gray-400"><%= ((current-1)*pageSize + i + 1).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3 font-DanaMedium">
+                                        <a href="/admin/users/<%= u._id %>" class="hover:text-blue-500"><%= name %></a>
+                                    </td>
+                                    <td class="px-4 py-3" dir="ltr"><%= u.phone %></td>
+                                    <td class="px-4 py-3">
+                                        <% if (isSuperRow) { %>
+                                            <span class="text-xs bg-purple-500/10 text-purple-600 rounded-full px-2 py-0.5">سوپرادمین</span>
+                                        <% } else if (isAdminRow) { %>
+                                            <span class="text-xs bg-blue-500/10 text-blue-600 rounded-full px-2 py-0.5">ادمین</span>
+                                        <% } else { %>
+                                            <span class="text-xs bg-gray-500/10 text-gray-500 rounded-full px-2 py-0.5">کاربر</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <% if (u.isActive) { %>
+                                            <span class="text-xs bg-green-500/10 text-green-600 rounded-full px-2 py-0.5">فعال</span>
+                                        <% } else { %>
+                                            <span class="text-xs bg-red-500/10 text-red-600 rounded-full px-2 py-0.5">مسدود</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-4 py-3"><%= Number(u.ordersCount).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3 text-green-600"><%= Number(u.totalSpent).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3 text-gray-500"><%= date(u.createdAt).format('jYYYY/jMM/jDD') %></td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-x-2">
+                                            <a href="/admin/users/<%= u._id %>" class="text-blue-500 hover:underline text-xs">مشاهده</a>
+                                            <% if (!isSuperRow) { %>
+                                                <form method="post" action="/admin/users/<%= u._id %>/toggle-active" class="inline">
+                                                    <button type="submit" class="text-xs <%= u.isActive ? 'text-red-500' : 'text-green-600' %> hover:underline">
+                                                        <%= u.isActive ? 'مسدود' : 'فعال' %>
+                                                    </button>
+                                                </form>
+                                                <% if (isSuper) { %>
+                                                    <form method="post" action="/admin/users/<%= u._id %>/role" class="inline">
+                                                        <input type="hidden" name="role" value="<%= isAdminRow ? 'USER' : 'ADMIN' %>">
+                                                        <button type="submit" class="text-xs text-purple-600 hover:underline">
+                                                            <%= isAdminRow ? 'حذف ادمین' : 'ادمین کن' %>
+                                                        </button>
+                                                    </form>
+                                                <% } %>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- صفحه‌بندی -->
+            <% if (pages > 1) { %>
+                <div class="flex items-center justify-center gap-x-2 flex-wrap">
+                    <% for (var p = 1; p <= pages; p++) { %>
+                        <a href="/admin/users?page=<%= p %><%= q ? '&q=' + encodeURIComponent(q) : '' %>"
+                           class="w-9 h-9 flex items-center justify-center rounded-lg text-sm <%= p === current ? 'bg-blue-500 text-white' : 'bg-white dark:bg-gray-800 shadow hover:text-blue-500' %>">
+                            <%= p.toLocaleString('fa-IR') %>
+                        </a>
+                    <% } %>
+                </div>
+            <% } %>
+
+        </div>
+    </div>
+</main>

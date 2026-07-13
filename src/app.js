@@ -140,7 +140,12 @@ module.exports = class Application {
           ? "خطای داخلی سرور رخ داد. لطفاً بعداً تلاش کنید."
           : error.message || serverError.message;
 
-      if (status >= 500) console.error("Server error:", error);
+      // خطاهای واقعیِ سرور (۵۰۰ به بالا) در دیتابیس ثبت می‌شوند تا در تبِ
+      // «خطاها»ی پنل ادمین دیده شوند. ۴۰۴ها ثبت نمی‌شوند (نویز هستند).
+      if (status >= 500) {
+        console.error("Server error:", error.message);
+        require("./utils/logError").logError(error, { source: "server", req, status });
+      }
 
       // برای درخواست‌های مرورگر، صفحه‌ی ۴۰۴ واقعی (کد وضعیت درست برای سئو)
       if (status === 404 && req.accepts("html")) {

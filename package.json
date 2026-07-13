@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "bun --watch server.js",
-    "prod": "bun server.js"
+    "prod": "bun server.js",
+    "dev": "node server.js"
   },
   "keywords": [],
   "author": "MohammadAlamzade",

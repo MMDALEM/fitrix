@@ -111,6 +111,45 @@ class dashboradController extends controller {
     }
   }
 
+  // افزودن آدرس به‌صورت AJAX (برای مودالِ صفحه‌ی سبد) — به‌جای ریدایرکت،
+  // JSON و خودِ آدرسِ ساخته‌شده را برمی‌گرداند تا بدون ترک صفحه اضافه شود
+  async addAddressAjax(req, res, next) {
+    try {
+      const { title, address, postalCode, receiver, phone } = req.body;
+      if (!title || !address || !postalCode || !receiver || !phone)
+        return res.status(400).json({
+          success: false,
+          message: "لطفا تمام فیلدهای مورد نیاز را پر کنید",
+        });
+
+      const doc = await addressModel.create({
+        title,
+        address,
+        postalCode,
+        receiver,
+        phone,
+        user: req.user._id,
+      });
+
+      return res.json({
+        success: true,
+        message: "آدرس با موفقیت اضافه شد",
+        address: {
+          _id: doc._id,
+          title: doc.title,
+          address: doc.address,
+          receiver: doc.receiver,
+          phone: doc.phone,
+          postalCode: doc.postalCode,
+        },
+      });
+    } catch (err) {
+      return res
+        .status(500)
+        .json({ success: false, message: "خطا در ثبت آدرس" });
+    }
+  }
+
   async deleteAddress(req, res, next) {
     try {
       const { id } = req.params;

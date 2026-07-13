@@ -1,0 +1,130 @@
+<%
+    var roles = Array.isArray(user.roles) ? user.roles : [user.roles];
+    var isSuperRow = roles.indexOf('SUPER_ADMIN') !== -1;
+    var isAdminRow = isSuperRow || roles.indexOf('ADMIN') !== -1;
+    var name = ((user.firstName||'') + ' ' + (user.lastName||'')).trim() || 'کاربر';
+%>
+<main class="container relative">
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <%- include(viewPath('layout/menu')) %>
+
+        <div class="lg:w-3/4 flex flex-col gap-y-5 mt-5 lg:mt-0">
+
+            <div class="flex items-center justify-between shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <span class="flex items-center gap-x-2">
+                    <svg class="size-7 text-blue-500"><use href="#ticket" /></svg>
+                    <h2 class="font-DanaMedium text-lg"><%= name %></h2>
+                    <% if (isSuperRow) { %>
+                        <span class="text-xs bg-purple-500/10 text-purple-600 rounded-full px-2 py-0.5">سوپرادمین</span>
+                    <% } else if (isAdminRow) { %>
+                        <span class="text-xs bg-blue-500/10 text-blue-600 rounded-full px-2 py-0.5">ادمین</span>
+                    <% } %>
+                    <% if (user.isActive) { %>
+                        <span class="text-xs bg-green-500/10 text-green-600 rounded-full px-2 py-0.5">فعال</span>
+                    <% } else { %>
+                        <span class="text-xs bg-red-500/10 text-red-600 rounded-full px-2 py-0.5">مسدود</span>
+                    <% } %>
+                </span>
+                <a href="/admin/users" class="text-sm text-blue-500 font-DanaMedium">← بازگشت</a>
+            </div>
+
+            <!-- اطلاعات کاربر -->
+            <div class="grid grid-cols-12 gap-4 child:col-span-12 md:child:col-span-6 child:rounded-lg child:bg-white child:dark:bg-gray-800 child:shadow child:p-4">
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">شماره موبایل</p>
+                    <p class="font-DanaMedium" dir="ltr"><%= user.phone %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">ایمیل</p>
+                    <p class="font-DanaMedium" dir="ltr"><%= user.email || '—' %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">تاریخ عضویت</p>
+                    <p class="font-DanaMedium"><%= date(user.createdAt).format('jYYYY/jMM/jDD - HH:mm') %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">آخرین ورود</p>
+                    <p class="font-DanaMedium"><%= user.lastLogin ? date(user.lastLogin).format('jYYYY/jMM/jDD - HH:mm') : '—' %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">تعداد سفارش</p>
+                    <p class="font-DanaDemiBold"><%= Number(orders.length).toLocaleString('fa-IR') %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">مجموع خرید</p>
+                    <p class="font-DanaDemiBold text-green-600"><%= Number(totalSpent).toLocaleString('fa-IR') %> تومان</p>
+                </div>
+            </div>
+
+            <!-- عملیات -->
+            <% if (!isSuperRow) { %>
+                <div class="flex items-center gap-x-3 shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                    <form method="post" action="/admin/users/<%= user._id %>/toggle-active">
+                        <button type="submit" class="<%= user.isActive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600' %> text-white rounded-lg px-4 py-2 text-sm font-DanaMedium">
+                            <%= user.isActive ? 'مسدود کردن کاربر' : 'فعال کردن کاربر' %>
+                        </button>
+                    </form>
+                    <% if (isSuper) { %>
+                        <form method="post" action="/admin/users/<%= user._id %>/role">
+                            <input type="hidden" name="role" value="<%= isAdminRow ? 'USER' : 'ADMIN' %>">
+                            <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white rounded-lg px-4 py-2 text-sm font-DanaMedium">
+                                <%= isAdminRow ? 'برداشتن دسترسی ادمین' : 'ادمین کردن' %>
+                            </button>
+                        </form>
+                    <% } %>
+                </div>
+            <% } %>
+
+            <!-- آدرس‌ها -->
+            <% if (addresses && addresses.length) { %>
+                <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                    <h3 class="font-DanaMedium mb-3">آدرس‌ها</h3>
+                    <div class="flex flex-col gap-y-2">
+                        <% addresses.forEach(function (a) { %>
+                            <div class="text-sm border border-gray-100 dark:border-gray-700 rounded-lg p-3 leading-7">
+                                <span class="text-gray-500">گیرنده:</span> <%= a.receiver || '—' %>
+                                <span class="text-gray-500 mr-2">تلفن:</span> <span dir="ltr"><%= a.phone || '—' %></span>
+                                <div class="text-gray-600 dark:text-gray-300"><%= a.address || '' %> <% if (a.postalCode) { %>— کدپستی: <%= a.postalCode %><% } %></div>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- سفارش‌ها -->
+            <div class="shadow rounded-lg dark:bg-gray-800 bg-white overflow-hidden">
+                <h3 class="font-DanaMedium p-4 border-b border-gray-100 dark:border-gray-700">سفارش‌های پرداخت‌شده</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-right whitespace-nowrap">
+                        <thead class="text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                            <tr>
+                                <th class="px-4 py-3">شماره سفارش</th>
+                                <th class="px-4 py-3">مبلغ</th>
+                                <th class="px-4 py-3">تعداد اقلام</th>
+                                <th class="px-4 py-3">وضعیت</th>
+                                <th class="px-4 py-3">تاریخ</th>
+                            </tr>
+                        </thead>
+                        <tbody class="child:border-b child:border-gray-50 dark:child:border-gray-700/50">
+                            <% if (!orders.length) { %>
+                                <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">سفارشی ثبت نشده است.</td></tr>
+                            <% } %>
+                            <% orders.forEach(function (o) {
+                                var count = (o.items || []).reduce(function (s, it) { return s + (it.quantity || 0); }, 0);
+                            %>
+                                <tr class="hover:bg-slate-50 dark:hover:bg-gray-700/30">
+                                    <td class="px-4 py-3 font-DanaMedium"><%= o.orderNumber || '—' %></td>
+                                    <td class="px-4 py-3 text-green-600"><%= Number(o.finalPrice || 0).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3"><%= Number(count).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3"><%= o.statusLabel || 'در دست اقدام' %></td>
+                                    <td class="px-4 py-3 text-gray-500"><%= o.paidAt ? date(o.paidAt).format('jYYYY/jMM/jDD - HH:mm') : '—' %></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>

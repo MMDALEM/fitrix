@@ -241,7 +241,10 @@ class productController extends controller {
         });
       }
       if (req.file) fs.unlink(req.file.path, () => {});
-      console.error("create product error:", err);
+      require("../../../utils/logError").logError(err, {
+        source: "product-create",
+        req,
+      });
       return this.alertAndBack(req, res, {
         title: err.userSafe ? err.message : "خطا در ذخیره محصول",
         icon: "error",
@@ -406,7 +409,10 @@ class productController extends controller {
         });
       }
       if (req.file) fs.unlink(req.file.path, () => {});
-      console.error("edit product error:", err);
+      require("../../../utils/logError").logError(err, {
+        source: "product-edit",
+        req,
+      });
       return this.alertAndBack(req, res, {
         title: err.userSafe ? err.message : "خطا در ویرایش محصول",
         icon: "error",

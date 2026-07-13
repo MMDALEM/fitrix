@@ -74,8 +74,13 @@ exports.verifyAdmin = async (req, res, next) => {
         audience: "admin",
         isRead: false,
       });
+      const errorLogModel = require("../models/errorLog.model");
+      res.locals.adminErrorUnread = await errorLogModel.countDocuments({
+        isRead: false,
+      });
     } catch {
       res.locals.adminUnread = 0;
+      res.locals.adminErrorUnread = 0;
     }
 
     next();
