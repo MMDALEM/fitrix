@@ -173,9 +173,11 @@
                             </a>
                             <% if (typeof brands !== 'undefined' && brands) { %>
                                 <h2 class="megamenu_left-title">برندها :</h2>
-                                <% brands.forEach(function (brand) { %>
-                                    <a href="/shop?brand=<%= brand.slug %>" class="text-blue-400 flex items-center gap-x-0.5 text-sm mb-4"><%= brand.title %></a>
-                                <% }); %>
+                                <div class="megamenu_brands">
+                                    <% brands.forEach(function (brand) { %>
+                                        <a href="/shop?brand=<%= brand.slug %>" class="text-blue-400 flex items-center gap-x-0.5 text-sm mb-4"><%= brand.title %></a>
+                                    <% }); %>
+                                </div>
                             <% } %>
                         </div>
                     </div>

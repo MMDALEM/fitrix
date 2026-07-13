@@ -2924,7 +2924,9 @@ img {
   top: 5rem;
   z-index: 10;
   display: flex;
-  height: 24rem;
+  height: auto;
+  max-height: 30rem;
+  overflow-y: auto;
   width: 70vw;
   border-radius: 0.75rem;
   --tw-bg-opacity: 1;
@@ -2963,13 +2965,17 @@ img {
 }
 
 .megamenu_category {
-  width: 25%;
+  width: 40%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem 0.75rem;
+  align-content: start;
 }
 
 .megamenu_category > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
-  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .megamenu_category {
@@ -2991,7 +2997,9 @@ img {
   display: flex;
   width: 100%;
   cursor: pointer;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 0.25rem;
   -moz-column-gap: 0.25rem;
        column-gap: 0.25rem;
   border-radius: 0.5rem;
@@ -3015,11 +3023,23 @@ img {
 }
 
 .megamenu_left {
-  margin-left: 2.5rem;
-  margin-right: 2.5rem;
-  width: 75%;
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+  flex: 1 1 auto;
+  width: auto;
   --tw-text-opacity: 1;
   color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
+/* برندها به‌صورت دوستونه؛ اگر زیاد باشند، بقیه به ردیف‌های بعدی می‌روند */
+.megamenu_brands {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1.5rem;
+}
+
+.megamenu_brands > a {
+  margin-bottom: 0.75rem;
 }
 
 .megamenu_left:is(.dark *) {

@@ -37,6 +37,10 @@
                     <p class="font-DanaDemiBold text-red-500"><%= Number(totals.totalExpenses).toLocaleString('fa-IR') %></p>
                 </div>
                 <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">باقیمانده هزینه سایت (پس از هزینه‌ها)</p>
+                    <p class="font-DanaDemiBold <%= totals.siteCostBalance < 0 ? 'text-red-500' : 'text-purple-500' %>"><%= Number(totals.siteCostBalance).toLocaleString('fa-IR') %></p>
+                </div>
+                <div class="flex flex-col gap-y-1">
                     <p class="text-gray-500 text-sm">مالیات (سهم دولت)</p>
                     <p class="font-DanaDemiBold text-gray-600 dark:text-gray-300"><%= Number(totals.totalTax).toLocaleString('fa-IR') %></p>
                 </div>
@@ -53,7 +57,7 @@
                     <p class="font-DanaDemiBold text-blue-600 text-lg"><%= Number(profitShare).toLocaleString('fa-IR') %></p>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 -mt-2">سود خالص = سود ناخالص − تخفیف کدها − هزینه‌های اضافه − هزینه سایت (۱۵٪ از سود هر تک محصول). تخفیف محصولات از قبل در سود ناخالص لحاظ شده است. مالیات جداست و تقسیم نمی‌شود.</p>
+            <p class="text-xs text-gray-400 -mt-2">سود خالص = سود ناخالص − تخفیف کدها − هزینه سایت (۱۵٪ از سود هر تک محصول). هزینه‌های اضافه از پولِ «هزینه سایت» کسر می‌شوند (باقیمانده هزینه سایت = هزینه سایت − هزینه‌ها) و از سهم شرکا کم نمی‌شوند. تخفیف محصولات از قبل در سود ناخالص لحاظ شده است. مالیات جداست و تقسیم نمی‌شود.</p>
 
             <!-- کل مبلغی که باید به هر شریک داده شود -->
             <div class="grid grid-cols-12 gap-4 child:col-span-12 md:child:col-span-6 child:rounded-lg child:shadow child:p-4">
@@ -199,6 +203,12 @@
             <!-- هزینه‌های اضافه -->
             <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white flex flex-col gap-y-4">
                 <h2 class="font-DanaMedium text-lg">هزینه‌های اضافه</h2>
+                <p class="text-xs text-gray-400 -mt-2">هر هزینه‌ای که این‌جا ثبت شود از پولِ «هزینه سایت» (۱۵٪) کسر می‌شود و از حساب/سهمِ شرکا کم نمی‌شود. برای ثبتِ پرداختِ یک هزینه، به‌جای حذف از دکمه‌ی «تسویه / پرداخت شد» استفاده کنید تا رکورد باقی بماند.</p>
+                <p class="text-xs text-gray-500 -mt-2">
+                    مجموع هزینه‌ها: <span class="font-DanaMedium"><%= Number(totals.totalExpenses).toLocaleString('fa-IR') %></span>
+                    · تسویه‌شده: <span class="font-DanaMedium" style="color:#15803d"><%= Number(totals.settledExpenses).toLocaleString('fa-IR') %></span>
+                    · در انتظار: <span class="font-DanaMedium" style="color:#c2410c"><%= Number(totals.pendingExpenses).toLocaleString('fa-IR') %></span>
+                </p>
 
                 <form action="/admin/partners/expense" method="POST" class="grid grid-cols-12 gap-2">
                     <input type="text" name="title" placeholder="عنوان هزینه" required
@@ -218,12 +228,13 @@
                                 <th class="px-4 py-3">مبلغ</th>
                                 <th class="px-4 py-3">توضیح</th>
                                 <th class="px-4 py-3">تاریخ</th>
+                                <th class="px-4 py-3">وضعیت</th>
                                 <th class="px-4 py-3"></th>
                             </tr>
                         </thead>
                         <tbody>
                             <% if (!expenses.length) { %>
-                                <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">هزینه‌ای ثبت نشده است.</td></tr>
+                                <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">هزینه‌ای ثبت نشده است.</td></tr>
                             <% } %>
                             <% expenses.forEach(function (e) { %>
                                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
@@ -232,10 +243,19 @@
                                     <td class="px-4 py-3"><%= e.note || '-' %></td>
                                     <td class="px-4 py-3"><%= date(e.createdAt).format('jYYYY/jMM/jDD') %></td>
                                     <td class="px-4 py-3">
-                                        <form action="/admin/partners/expense/<%= e._id %>/delete" method="POST">
-                                            <button type="submit" class="text-red-500 hover:text-red-700">
-                                                <svg class="w-5 h-5"><use href="#trash" /></svg>
-                                            </button>
+                                        <% if (e.settled) { %>
+                                            <span class="text-xs font-DanaMedium rounded-full px-2 py-0.5" style="background:#dcfce7;color:#15803d">تسویه‌شده<% if (e.settledAt) { %> · <%= date(e.settledAt).format('jYYYY/jMM/jDD') %><% } %></span>
+                                        <% } else { %>
+                                            <span class="text-xs font-DanaMedium rounded-full px-2 py-0.5" style="background:#ffedd5;color:#c2410c">در انتظار</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <form action="/admin/partners/expense/<%= e._id %>/settle" method="POST">
+                                            <% if (e.settled) { %>
+                                                <button type="submit" class="text-xs font-DanaMedium rounded-lg px-3 py-1" style="border:1px solid #d1d5db;color:#6b7280;background:transparent">لغو تسویه</button>
+                                            <% } else { %>
+                                                <button type="submit" class="text-xs font-DanaMedium rounded-lg px-3 py-1" style="background:#16a34a;color:#fff">تسویه / پرداخت شد</button>
+                                            <% } %>
                                         </form>
                                     </td>
                                 </tr>

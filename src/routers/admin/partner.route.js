@@ -14,6 +14,7 @@ router.get("/", partnerController.partners);
 
 // هزینه‌های اضافه
 router.post("/expense", partnerController.addExpense);
+router.post("/expense/:id/settle", partnerController.settleExpense);
 router.post("/expense/:id/delete", partnerController.deleteExpense);
 
 // ثبت تسویه با شریک

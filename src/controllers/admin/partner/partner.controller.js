@@ -144,14 +144,24 @@ class partnerController extends controller {
       // هزینه‌های اضافه
       const expenses = await expenseModel.find().sort({ createdAt: -1 });
       const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
+      // تفکیک تسویه‌شده / در انتظار (هر دو در مجموع هزینه‌ها حساب می‌شوند؛
+      // «تسویه» فقط وضعیتِ پرداختِ آن هزینه است و رکورد را پاک نمی‌کند)
+      const settledExpenses = expenses
+        .filter((e) => e.settled)
+        .reduce((s, e) => s + (e.amount || 0), 0);
+      const pendingExpenses = totalExpenses - settledExpenses;
 
       // قیمت تمام‌شده‌ی کل محصولات (سرمایه) = کل فروش − سود ناخالص
       // (سود ناخالص از قیمتِ واقعی فروش — بعد از تخفیف محصول — محاسبه شده)
       const costOfGoods = totalSales - grossProfit;
 
-      // سود خالص = سود ناخالص − تخفیف کدها − هزینه‌های اضافه − هزینه سایت (۱۵٪)
-      const netProfit =
-        grossProfit - totalDiscount - totalExpenses - totalSiteCost;
+      // هزینه‌های اضافه از پولِ «هزینه سایت» (۱۵٪) کسر می‌شوند، نه از سهم شرکا.
+      // باقیمانده‌ی هزینه سایت = هزینه سایت − هزینه‌های اضافه
+      const siteCostBalance = totalSiteCost - totalExpenses;
+
+      // سود خالص = سود ناخالص − تخفیف کدها − هزینه سایت (۱۵٪)
+      // (هزینه‌های اضافه دیگر از سود/حساب شرکا کم نمی‌شوند)
+      const netProfit = grossProfit - totalDiscount - totalSiteCost;
       // سهم سودِ هر شریک = نصف سود خالص
       const profitShare = Math.round(netProfit / 2);
 
@@ -188,6 +198,9 @@ class partnerController extends controller {
           totalProductDiscount,
           totalSiteCost,
           totalExpenses,
+          settledExpenses,
+          pendingExpenses,
+          siteCostBalance,
           netProfit,
           totalTax,
         },
@@ -220,7 +233,6 @@ class partnerController extends controller {
       const orders = await basketModel
         .find({ status: "paid" })
         .populate("items.product", "title image darsad");
-      const expenses = await expenseModel.find().sort({ createdAt: 1 });
       const settlements = await settlementModel
         .find({ partner: pk })
         .sort({ createdAt: 1 });
@@ -310,16 +322,8 @@ class partnerController extends controller {
         }
       });
 
-      // سهم هزینه‌های اضافه (نصف برای هر شریک)
-      expenses.forEach((e) => {
-        entries.push({
-          date: e.createdAt,
-          sign: -1,
-          amount: Math.round((e.amount || 0) / 2),
-          reason: "سهم هزینه: " + e.title,
-          product: "—",
-        });
-      });
+      // توجه: هزینه‌های اضافه از پولِ «هزینه سایت» کسر می‌شوند و دیگر از
+      // دفترحساب/سهم شرکا کم نمی‌شوند (طبق تصمیم مدیریت).
 
       // تسویه‌ها = برداشت از کیف شریک
       settlements.forEach((s) => {
@@ -401,6 +405,30 @@ class partnerController extends controller {
       await expenseModel.findByIdAndDelete(req.params.id);
       return this.alertAndBack(req, res, {
         title: "هزینه حذف شد",
+        icon: "success",
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // علامت‌گذاریِ هزینه به‌عنوان تسویه‌شده/پرداخت‌شده (بدون حذف رکورد).
+  // قابل برگشت است تا اگر اشتباه زده شد بتوان لغو کرد؛ هیچ داده‌ای پاک نمی‌شود.
+  async settleExpense(req, res, next) {
+    try {
+      const expense = await expenseModel.findById(req.params.id);
+      if (!expense)
+        return this.alertAndBack(req, res, {
+          title: "هزینه یافت نشد",
+          icon: "error",
+        });
+
+      expense.settled = !expense.settled;
+      expense.settledAt = expense.settled ? new Date() : null;
+      await expense.save();
+
+      return this.alertAndBack(req, res, {
+        title: expense.settled ? "هزینه تسویه شد" : "تسویه لغو شد",
         icon: "success",
       });
     } catch (err) {
