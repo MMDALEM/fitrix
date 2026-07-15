@@ -313,7 +313,7 @@
                     </div>
                     <div class="slider-modal">
                         <div class="flex w-full h-fit items-center justify-between">
-                            <h1 class="font-DanaMedium text-lg"><%= product.title %></h1>
+                            <p class="font-DanaMedium text-lg"><%= product.title %></p>
                             <svg class="size-6 cursor-pointer close-sliderModal"><use href="#x-mark"></use></svg>
                         </div>
                         <div class="swiper ProductDetailsSlider mt-14 px-10 w-96 relative">
@@ -350,7 +350,7 @@
                         </div>
 
                         <div class="flex flex-col gap-y-3">
-                            <p class="text-lg font-DanaDemiBold dark:text-gray-300"><%= product.title %></p>
+                            <h1 class="text-lg font-DanaDemiBold dark:text-gray-300"><%= product.title %></h1>
                             <p class="text-sm text-gray-300 dark:text-gray-500"><%= product.description %></p>
                         </div>
 
@@ -766,22 +766,37 @@
 </script>
 
 <!-- Structured Data: Product + Breadcrumb -->
+<%
+  // مقادیر داخل JSON-LD باید JSON-safe باشند: هر گیومه/خط‌جدید/بک‌اسلش در
+  // عنوان یا توضیحاتِ محصول می‌تواند کل structured data را بشکند و rich result
+  // گوگل را از کار بیندازد. j() مقدار را به یک رشته‌ی معتبرِ JSON (همراه با
+  // گیومه) تبدیل می‌کند و <\/script> را هم خنثی می‌کند.
+  var j = function (v) {
+    return JSON.stringify(String(v == null ? "" : v)).replace(/</g, "\\u003c");
+  };
+  var _ldDesc = (product.description || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 300);
+  var _ldPrice = ((product.onSale && product.salePrice ? product.salePrice : product.priceSingle) || 0) * 10;
+%>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Product",
-  "name": "<%= product.title %>",
-  "image": "<%= siteUrl + product.image %>",
-  "description": "<%= (product.description || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300) %>",
-  "sku": "<%= product._id %>",
+  "name": <%- j(product.title) %>,
+  "image": <%- j(siteUrl + product.image) %>,
+  "description": <%- j(_ldDesc) %>,
+  "sku": <%- j(product._id) %>,
   <% if (product.brand && product.brand.title) { %>
-  "brand": { "@type": "Brand", "name": "<%= product.brand.title %>" },
+  "brand": { "@type": "Brand", "name": <%- j(product.brand.title) %> },
   <% } %>
   "offers": {
     "@type": "Offer",
-    "url": "<%= siteUrl %>/product/<%= product.slug %>",
+    "url": <%- j(siteUrl + "/product/" + product.slug) %>,
     "priceCurrency": "IRR",
-    "price": "<%= ((product.onSale && product.salePrice ? product.salePrice : product.priceSingle) || 0) * 10 %>",
+    "price": "<%= _ldPrice %>",
     "availability": "<%= product.quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' %>"
   }
 }
@@ -791,13 +806,13 @@
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "صفحه اصلی", "item": "<%= siteUrl %>/" },
-    { "@type": "ListItem", "position": 2, "name": "فروشگاه", "item": "<%= siteUrl %>/shop" },
+    { "@type": "ListItem", "position": 1, "name": "صفحه اصلی", "item": <%- j(siteUrl + "/") %> },
+    { "@type": "ListItem", "position": 2, "name": "فروشگاه", "item": <%- j(siteUrl + "/shop") %> },
     <% if (product.category && product.category.title) { %>
-    { "@type": "ListItem", "position": 3, "name": "<%= product.category.title %>", "item": "<%= siteUrl %>/shop?category=<%= product.category.slug %>" },
-    { "@type": "ListItem", "position": 4, "name": "<%= product.title %>" }
+    { "@type": "ListItem", "position": 3, "name": <%- j(product.category.title) %>, "item": <%- j(siteUrl + "/shop?category=" + product.category.slug) %> },
+    { "@type": "ListItem", "position": 4, "name": <%- j(product.title) %> }
     <% } else { %>
-    { "@type": "ListItem", "position": 3, "name": "<%= product.title %>" }
+    { "@type": "ListItem", "position": 3, "name": <%- j(product.title) %> }
     <% } %>
   ]
 }

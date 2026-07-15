@@ -23,12 +23,36 @@ const create =
 
 module.exports = class Application {
   constructor() {
+    this.installProcessGuards();
     this.configServer();
     this.createServer();
     this.createMongodb();
     this.exchangeRate();
     this.createRoutes();
     this.errorHandler();
+  }
+
+  // شبکه‌ی ایمنیِ سراسری. یک خطای async ِ مدیریت‌نشده (قطعیِ لحظه‌ایِ
+  // دیتابیس، تایم‌اوتِ یک API بیرونی مثل نرخِ ارز/پیامک/درگاه، و ...) به‌طور
+  // پیش‌فرض کلِ پروسه‌ی Node را می‌کُشد. با max_restarts محدودِ PM2 این یعنی
+  // چند کرشِ پشت‌سرهم و سپس «از دسترس خارج شدنِ» کاملِ سایت — که برای سئو
+  // فاجعه است. این هندلرها خطا را ثبت می‌کنند اما پروسه را زنده نگه می‌دارند.
+  installProcessGuards() {
+    const { logError } = require("./utils/logError");
+    process.on("unhandledRejection", (reason) => {
+      console.error("UnhandledRejection:", reason);
+      try {
+        logError(reason instanceof Error ? reason : new Error(String(reason)), {
+          source: "unhandledRejection",
+        });
+      } catch {}
+    });
+    process.on("uncaughtException", (err) => {
+      console.error("UncaughtException:", err);
+      try {
+        logError(err, { source: "uncaughtException" });
+      } catch {}
+    });
   }
 
   configServer() {
@@ -86,7 +110,13 @@ module.exports = class Application {
   }
 
   createMongodb() {
-    mongoose.connect(DATABASE_MONGODB_URL, { autoIndex: true });
+    // خطای اتصالِ اولیه نباید unhandledRejection بسازد؛ Mongoose خودش کوئری‌ها
+    // را بافر و اتصال را به‌صورت خودکار دوباره برقرار می‌کند.
+    mongoose
+      .connect(DATABASE_MONGODB_URL, { autoIndex: true })
+      .catch((e) =>
+        console.error("خطای اتصالِ اولیه به MongoDB (تلاش مجدد خودکار):", e.message),
+      );
     mongoose.set("strictPopulate", true);
     mongoose.set("strictQuery", true);
     mongoose.connection.on("connected", async () => {
@@ -147,12 +177,32 @@ module.exports = class Application {
         require("./utils/logError").logError(error, { source: "server", req, status });
       }
 
-      // برای درخواست‌های مرورگر، صفحه‌ی ۴۰۴ واقعی (کد وضعیت درست برای سئو)
+      // برای درخواست‌های مرورگر، صفحه‌ی ۴۰۴ واقعی (کد وضعیت درست برای سئو).
+      // اگر خودِ رندرِ قالب هم بشکند، به یک صفحه‌ی ساده‌ی امن برمی‌گردیم تا هرگز
+      // خطای مدیریت‌نشده رخ ندهد.
       if (status === 404 && req.accepts("html")) {
-        return res.status(404).render("home/404", {
-          pageTitle: "صفحه پیدا نشد",
-          noindex: true,
-        });
+        return res
+          .status(404)
+          .render("home/404", { pageTitle: "صفحه پیدا نشد", noindex: true }, (renderErr, html) => {
+            if (renderErr) {
+              console.error("404 render failed:", renderErr.message);
+              return res
+                .status(404)
+                .type("html")
+                .send(
+                  '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8">' +
+                    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+                    '<meta name="robots" content="noindex"><title>صفحه پیدا نشد</title>' +
+                    "<style>body{font-family:Tahoma,sans-serif;background:#f8fafc;color:#1f2937;" +
+                    "display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}" +
+                    ".box{text-align:center;padding:2rem}.box h1{font-size:3.2rem;margin:0 0 .5rem;" +
+                    "color:#2563eb}a{color:#2563eb;text-decoration:none}</style></head><body>" +
+                    '<div class="box"><h1>۴۰۴</h1><p>صفحه‌ای که دنبالش بودید پیدا نشد.</p>' +
+                    '<a href="/">بازگشت به صفحه اصلی</a></div></body></html>',
+                );
+            }
+            res.send(html);
+          });
       }
 
       // خطای سرور روی صفحه‌ی مرورگر → صفحه‌ی خطای دوستانه (نه JSON خام)

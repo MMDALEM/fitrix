@@ -307,9 +307,11 @@
                     </a>
 
                     <div class="space-y-2">
-                        <a href="/product/<%= product.slug %>" class="product-card_link">
-                            <%= product.title %>
-                        </a>
+                        <h3 class="product-card_title">
+                            <a href="/product/<%= product.slug %>" class="product-card_link">
+                                <%= product.title %>
+                            </a>
+                        </h3>
                         
                         <% if (product.brand) { %>
                         <p class="text-xs text-gray-400"><%= product.brand.title %></p>
