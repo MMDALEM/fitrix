@@ -1,0 +1,30 @@
+<main class="container mt-8 mb-16" style="max-width:48rem;margin-inline:auto">
+    <h1 class="text-2xl font-DanaDemiBold mb-6">برنامه‌های من</h1>
+    <% if (!plans || !plans.length){ %>
+        <div class="text-center py-16 text-gray-500">
+            <p class="mb-5">هنوز برنامه‌ای نساخته‌ای.</p>
+            <a href="/program" class="prg-btn prg-btn-primary" style="width:auto;display:inline-flex;padding:.7rem 1.6rem">ساختِ برنامه‌ی جدید</a>
+        </div>
+    <% } else { %>
+        <div class="space-y-3">
+            <% plans.forEach(function(p){ %>
+            <div class="flex items-center justify-between gap-3 p-4 rounded-xl border dark:border-gray-700 hover:border-blue-400 transition-all bg-white dark:bg-gray-900">
+                <a href="/program/<%= p._id %>" class="flex-1 min-w-0">
+                    <p class="font-DanaDemiBold truncate"><%= p.title || 'برنامه‌ی اختصاصی' %></p>
+                    <span class="text-xs px-2 py-0.5 rounded-full <%= p.unlocked ? 'bg-blue-100 text-blue-700' : 'bg-sky-100 text-sky-700' %>"><%= p.unlocked ? 'باز شده (کامل)' : 'پیش‌نمایش — قابلِ بازکردن' %></span>
+                </a>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <% if (p.unlocked){ %>
+                    <a href="/program/<%= p._id %>/pdf" class="inline-flex items-center gap-1 text-xs font-DanaMedium py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:.9rem;height:.9rem"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                        PDF
+                    </a>
+                    <% } %>
+                    <a href="/program/<%= p._id %>"><svg class="size-5 text-gray-400 rtl:rotate-180"><use href="#chevron-left" /></svg></a>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+        <a href="/program" class="inline-block mt-6 prg-btn prg-btn-primary" style="width:auto;padding:.7rem 1.6rem">ساختِ برنامه‌ی جدید</a>
+    <% } %>
+</main>

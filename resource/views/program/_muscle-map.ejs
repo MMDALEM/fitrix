@@ -1,0 +1,79 @@
+<!-- کاوشگرِ عضلات — روی هر عضله کلیک کن تا نام و توضیحش بیاید -->
+<div class="mm prg-card pad">
+    <div class="mm-head">
+        <div>
+            <h3 class="mm-title">کاوشگرِ عضلات</h3>
+            <p class="prg-sub">روی هر عضله بزن تا نام و نکته‌ی تمرینی‌اش را ببینی.</p>
+        </div>
+        <div class="mm-toggle" id="mmToggle">
+            <button type="button" data-sex="male" class="is-active">آقا</button>
+            <button type="button" data-sex="female">خانم</button>
+        </div>
+    </div>
+
+    <div class="mm-body">
+        <div class="mm-figure">
+            <svg class="mm-svg" viewBox="0 0 320 620" id="mmSvg" xmlns="http://www.w3.org/2000/svg" aria-label="نقشه‌ی عضلات">
+                <defs>
+                    <linearGradient id="mmGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#2563eb"/>
+                        <stop offset="0.55" stop-color="#7c3aed"/>
+                        <stop offset="1" stop-color="#db2777"/>
+                    </linearGradient>
+                </defs>
+                <!-- موی خانم (پشتِ سر) — با تعویض نمایش داده می‌شود -->
+                <path class="mm-hair" d="M120 44 Q118 120 128 168 L140 150 Q135 90 160 74 Q185 90 180 150 L192 168 Q202 120 200 44 Q160 8 120 44 Z"/>
+                <!-- سیلوئتِ پایه -->
+                <g class="mm-base">
+                    <ellipse cx="160" cy="52" rx="27" ry="33"/>
+                    <path d="M150 84 h20 v16 h-20 Z"/>
+                    <!-- تنه -->
+                    <path d="M108 118 Q160 104 212 118 Q224 170 214 214 Q208 250 200 300 Q196 330 190 356 L130 356 Q124 330 120 300 Q112 250 106 214 Q96 170 108 118 Z"/>
+                    <!-- بازوها -->
+                    <path d="M108 122 Q84 132 78 176 Q74 214 70 250 Q68 276 74 300 L92 298 Q92 262 96 230 Q102 186 116 150 Z"/>
+                    <path d="M212 122 Q236 132 242 176 Q246 214 250 250 Q252 276 246 300 L228 298 Q228 262 224 230 Q218 186 204 150 Z"/>
+                    <!-- ساعد تا دست -->
+                    <path d="M74 300 Q70 340 66 372 Q64 392 72 402 L86 398 Q88 360 92 322 L92 298 Z"/>
+                    <path d="M246 300 Q250 340 254 372 Q256 392 248 402 L234 398 Q232 360 228 322 L228 298 Z"/>
+                    <!-- پاها -->
+                    <path d="M130 356 h60 q4 60 -2 120 q-4 60 -10 110 q-4 26 -8 74 l-22 0 q-4 -60 -8 -140 q-4 60 -8 140 l-22 0 q-4 -48 -8 -74 q-6 -50 -10 -110 q-6 -60 -2 -120 Z"/>
+                </g>
+
+                <!-- عضلاتِ قابلِ کلیک (روی سیلوئت) -->
+                <g class="mm-muscles">
+                    <!-- کول/گردن -->
+                    <path class="mm-m" data-key="traps" d="M132 108 Q160 96 188 108 Q176 122 160 122 Q144 122 132 108 Z"/>
+                    <!-- سرشانه -->
+                    <ellipse class="mm-m" data-key="shoulders" cx="110" cy="132" rx="22" ry="18"/>
+                    <ellipse class="mm-m" data-key="shoulders" cx="210" cy="132" rx="22" ry="18"/>
+                    <!-- سینه -->
+                    <path class="mm-m" data-key="chest" d="M128 132 Q158 128 158 128 L158 178 Q140 184 124 172 Q120 148 128 132 Z"/>
+                    <path class="mm-m" data-key="chest" d="M192 132 Q162 128 162 128 L162 178 Q180 184 196 172 Q200 148 192 132 Z"/>
+                    <!-- جلوبازو -->
+                    <ellipse class="mm-m" data-key="biceps" cx="92" cy="188" rx="15" ry="30"/>
+                    <ellipse class="mm-m" data-key="biceps" cx="228" cy="188" rx="15" ry="30"/>
+                    <!-- ساعد -->
+                    <ellipse class="mm-m" data-key="forearms" cx="80" cy="340" rx="12" ry="34"/>
+                    <ellipse class="mm-m" data-key="forearms" cx="240" cy="340" rx="12" ry="34"/>
+                    <!-- شکم -->
+                    <path class="mm-m" data-key="abs" d="M144 186 h32 q6 40 0 90 q-16 14 -32 0 q-6 -50 0 -90 Z"/>
+                    <!-- پهلو -->
+                    <path class="mm-m" data-key="obliques" d="M132 196 q-8 40 4 74 q-10 -6 -14 -30 q-4 -26 10 -44 Z"/>
+                    <path class="mm-m" data-key="obliques" d="M188 196 q8 40 -4 74 q10 -6 14 -30 q4 -26 -10 -44 Z"/>
+                    <!-- چهارسر ران -->
+                    <path class="mm-m" data-key="quads" d="M132 366 q-6 70 4 130 q-18 -8 -22 -70 q-4 -44 18 -60 Z"/>
+                    <path class="mm-m" data-key="quads" d="M188 366 q6 70 -4 130 q18 -8 22 -70 q4 -44 -18 -60 Z"/>
+                    <!-- ساق پا -->
+                    <ellipse class="mm-m" data-key="calves" cx="132" cy="536" rx="13" ry="34"/>
+                    <ellipse class="mm-m" data-key="calves" cx="188" cy="536" rx="13" ry="34"/>
+                </g>
+            </svg>
+        </div>
+
+        <div class="mm-info" id="mmInfo" aria-live="polite">
+            <span class="mm-info-badge">راهنما</span>
+            <h4 class="mm-info-title">یک عضله را انتخاب کن</h4>
+            <p class="mm-info-text">با کلیک روی هر عضله در تصویر، نام، نقش و بهترین حرکاتِ تمرینیِ آن این‌جا نمایش داده می‌شود.</p>
+        </div>
+    </div>
+</div>

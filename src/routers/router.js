@@ -19,6 +19,20 @@ router.use("/shop", verifyTokenPublic, shopRouter);
 const consultRouter = require("./consult/consult.route");
 router.use("/consult", consultRouter);
 
+const programRouter = require("./program/program.route");
+router.use("/program", verifyUser, programRouter);
+
+// بدن‌شناسی — نقشه‌ی تعاملیِ عضلات + تفاوتِ تیپ‌های بدنی (عمومی، برای سئو)
+router.get("/anatomy", (req, res) => {
+  const siteUrl = `${req.protocol}://${req.get("host")}`;
+  res.render("anatomy/index", {
+    pageTitle: "بدن‌شناسی و آناتومی عضلات",
+    metaDescription:
+      "نقشه‌ی تعاملیِ عضلاتِ بدن (آقا و خانم) و تفاوتِ تیپ‌های بدنی اکتومورف، مزومورف و اندومورف — آموزشِ رایگانِ فیت‌ریکس.",
+    canonicalUrl: `${siteUrl}/anatomy`,
+  });
+});
+
 const basketRouter = require("./shop/basket.route");
 router.use("/basket", checkBasketAccess, basketRouter);
 

@@ -1,0 +1,98 @@
+/* ==========================================================================
+   بدن‌شناسی — نقشه‌ی عضلاتِ تعاملی + تفاوتِ تیپ‌های بدنی
+   بر پایه‌ی body-map.css (کلاس‌های .body-map__*) + استایلِ صفحه
+   ========================================================================== */
+.an-wrap { max-width: 68rem; margin-inline: auto; }
+.an-anim { opacity: 0; transform: translateY(16px); animation: anUp .55s cubic-bezier(.22,1,.36,1) forwards; }
+@keyframes anUp { to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce){ .an-anim{ animation:none; opacity:1; transform:none; } }
+
+.an-hero { position: relative; overflow: hidden; color: #fff; border-radius: 1.4rem; padding: 1.9rem;
+    background: linear-gradient(135deg, #0f172a, #2563eb 60%, #1d4ed8);
+    box-shadow: 0 22px 50px -14px rgba(37,99,235,.45); }
+.an-hero h1 { font-size: 1.7rem; font-weight: 800; margin-bottom: .5rem; }
+@media (min-width:768px){ .an-hero h1{ font-size: 2rem; } }
+.an-hero p { opacity: .95; line-height: 1.9; font-size: .95rem; max-width: 40rem; }
+
+/* تعویضِ آقا/خانم و جلو/پشت */
+.an-toggle { display: inline-flex; background: #eef2f7; border-radius: 99px; padding: 3px; gap: 2px; }
+.dark .an-toggle { background: #1e293b; }
+.an-toggle button { border: none; background: transparent; padding: .5rem 1.3rem; border-radius: 99px; font-weight: 700;
+    cursor: pointer; color: #64748b; transition: .2s; }
+.an-toggle button.is-active { background: #fff; color: #2563eb; box-shadow: 0 4px 12px -4px rgba(0,0,0,.15); }
+.dark .an-toggle button.is-active { background: #0f172a; color: #93c5fd; }
+.an-controls { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin: 1.2rem 0; }
+
+.an-stage { display: grid; grid-template-columns: 1fr; gap: 1.5rem; align-items: start; }
+@media (min-width: 860px){ .an-stage { grid-template-columns: 1fr 20rem; } }
+
+/* نقشه */
+.an-maps { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;
+    background: radial-gradient(120% 80% at 50% 0%, rgba(37,99,235,.06), transparent 70%); border-radius: 1.2rem; padding: 1rem; }
+.body-map { padding: 0; }
+.body-map__container { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; }
+.body-map__body { height: 30rem; }
+@media (min-width: 640px){ .body-map__body { height: 34rem; } }
+/* کلِ بلاکِ هر جنسیت با هم مخفی/نمایش می‌شود (جلو + پشت) */
+.an-sex-map[data-sex="female"] { display: none; }
+.an-sex-map { width: 100%; }
+
+/* رنگِ بدن و عضلات (currentColor روی path ها) */
+.body-map__model { color: #334155; }
+.dark .body-map__model { color: #cbd5e1; }
+.body-map__muscle { color: #dbe3ec; transition: color .12s ease-in-out; cursor: pointer; }
+.dark .body-map__muscle { color: #3a475b; }
+.body-map__muscle:hover { color: #38bdf8; }
+.body-map__muscle.is-active { color: #1d4ed8; }
+
+/* پنلِ اطلاعات */
+.an-info { position: sticky; top: 1rem; border: 1px solid #eef2f7; border-radius: 1.1rem; background: #fff; padding: 1.3rem; }
+.dark .an-info { background: #0f1729; border-color: #1e293b; }
+.an-info-badge { display: inline-block; font-size: .68rem; font-weight: 800; letter-spacing: .04em; color: #1d4ed8;
+    background: rgba(29,78,216,.1); padding: .2rem .6rem; border-radius: 99px; margin-bottom: .7rem; }
+.an-info-title { font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: .5rem; }
+.dark .an-info-title { color: #e2e8f0; }
+.an-info-text { color: #64748b; font-size: .92rem; line-height: 1.9; }
+.dark .an-info-text { color: #94a3b8; }
+.an-info-ex { margin-top: .9rem; display: flex; flex-wrap: wrap; gap: .4rem; }
+.an-info-ex span { font-size: .78rem; font-weight: 700; background: #eff6ff; color: #2563eb; border-radius: .5rem; padding: .25rem .6rem; }
+.dark .an-info-ex span { background: #172033; color: #93c5fd; }
+.an-info.pop { animation: anPop .35s ease; }
+@keyframes anPop { from { opacity:.3; transform: translateY(6px);} to { opacity:1; transform:none; } }
+
+/* تفاوتِ تیپ‌های بدنی */
+.an-sec-title { font-size: 1.3rem; font-weight: 800; margin: 2.5rem 0 1.2rem; text-align: center; color: #0f172a; }
+.dark .an-sec-title { color: #e2e8f0; }
+.an-types { display: grid; grid-template-columns: 1fr; gap: 1.1rem; }
+@media (min-width: 800px){ .an-types { grid-template-columns: repeat(3, 1fr); } }
+.an-type { border: 1px solid #eef2f7; border-radius: 1.1rem; background: #fff; padding: 1.4rem; transition: transform .2s, box-shadow .2s; }
+.dark .an-type { background: #0f1729; border-color: #1e293b; }
+.an-type:hover { transform: translateY(-4px); box-shadow: 0 22px 44px -20px rgba(2,6,23,.28); }
+.an-type-ic { width: 3rem; height: 3rem; border-radius: .8rem; display: grid; place-items: center; margin-bottom: .8rem;
+    background: linear-gradient(135deg, rgba(37,99,235,.14), rgba(29,78,216,.14)); }
+.an-type-ic svg { width: 1.6rem; height: 1.6rem; stroke: #1d4ed8; fill: none; stroke-width: 1.6; }
+.an-type h3 { font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: .15rem; }
+.dark .an-type h3 { color: #e2e8f0; }
+.an-type .lat { font-size: .78rem; color: #94a3b8; margin-bottom: .7rem; }
+.an-type p { font-size: .9rem; color: #64748b; line-height: 1.9; margin-bottom: .8rem; }
+.dark .an-type p { color: #94a3b8; }
+.an-type-row { display: flex; gap: .5rem; align-items: flex-start; font-size: .86rem; margin: .4rem 0; color: #334155; }
+.dark .an-type-row { color: #cbd5e1; }
+.an-type-row b { color: #2563eb; white-space: nowrap; }
+
+/* ---- موبایل: پنلِ اطلاعات به‌صورتِ بات‌شیت (تا کاربر همان‌جا ببیند) ---- */
+.an-info-close { display: none; }
+@media (max-width: 859px) {
+    .an-info {
+        position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 60;
+        border-radius: 1.2rem 1.2rem 0 0; border: none; box-shadow: 0 -12px 40px -12px rgba(0,0,0,.35);
+        transform: translateY(110%); transition: transform .3s cubic-bezier(.22,1,.36,1);
+        max-height: 70vh; overflow-y: auto; padding-top: 1.6rem;
+    }
+    .an-info.show { transform: translateY(0); }
+    .an-info-close { display: grid; place-items: center; position: absolute; top: .7rem; left: .9rem;
+        width: 2rem; height: 2rem; border-radius: 99px; border: none; background: #eef2f7; color: #334155; cursor: pointer; font-size: 1rem; }
+    .dark .an-info-close { background: #1e293b; color: #cbd5e1; }
+    .an-info::before { content: ""; position: absolute; top: .55rem; left: 50%; transform: translateX(-50%);
+        width: 2.6rem; height: .3rem; border-radius: 99px; background: #cbd5e1; }
+}

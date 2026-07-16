@@ -1,0 +1,144 @@
+<% var unlocked = !!plan.unlocked; %>
+<main class="container mt-8 mb-16">
+    <div class="prg-wrap">
+        <!-- HERO -->
+        <div class="prg-hero prg-anim mb-6">
+            <span class="prg-orb"></span>
+            <div class="prg-fig-wrap"><%- include('_figure', { figGender: plan.gender }) %></div>
+            <span class="prg-kicker"><%= unlocked ? 'برنامه‌ی کاملِ تو' : 'پیش‌نمایشِ برنامه' %></span>
+            <h1 class="prg-h1"><%= plan.title || 'برنامه‌ی اختصاصی من' %></h1>
+            <% if (plan.summary){ %><p style="opacity:.95;font-size:.95rem;line-height:1.9;margin-bottom:1rem;max-width:34rem"><%= plan.summary %></p><% } %>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+                <% var stats=[[plan.metrics.calories,'کالری'],[plan.metrics.protein+'g','پروتئین'],[plan.metrics.carb+'g','کربوهیدرات'],[plan.metrics.fat+'g','چربی'],[plan.metrics.bmi,'BMI']]; %>
+                <% stats.forEach(function(st){ %>
+                <div style="background:rgba(255,255,255,.16);border-radius:.7rem;padding:.5rem .8rem;text-align:center;min-width:4.6rem">
+                    <b style="display:block;font-weight:800"><%= (typeof st[0]==='number'? Number(st[0]).toLocaleString('fa-IR') : st[0]) %></b>
+                    <span style="font-size:.72rem;opacity:.9"><%= st[1] %></span>
+                </div>
+                <% }) %>
+            </div>
+            <% if (unlocked){ %>
+            <a href="/program/<%= plan._id %>/pdf" class="prg-pdf-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1.1rem;height:1.1rem"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                دانلود PDF برنامه
+            </a>
+            <% } %>
+        </div>
+
+        <!-- WEEKLY PLAN -->
+        <div class="prg-sec-title">برنامه‌ی تمرین</div>
+        <div class="space-y-4">
+            <% plan.weeklyPlan.forEach(function(day, i){ %>
+                <% var locked = !unlocked && i > 0; %>
+                <div class="prg-day prg-anim <%= locked ? 'prg-lock' : '' %>" style="animation-delay:<%= (0.04*i).toFixed(2) %>s">
+                    <div class="<%= locked ? 'prg-blur' : '' %>">
+                        <div class="prg-day-head"><%= day.day || ('روز ' + (i+1)) %><% if (day.focus){ %> <small>— <%= day.focus %></small><% } %></div>
+                        <% (day.exercises || []).forEach(function(ex){ %>
+                        <div class="prg-ex">
+                            <div>
+                                <p class="prg-ex-name"><%= ex.name %></p>
+                                <% if (ex.note){ %><p class="prg-ex-note"><%= ex.note %></p><% } %>
+                            </div>
+                            <div class="prg-tags">
+                                <% if (ex.sets){ %><span class="prg-tag"><%= ex.sets %> ست</span><% } %>
+                                <% if (ex.reps){ %><span class="prg-tag"><%= ex.reps %> تکرار</span><% } %>
+                                <% if (ex.rest){ %><span class="prg-tag">استراحت <%= ex.rest %></span><% } %>
+                            </div>
+                        </div>
+                        <% }) %>
+                    </div>
+                    <% if (locked){ %>
+                    <div class="prg-over">
+                        <p class="prg-over-title">این روز در نسخه‌ی کامل باز می‌شود</p>
+                        <a href="#unlock" class="prg-unlock">مشاهده‌ی نسخه‌ی کامل</a>
+                    </div>
+                    <% } %>
+                </div>
+            <% }) %>
+        </div>
+
+        <% if (unlocked){ %>
+            <!-- NUTRITION -->
+            <% if (plan.nutrition){ %>
+            <div class="prg-sec-title">برنامه‌ی تغذیه</div>
+            <div class="prg-sec prg-anim">
+                <% if (plan.nutrition.overview){ %><p style="font-size:.92rem;line-height:1.9;margin-bottom:1rem;color:var(--prg-muted)"><%= plan.nutrition.overview %></p><% } %>
+                <% (plan.nutrition.meals || []).forEach(function(meal){ %>
+                <div class="prg-meal">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+                        <h4><%= meal.name %></h4>
+                        <% if (meal.calories){ %><span class="prg-tag"><%= meal.calories %></span><% } %>
+                    </div>
+                    <ul class="prg-list"><% (meal.items || []).forEach(function(it){ %><li><%= it %></li><% }) %></ul>
+                    <% if (meal.note){ %><p class="prg-ex-note" style="margin-top:.35rem"><%= meal.note %></p><% } %>
+                </div>
+                <% }) %>
+                <% if (plan.nutrition.tips && plan.nutrition.tips.length){ %>
+                <div style="margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--prg-border)">
+                    <h4 style="font-weight:800;margin-bottom:.35rem">نکته‌ها</h4>
+                    <ul class="prg-list"><% plan.nutrition.tips.forEach(function(t){ %><li><%= t %></li><% }) %></ul>
+                </div>
+                <% } %>
+            </div>
+            <% } %>
+
+            <!-- SUPPLEMENTS -->
+            <% if (plan.supplements && plan.supplements.length){ %>
+            <div class="prg-sec-title">مکمل‌های پیشنهادی</div>
+            <div class="prg-sec prg-anim">
+                <% plan.supplements.forEach(function(sp){ %>
+                <div class="prg-supp">
+                    <div>
+                        <a href="/product/<%= sp.slug %>" class="t"><%= sp.title %></a>
+                        <% if (sp.reason){ %><p class="prg-ex-note"><%= sp.reason %></p><% } %>
+                    </div>
+                    <a href="/product/<%= sp.slug %>" class="prg-buy">مشاهده و خرید</a>
+                </div>
+                <% }) %>
+            </div>
+            <% } %>
+
+            <!-- Q&A -->
+            <div class="prg-sec-title">سوال درباره‌ی برنامه</div>
+            <div class="prg-sec prg-anim">
+                <div id="qaList">
+                    <% (plan.qa || []).forEach(function(item){ %>
+                    <div class="prg-qa-item"><p class="prg-qa-q"><%= item.q %></p><div class="prg-qa-a"><%= item.a %></div></div>
+                    <% }) %>
+                </div>
+                <form id="qaForm" class="prg-ask" data-id="<%= plan._id %>">
+                    <input class="prg-field" id="qaInput" type="text" maxlength="1000" placeholder="مثلاً: اگر یک روز نتوانم به باشگاه بروم چه کنم؟" required>
+                    <button class="prg-buy" type="submit" style="padding:.5rem 1.2rem">بپرس</button>
+                </form>
+                <p class="prg-hint" style="margin-top:.5rem">تا ۲۰ سوال برای این برنامه.</p>
+            </div>
+        <% } else { %>
+            <!-- PAYWALL: بازکردنِ نسخه‌ی کامل -->
+            <div id="unlock" class="prg-paywall prg-anim" style="margin-top:1.5rem">
+                <h3>نسخه‌ی کاملِ برنامه‌ات آماده است</h3>
+                <p class="prg-sub" style="margin-bottom:1rem">با باز کردنِ برنامه، همه‌ی این‌ها فعال می‌شود:</p>
+                <div class="prg-benefits" style="text-align:right;margin-bottom:1.2rem">
+                    <div class="prg-benefit"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>
+                        <div><b>کلِ روزهای تمرین</b><span>برنامه‌ی کاملِ هفته با جزئیات</span></div></div>
+                    <div class="prg-benefit"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>
+                        <div><b>برنامه‌ی تغذیه</b><span>با کالریِ هر وعده و بودجه‌ات</span></div></div>
+                    <div class="prg-benefit"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>
+                        <div><b>مکمل + پرسش‌وپاسخ</b><span>پیشنهادِ مکمل و مشاوره‌ی نامحدود</span></div></div>
+                </div>
+                <div style="margin-bottom:1rem">
+                    <% if (onSale){ %><span class="prg-strike"><%= Number(price).toLocaleString('fa-IR') %></span> <% } %>
+                    <span class="prg-price"><%= Number(effective).toLocaleString('fa-IR') %></span> <span>تومان</span>
+                </div>
+                <form action="/program/<%= plan._id %>/pay" method="POST" style="max-width:22rem;margin-inline:auto">
+                    <div class="prg-gw">
+                        <label><input type="radio" name="gateway" value="zarinpal" checked><span>زرین‌پال</span></label>
+                        <label><input type="radio" name="gateway" value="digipay"><span>دیجی‌پی</span></label>
+                    </div>
+                    <button class="prg-btn prg-btn-primary" type="submit">پرداخت و بازکردنِ برنامه‌ی کامل</button>
+                </form>
+            </div>
+        <% } %>
+
+        <p class="prg-disclaimer">این برنامه جایگزینِ پزشک یا متخصصِ تغذیه نیست؛ در صورتِ بیماری، بارداری یا سن زیر ۱۸ سال با متخصص مشورت کن.</p>
+    </div>
+</main>

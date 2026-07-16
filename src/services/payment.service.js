@@ -8,14 +8,15 @@
 // ───────────────────────────────────────────────────────────────
 const { ZarinPal } = require("zarinpal-node-sdk");
 
-const ZARINPAL_MERCHANT = process.env.ZARINPAL_MERCHANT_ID || "";
+const ZARINPAL_MERCHANT = process.env.ZARINPAL_MERCHANT_ID;
 const ZARINPAL_SANDBOX = process.env.ZARINPAL_SANDBOX;
 const ZARINPAL_BASE_URL_TEST = process.env.ZARINPAL_BASE_URL_TEST;
 const ZARINPAL_BASE_URL = process.env.ZARINPAL_BASE_URL;
-const DIGIPAY_USERNAME = process.env.DIGIPAY_USERNAME || "";
-const DIGIPAY_PASSWORD = process.env.DIGIPAY_PASSWORD || "";
-const DIGIPAY_CLIENT_ID = process.env.DIGIPAY_CLIENT_ID || "";
-const DIGIPAY_CLIENT_SECRET = process.env.DIGIPAY_CLIENT_SECRET || "";
+const DIGIPAY_STARTPAY = process.env.DIGIPAY_STARTPAY;
+const DIGIPAY_USERNAME = process.env.DIGIPAY_USERNAME;
+const DIGIPAY_PASSWORD = process.env.DIGIPAY_PASSWORD;
+const DIGIPAY_CLIENT_ID = process.env.DIGIPAY_CLIENT_ID;
+const DIGIPAY_CLIENT_SECRET = process.env.DIGIPAY_CLIENT_SECRET;
 const DIGIPAY_BASE_URL = process.env.DIGIPAY_BASE_URL;
 const DIGIPAY_BASE_URL_TEST = process.env.DIGIPAY_BASE_URL_TEST;
 
@@ -178,7 +179,13 @@ class PaymentService {
   }
 
   // مرحله‌ی تحویل — فقط برای تیکت‌های قسطی/اعتباری (CREDIT/BNPL) لازم است.
-  async digipayDeliver({ trackingCode, invoiceNumber, products, amount, type }) {
+  async digipayDeliver({
+    trackingCode,
+    invoiceNumber,
+    products,
+    amount,
+    type,
+  }) {
     const token = await this.digipayToken();
     const t = type || DIGIPAY_TYPE;
     const res = await fetch(
@@ -196,7 +203,8 @@ class PaymentService {
           invoiceNumber: String(invoiceNumber || trackingCode),
           deliveryDate: Date.now(),
           amount: Math.round((Number(amount) || 0) * 10), // ریال
-          products: Array.isArray(products) && products.length ? products : ["order"],
+          products:
+            Array.isArray(products) && products.length ? products : ["order"],
         }),
       },
     );

@@ -173,6 +173,9 @@
                                     </svg>
                                     <p class="text-xs">ارسال سریع</p>
                                 </span>
+                                <% if (product.quantity > 0 && saleActive(product)) { %>
+                                <span style="display:inline-flex;align-items:center;gap:.15rem;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;box-shadow:0 4px 10px rgba(239,68,68,.4)"><svg viewBox="0 0 24 24" style="width:.82rem;height:.82rem;fill:currentColor;flex:0 0 auto" aria-hidden="true"><path d="M13 2c.5 3-1.5 4.2-2.7 5.6C9 9 8 10.3 8 12.4A4.7 4.7 0 0 0 17.4 13c0-2.4-1.3-3.7-1.3-3.7-.2 1.2-1 1.7-1.6 1.7.8-2.6-.2-6.7-1.5-9Z"/></svg> <%= Number(product.salePercent).toLocaleString('fa-IR') %>٪ تخفیف</span>
+                                <% } %>
                             </div>
                             <!-- product img -->
                             <a href="/product/<%= product.slug %>">
@@ -188,12 +191,14 @@
                                         <% if (product.quantity <= 0) { %>
                                         <h4 class="flex items-center gap-x-1 text-lg text-gray-400 font-DanaMedium">ناموجود</h4>
                                         <% } else if (saleActive(product)) { %>
-                                        <span class="pt-1"><%= product.salePercent %>%</span>
-                                        <h4 class="flex items-center gap-x-1 text-lg"><%= (product.salePrice).toLocaleString() %> <p
-                                                class="text-xs font-DanaMedium">تومان</p>
-                                        </h4>
+                                        <div class="flex flex-col leading-tight">
+                                            <del style="font-size:.72rem;color:#9ca3af;text-decoration:line-through"><%= Number(product.priceSingle).toLocaleString('fa-IR') %> تومان</del>
+                                            <h4 class="flex items-center gap-x-1 text-lg" style="color:#ef4444;font-weight:800"><%= Number(product.salePrice).toLocaleString('fa-IR') %> <p
+                                                    class="text-xs font-DanaMedium">تومان</p>
+                                            </h4>
+                                        </div>
                                         <% } else { %>
-                                        <h4 class="flex items-center gap-x-1 text-lg"><%= (product.priceSingle).toLocaleString() %> <p
+                                        <h4 class="flex items-center gap-x-1 text-lg"><%= Number(product.priceSingle).toLocaleString('fa-IR') %> <p
                                                 class="text-xs font-DanaMedium">تومان</p>
                                         </h4>
                                         <% } %>

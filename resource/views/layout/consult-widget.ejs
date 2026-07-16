@@ -192,7 +192,7 @@
             <div class="fx-head-sub">راهنمای انتخاب مکمل — رایگان</div>
         </div>
         <div style="display:flex;gap:6px;">
-            <button id="fxConsultReset" style="font-size:28px; color: #dc2626; font-weight: bold;" title="پایان گفتگو و پاک کردن" aria-label="پاک کردن گفتگو">🗑</button>
+            <button id="fxConsultReset" style="color: #dc2626; display:inline-flex;align-items:center;" title="پایان گفتگو و پاک کردن" aria-label="پاک کردن گفتگو"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg></button>
             <button id="fxConsultClose" style="font-size:22px; margin-right: 10px; color: #fff; font-weight: 400;"  aria-label="بستن">✕</button>
         </div>
     </div>
@@ -224,7 +224,7 @@
     var sendBtn = document.getElementById("fxConsultSend");
     var suggests = document.getElementById("fxConsultSuggests");
 
-    var GREETING = "سلام! 👋 من مشاور فیت‌ریکسم 😊 بگو هدفت چیه — عضله‌سازی، کاهش وزن، انرژی بیشتر یا ریکاوری — تا بهترین مکمل رو برات پیدا کنم 💪";
+    var GREETING = "سلام، من مشاورِ فیت‌ریکسم. بگو هدفت چیه — عضله‌سازی، کاهش وزن، انرژی بیشتر یا ریکاوری — تا بهترین مکمل رو برات پیدا کنم.";
     var STORE_KEY = "fx_consult_history";
     var busy = false;
 

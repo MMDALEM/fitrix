@@ -1,0 +1,157 @@
+<main class="container mt-8 mb-16">
+    <nav class="flex mb-6 text-sm text-gray-500" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-blue-600">صفحه اصلی</a>
+        <span class="mx-2">/</span>
+        <span class="text-blue-500">برنامه‌ساز هوشمند</span>
+    </nav>
+
+    <div class="prg-wrap" style="max-width:44rem">
+        <!-- HERO -->
+        <div class="prg-hero prg-anim mb-6">
+            <span class="prg-orb"></span>
+            <span class="prg-kicker">هوش مصنوعیِ فیت‌ریکس</span>
+            <h1 class="prg-h1">برنامه‌ی تمرین و تغذیه‌ی اختصاصیِ تو</h1>
+            <p style="opacity:.95;line-height:1.9;font-size:.95rem">چند سؤالِ کوتاه جواب بده تا با دقتِ علمی و بر اساسِ بدن، هدف و تیپ بدنیِ تو یک برنامه‌ی کاملاً شخصی طراحی شود.</p>
+        </div>
+
+        <!-- مزایا -->
+        <div class="prg-benefits prg-anim" style="animation-delay:.05s">
+            <div class="prg-benefit"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5M5 8v8l7 5 7-5V8"/></svg></span>
+                <div><b>دقتِ علمی</b><span>محاسبه‌ی کالری و ماکرو با فرمولِ استاندارد</span></div></div>
+            <div class="prg-benefit"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>
+                <div><b>کاملاً شخصی</b><span>متناسب با هدف، سطح و تیپ بدنی</span></div></div>
+            <div class="prg-benefit"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <div><b>پشتیبانیِ هوشمند</b><span>پرسش‌وپاسخ درباره‌ی برنامه</span></div></div>
+        </div>
+
+        <form action="/program/create" method="POST" id="programForm" class="prg-anim" style="animation-delay:.1s">
+            <div class="wz">
+                <div class="wz-bar"><div class="wz-bar-fill" id="wzFill"></div></div>
+                <p class="wz-count">مرحله <span id="wzCur">۱</span> از <span id="wzTotal">۱۱</span></p>
+
+                <!-- ۱) جنسیت -->
+                <div class="wz-step is-active">
+                    <h2 class="wz-q">جنسیتت چیه؟</h2>
+                    <div class="prg-grid prg-g2">
+                        <label class="prg-opt"><input type="radio" name="gender" value="male" required><span>آقا</span></label>
+                        <label class="prg-opt"><input type="radio" name="gender" value="female"><span>خانم</span></label>
+                    </div>
+                </div>
+
+                <!-- ۲) هدف -->
+                <div class="wz-step">
+                    <h2 class="wz-q">هدفت از تمرین چیه؟</h2>
+                    <div class="prg-grid prg-g2 prg-md3">
+                        <% var goals=[['muscle','عضله‌سازی'],['fatloss','چربی‌سوزی'],['recomp','بازترکیب بدن'],['strength','افزایش قدرت'],['endurance','استقامت'],['fitness','تناسب اندام']]; %>
+                        <% goals.forEach(function(g){ %>
+                        <label class="prg-opt"><input type="radio" name="goal" value="<%= g[0] %>" required><span><%= g[1] %></span></label>
+                        <% }) %>
+                    </div>
+                </div>
+
+                <!-- ۳) تیپ بدنی -->
+                <div class="wz-step">
+                    <h2 class="wz-q">تیپ بدنیت کدومه؟</h2>
+                    <p class="wz-hint">اگر مطمئن نیستی، در صفحه‌ی «بدن‌شناسی» توضیح داده‌ایم. این مرحله اختیاری است.</p>
+                    <div class="prg-grid prg-g3">
+                        <% var bodies=[['ecto','اکتومورف','لاغر، سوخت‌وسازِ سریع'],['meso','مزومورف','عضلانی و پاسخ‌ده'],['endo','اندومورف','مستعدِ افزایشِ چربی']]; %>
+                        <% bodies.forEach(function(bt){ %>
+                        <label class="prg-opt"><input type="radio" name="bodyType" value="<%= bt[0] %>">
+                            <span><b style="font-weight:800"><%= bt[1] %></b><small style="font-weight:500;color:var(--prg-muted);font-size:.72rem"><%= bt[2] %></small></span></label>
+                        <% }) %>
+                    </div>
+                </div>
+
+                <!-- ۴) سن -->
+                <div class="wz-step">
+                    <h2 class="wz-q">چند سالته؟</h2>
+                    <input class="prg-field wz-big" type="number" name="age" min="12" max="90" placeholder="مثلاً ۲۵" required>
+                </div>
+
+                <!-- ۵) قد -->
+                <div class="wz-step">
+                    <h2 class="wz-q">قدت چند سانتی‌متره؟</h2>
+                    <input class="prg-field wz-big" type="number" name="height" min="120" max="230" placeholder="مثلاً ۱۷۵" required>
+                </div>
+
+                <!-- ۶) وزن -->
+                <div class="wz-step">
+                    <h2 class="wz-q">وزنت چند کیلوگرمه؟</h2>
+                    <input class="prg-field wz-big" type="number" name="weight" min="30" max="250" placeholder="مثلاً ۷۵" required>
+                </div>
+
+                <!-- ۷) سطح تجربه -->
+                <div class="wz-step">
+                    <h2 class="wz-q">سطحِ تمرینت چیه؟</h2>
+                    <div class="prg-grid prg-g3">
+                        <% var exps=[['beginner','مبتدی'],['intermediate','متوسط'],['advanced','پیشرفته']]; %>
+                        <% exps.forEach(function(e,i){ %>
+                        <label class="prg-opt"><input type="radio" name="experience" value="<%= e[0] %>" <%= i===0?'checked':'' %>><span><%= e[1] %></span></label>
+                        <% }) %>
+                    </div>
+                </div>
+
+                <!-- ۸) روزهای تمرین -->
+                <div class="wz-step">
+                    <h2 class="wz-q">چند روز در هفته تمرین می‌کنی؟</h2>
+                    <div class="prg-grid prg-g7">
+                        <% for(var d=1; d<=7; d++){ %>
+                        <label class="prg-opt"><input type="radio" name="daysPerWeek" value="<%= d %>" <%= d===3?'checked':'' %>><span><%= d.toLocaleString('fa-IR') %></span></label>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- ۹) محل تمرین -->
+                <div class="wz-step">
+                    <h2 class="wz-q">کجا تمرین می‌کنی؟</h2>
+                    <div class="prg-grid prg-g3">
+                        <% var places=[['gym','باشگاه'],['home','خانه'],['none','بدون وسیله']]; %>
+                        <% places.forEach(function(pl,i){ %>
+                        <label class="prg-opt"><input type="radio" name="place" value="<%= pl[0] %>" <%= i===0?'checked':'' %>><span><%= pl[1] %></span></label>
+                        <% }) %>
+                    </div>
+                </div>
+
+                <!-- ۱۰) فعالیت روزانه -->
+                <div class="wz-step">
+                    <h2 class="wz-q">میزانِ فعالیتِ روزانه‌ات (بیرون از تمرین)؟</h2>
+                    <select class="prg-field wz-big" name="activity">
+                        <option value="sedentary">کم‌تحرک (کار پشت‌میزی)</option>
+                        <option value="light">کمی فعال</option>
+                        <option value="moderate" selected>متوسط</option>
+                        <option value="active">فعال</option>
+                        <option value="very">خیلی فعال (کار بدنی)</option>
+                    </select>
+                </div>
+
+                <!-- ۱۱) اطلاعات تکمیلی -->
+                <div class="wz-step">
+                    <h2 class="wz-q">چند نکته‌ی آخر (اختیاری)</h2>
+                    <div class="space-y-4">
+                        <div><span class="prg-hint">آسیب یا محدودیت جسمی</span><input class="prg-field" type="text" name="injuries" maxlength="300" placeholder="مثلاً زانو درد، کمر"></div>
+                        <div><span class="prg-hint">محدودیت غذایی</span><input class="prg-field" type="text" name="diet" maxlength="300" placeholder="مثلاً گیاه‌خوار، حساسیت به لاکتوز"></div>
+                        <div><span class="prg-hint">بودجه‌ی مکمل در ماه (تومان)</span><input class="prg-field" type="number" name="budget" min="0" placeholder="برای پیشنهادِ مکملِ متناسب با جیبت"></div>
+                    </div>
+                    <p class="prg-sub" style="margin-top:1rem">ساختِ برنامه چند ثانیه طول می‌کشد؛ سپس یک روز پیش‌نمایش می‌بینی و می‌تونی نسخه‌ی کامل رو باز کنی
+                        <% if (typeof effective!=='undefined' && effective){ %>(<% if (onSale){ %><span class="prg-strike"><%= Number(price).toLocaleString('fa-IR') %></span> <% } %><b style="color:#2563eb"><%= Number(effective).toLocaleString('fa-IR') %> تومان</b>)<% } %>.
+                    </p>
+                </div>
+
+                <!-- ناوبری -->
+                <div class="wz-nav">
+                    <button type="button" class="prg-btn prg-btn-soft wz-prev" style="width:auto;padding:.8rem 1.6rem">قبلی</button>
+                    <button type="button" class="prg-btn prg-btn-primary wz-next" style="width:auto;padding:.8rem 1.8rem">بعدی</button>
+                    <button type="submit" class="prg-btn prg-btn-primary wz-submit" style="width:auto;padding:.8rem 1.8rem;display:none">ساختِ برنامه‌ی من</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+
+<div class="prg-loading" id="prgLoading" aria-hidden="true">
+    <div class="prg-loading-box">
+        <div class="prg-loader"></div>
+        <p class="prg-loading-title">هوش مصنوعی در حال طراحیِ برنامه‌ی توست…</p>
+        <p class="prg-loading-sub">چند ثانیه صبر کن؛ داریم دقیق‌ترین برنامه رو برات می‌سازیم.</p>
+    </div>
+</div>

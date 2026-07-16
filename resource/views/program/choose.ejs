@@ -1,0 +1,58 @@
+<main class="container mt-8 mb-16">
+    <div class="prg-wrap">
+        <div class="text-center prg-anim mb-6">
+            <h1 class="prg-h1" style="color:var(--prg-ink)">تحلیلِ بدنیِ تو آماده‌ست ✅</h1>
+            <p class="prg-sub">این‌ها بر اساس مشخصاتت محاسبه شدن. حالا نسخه‌ی برنامه رو انتخاب کن.</p>
+        </div>
+
+        <!-- متریک‌ها -->
+        <div class="prg-grid prg-g4 mb-8 prg-anim" style="animation-delay:.05s">
+            <div class="prg-stat"><b><%= Number(plan.metrics.calories).toLocaleString('fa-IR') %></b><span>کالریِ روزانه</span></div>
+            <div class="prg-stat"><b><%= Number(plan.metrics.protein).toLocaleString('fa-IR') %>g</b><span>پروتئین</span></div>
+            <div class="prg-stat"><b><%= Number(plan.metrics.carb).toLocaleString('fa-IR') %>g</b><span>کربوهیدرات</span></div>
+            <div class="prg-stat"><b><%= Number(plan.metrics.fat).toLocaleString('fa-IR') %>g</b><span>چربی</span></div>
+        </div>
+
+        <div class="prg-grid prg-md2" style="gap:1.25rem">
+            <!-- رایگان -->
+            <div class="prg-plan prg-anim" style="animation-delay:.1s">
+                <h2 class="text-xl" style="font-weight:800;margin-bottom:.25rem">نسخه‌ی رایگان</h2>
+                <p class="prg-sub" style="margin-bottom:1rem">یک نگاهِ کلی به برنامه‌ی تمرینت</p>
+                <div class="prg-li"><span class="yes">✓</span> برنامه‌ی تمرینِ کلی (خلاصه)</div>
+                <div class="prg-li"><span class="yes">✓</span> نمایشِ یک روزِ نمونه</div>
+                <div class="prg-li off"><span class="no">✕</span> برنامه‌ی تغذیه</div>
+                <div class="prg-li off"><span class="no">✕</span> پیشنهادِ مکمل</div>
+                <div class="prg-li off"><span class="no">✕</span> پرسش‌وپاسخ با مربی</div>
+                <form action="/program/<%= plan._id %>/free" method="POST" style="margin-top:auto;padding-top:1.2rem">
+                    <button class="prg-btn prg-btn-soft" type="submit">دریافت رایگان</button>
+                </form>
+            </div>
+
+            <!-- پولی -->
+            <div class="prg-plan pro prg-anim" style="animation-delay:.15s">
+                <span class="prg-ribbon">پیشنهادِ ما ⭐</span>
+                <h2 class="text-xl" style="font-weight:800;margin-bottom:.25rem">نسخه‌ی کامل</h2>
+                <p class="prg-sub" style="margin-bottom:.7rem">همه‌چیزِ یک مربیِ اختصاصی</p>
+                <div style="margin-bottom:.8rem">
+                    <% if (onSale){ %><span class="prg-strike"><%= Number(price).toLocaleString('fa-IR') %></span> <% } %>
+                    <span class="prg-price"><%= Number(effective).toLocaleString('fa-IR') %></span>
+                    <span style="font-size:.9rem">تومان</span>
+                </div>
+                <div class="prg-li"><span class="yes">✓</span> برنامه‌ی تمرینِ کاملِ هفته (با جزئیات فرم)</div>
+                <div class="prg-li"><span class="yes">✓</span> برنامه‌ی تغذیه‌ی متناسب با کالری و بودجه</div>
+                <div class="prg-li"><span class="yes">✓</span> پیشنهادِ مکملِ مناسب (لینک به فروشگاه)</div>
+                <div class="prg-li"><span class="yes">✓</span> پرسش‌وپاسخ با مربیِ هوشمند</div>
+                <div class="prg-li"><span class="yes">✓</span> ذخیره در حساب کاربری</div>
+                <form action="/program/<%= plan._id %>/pay" method="POST" style="margin-top:auto;padding-top:1rem">
+                    <p class="prg-hint">درگاه پرداخت:</p>
+                    <div class="prg-gw">
+                        <label><input type="radio" name="gateway" value="zarinpal" checked><span>زرین‌پال</span></label>
+                        <label><input type="radio" name="gateway" value="digipay"><span>دیجی‌پی</span></label>
+                    </div>
+                    <button class="prg-btn prg-btn-primary" type="submit">پرداخت و دریافتِ نسخه‌ی کامل</button>
+                </form>
+            </div>
+        </div>
+        <p class="prg-disclaimer">⚠️ این برنامه جایگزینِ پزشک یا متخصصِ تغذیه نیست. در صورت بیماری، بارداری یا سن زیر ۱۸ سال با متخصص مشورت کن.</p>
+    </div>
+</main>

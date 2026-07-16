@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>برنامه‌ی <%= (user.firstName || '') + ' ' + (user.lastName || '') %> — <%= siteName %></title>
+    <%
+        var bmi = (plan.metrics && plan.metrics.bmi) || 0;
+        var bmiLabel = bmi < 18.5 ? "کمبود وزن" : bmi < 25 ? "نرمال" : bmi < 30 ? "اضافه وزن" : "چاقی";
+        var GOAL_FA = { muscle:"عضله‌سازی", fatloss:"چربی‌سوزی", recomp:"بازترکیب بدن", strength:"افزایش قدرت", endurance:"استقامت", fitness:"تناسب اندام" };
+        var BODY_FA = { ecto:"اکتومورف", meso:"مزومورف", endo:"اندومورف" };
+        var fa = function(n){ return Number(n||0).toLocaleString('fa-IR'); };
+    %>
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:Tahoma,'Segoe UI',sans-serif;color:#1e293b;background:#f1f5f9;line-height:1.9;padding:1.5rem}
+        .sheet{max-width:52rem;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 10px 40px rgba(2,6,23,.12)}
+        .head{background:linear-gradient(135deg,#0f172a,#2563eb 65%,#1d4ed8);color:#fff;padding:1.6rem 1.8rem;position:relative;overflow:hidden}
+        .head h1{font-size:1.5rem;font-weight:800;margin-bottom:.3rem}
+        .head .sub{opacity:.9;font-size:.9rem}
+        .head .brand{position:absolute;top:1.4rem;left:1.8rem;font-weight:800;font-size:1.1rem;opacity:.95}
+        .head .fig{position:absolute;bottom:-2rem;left:8rem;height:12rem;opacity:.22;color:#fff}
+        .head .fig svg{height:100%;width:auto}
+        .body{padding:1.6rem 1.8rem}
+        .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-bottom:1.2rem}
+        .info{border:1px solid #e6ecf3;border-radius:10px;padding:.6rem .8rem;font-size:.9rem;display:flex;justify-content:space-between}
+        .info b{color:#2563eb}
+        .stats{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.6rem}
+        .stat{flex:1;min-width:6rem;border:1px solid #e6ecf3;border-radius:10px;padding:.6rem;text-align:center}
+        .stat b{display:block;font-size:1.25rem;color:#1d4ed8;font-weight:800}
+        .stat span{font-size:.72rem;color:#64748b}
+        h2.sec{font-size:1.1rem;font-weight:800;color:#0f172a;margin:1.4rem 0 .7rem;padding-bottom:.35rem;border-bottom:2px solid #2563eb;display:inline-block}
+        .day{border:1px solid #e6ecf3;border-radius:10px;margin-bottom:.8rem;overflow:hidden;break-inside:avoid}
+        .day h3{background:#eef4ff;color:#1e3a8a;font-weight:800;padding:.6rem .9rem;font-size:.95rem}
+        .ex{display:flex;justify-content:space-between;gap:.6rem;padding:.5rem .9rem;border-top:1px dashed #eef2f7;font-size:.88rem}
+        .ex:first-of-type{border-top:none}
+        .ex .tags{color:#2563eb;white-space:nowrap;font-size:.8rem;font-weight:700}
+        .ex .note{color:#94a3b8;font-size:.76rem}
+        .meal{margin-bottom:.7rem}.meal h4{color:#2563eb;font-weight:800;display:flex;justify-content:space-between}
+        .meal ul{padding-inline-start:1.2rem;color:#475569;font-size:.86rem}
+        .supp{display:flex;justify-content:space-between;border:1px solid #e6ecf3;border-radius:8px;padding:.5rem .8rem;margin:.4rem 0;font-size:.88rem}
+        .supp b{color:#1d4ed8}
+        .foot{text-align:center;color:#94a3b8;font-size:.75rem;padding:1rem;border-top:1px solid #eef2f7}
+        .printbar{max-width:52rem;margin:0 auto 1rem;display:flex;justify-content:flex-end;gap:.5rem}
+        .btn{background:#2563eb;color:#fff;border:none;border-radius:9px;padding:.6rem 1.4rem;font-weight:800;cursor:pointer;font-family:inherit}
+        .btn.ghost{background:#e2e8f0;color:#334155}
+        @media print{ body{background:#fff;padding:0} .sheet{box-shadow:none;border-radius:0;max-width:100%} .printbar{display:none} @page{margin:1cm} }
+    </style>
+</head>
+<body>
+    <div class="printbar">
+        <button class="btn" onclick="window.print()">دانلود / چاپ PDF</button>
+        <a class="btn ghost" href="/program/<%= plan._id %>" style="text-decoration:none">بازگشت</a>
+    </div>
+
+    <div class="sheet">
+        <div class="head">
+            <div class="brand"><%= siteName %></div>
+            <div class="fig"><%- include('_figure', { figGender: plan.gender }) %></div>
+            <h1><%= plan.title || 'برنامه‌ی تمرین و تغذیه' %></h1>
+            <p class="sub"><%= (user.firstName || '') %> <%= (user.lastName || '') %> — تاریخ صدور: <%= new Date().toLocaleDateString('fa-IR') %></p>
+        </div>
+
+        <div class="body">
+            <!-- اطلاعات کاربر -->
+            <div class="grid">
+                <div class="info"><span>جنسیت</span><b><%= plan.gender === 'female' ? 'خانم' : 'آقا' %></b></div>
+                <div class="info"><span>سن</span><b><%= fa(plan.age) %> سال</b></div>
+                <div class="info"><span>قد</span><b><%= fa(plan.height) %> سانتی‌متر</b></div>
+                <div class="info"><span>وزن</span><b><%= fa(plan.weight) %> کیلوگرم</b></div>
+                <div class="info"><span>هدف</span><b><%= GOAL_FA[plan.goal] || plan.goal %></b></div>
+                <div class="info"><span>تیپ بدنی</span><b><%= BODY_FA[plan.bodyType] || '—' %></b></div>
+                <div class="info"><span>شاخصِ توده‌ی بدنی (BMI)</span><b><%= fa(bmi) %> (<%= bmiLabel %>)</b></div>
+                <div class="info"><span>روزهای تمرین</span><b><%= fa(plan.daysPerWeek) %> روز در هفته</b></div>
+            </div>
+
+            <!-- متریک‌ها -->
+            <div class="stats">
+                <div class="stat"><b><%= fa(plan.metrics.calories) %></b><span>کالریِ روزانه</span></div>
+                <div class="stat"><b><%= fa(plan.metrics.protein) %>g</b><span>پروتئین</span></div>
+                <div class="stat"><b><%= fa(plan.metrics.carb) %>g</b><span>کربوهیدرات</span></div>
+                <div class="stat"><b><%= fa(plan.metrics.fat) %>g</b><span>چربی</span></div>
+            </div>
+
+            <% if (plan.summary){ %><p style="color:#475569;font-size:.9rem;margin-bottom:.5rem"><%= plan.summary %></p><% } %>
+
+            <!-- تمرین -->
+            <h2 class="sec">برنامه‌ی تمرین</h2>
+            <% (plan.weeklyPlan || []).forEach(function(day, i){ %>
+            <div class="day">
+                <h3><%= day.day || ('روز ' + (i+1)) %><% if (day.focus){ %> — <%= day.focus %><% } %></h3>
+                <% (day.exercises || []).forEach(function(ex){ %>
+                <div class="ex">
+                    <div><%= ex.name %><% if (ex.note){ %><div class="note"><%= ex.note %></div><% } %></div>
+                    <div class="tags"><%= ex.sets ? ex.sets+' ست' : '' %> <%= ex.reps ? '× '+ex.reps : '' %><%= ex.rest ? ' | '+ex.rest : '' %></div>
+                </div>
+                <% }) %>
+            </div>
+            <% }) %>
+
+            <!-- تغذیه -->
+            <% if (plan.nutrition){ %>
+            <h2 class="sec">برنامه‌ی تغذیه</h2>
+            <% if (plan.nutrition.overview){ %><p style="color:#475569;font-size:.88rem;margin-bottom:.6rem"><%= plan.nutrition.overview %></p><% } %>
+            <% (plan.nutrition.meals || []).forEach(function(meal){ %>
+            <div class="meal">
+                <h4><span><%= meal.name %></span><% if (meal.calories){ %><span style="color:#64748b;font-weight:600;font-size:.82rem"><%= meal.calories %></span><% } %></h4>
+                <ul><% (meal.items || []).forEach(function(it){ %><li><%= it %></li><% }) %></ul>
+            </div>
+            <% }) %>
+            <% if (plan.nutrition.tips && plan.nutrition.tips.length){ %>
+            <p style="font-weight:800;margin:.4rem 0 .2rem">نکته‌ها:</p>
+            <ul style="padding-inline-start:1.2rem;color:#475569;font-size:.86rem"><% plan.nutrition.tips.forEach(function(t){ %><li><%= t %></li><% }) %></ul>
+            <% } %>
+            <% } %>
+
+            <!-- مکمل -->
+            <% if (plan.supplements && plan.supplements.length){ %>
+            <h2 class="sec">مکمل‌های پیشنهادی</h2>
+            <% plan.supplements.forEach(function(sp){ %>
+            <div class="supp"><b><%= sp.title %></b><span style="color:#64748b"><%= sp.reason || '' %></span></div>
+            <% }) %>
+            <% } %>
+        </div>
+
+        <div class="foot">این برنامه توسط هوش مصنوعیِ <%= siteName %> طراحی شده و جایگزینِ پزشک یا متخصصِ تغذیه نیست. — fitrix.ir</div>
+    </div>
+
+    <script>
+        // بازکردنِ خودکارِ پنجره‌ی چاپ (ذخیره به‌صورت PDF)
+        window.addEventListener('load', function(){ setTimeout(function(){ window.print(); }, 400); });
+    </script>
+</body>
+</html>
