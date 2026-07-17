@@ -1,0 +1,123 @@
+/* ==========================================================================
+   fitrix • Motion System  (انیمیشن‌های نرمِ سبک اپل/آیفون)
+   --------------------------------------------------------------------------
+   سه لایه:
+     ۱) Scroll-reveal  → ظاهرشدنِ تدریجیِ المان‌ها با اسکرول (fluid)
+     ۲) Micro-interactions → واکنشِ لمسی/hover (press-scale, lift, bump)
+     ۳) Easing فنری   → منحنیِ اصلیِ فیزیک‌محور که «حسِ آیفون» می‌دهد
+
+   قوانین ایمنی:
+     • همه‌چیز فقط وقتی JS فعال است پنهان می‌شود (کلاس html.mo-js را
+       اسکریپت اضافه می‌کند). بدون JS، هیچ محتوایی مخفی نمی‌ماند.
+     • prefers-reduced-motion همه‌ی حرکت‌ها را خاموش می‌کند.
+     • داخلِ .swiper هرگز reveal نمی‌شود (سوییپر خودش transform می‌زند).
+   ========================================================================== */
+
+:root {
+  /* منحنیِ اصلیِ فنری/روان (همان easeOutQuint نرمِ iOS) */
+  --fx-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  /* منحنیِ فنری با پرشِ ملایم (overshoot) — برای pop/press/bump */
+  --fx-spring-back: cubic-bezier(0.34, 1.4, 0.64, 1);
+  /* زمان‌بندی‌ها */
+  --fx-reveal-dur: 0.7s;
+  --fx-press-dur: 0.18s;
+  --fx-lift-dur: 0.32s;
+}
+
+/* ---------------------------------------------------------------------------
+   ۱) SCROLL REVEAL
+   حالتِ اولیه فقط زیرِ کلاسِ html.mo-js اعمال می‌شود تا بدونِ JS چیزی
+   پنهان نشود. اسکریپت به المان‌های زیرِ خطِ دید کلاسِ .mo-init می‌دهد و
+   هنگامِ ورود به view کلاسِ .mo-in را اضافه می‌کند.
+   --------------------------------------------------------------------------- */
+.mo-js .mo-init {
+  opacity: 0;
+  will-change: opacity, transform;
+  transition:
+    opacity var(--fx-reveal-dur) var(--fx-spring),
+    transform var(--fx-reveal-dur) var(--fx-spring);
+}
+
+/* واریانت‌های ورود */
+.mo-js .mo-init.mo-up    { transform: translateY(30px); }
+.mo-js .mo-init.mo-up-sm { transform: translateY(16px); }
+.mo-js .mo-init.mo-scale { transform: scale(0.92); }
+.mo-js .mo-init.mo-fade  { transform: none; }              /* فقط محو → امن برای سوییپر */
+.mo-js .mo-init.mo-right { transform: translateX(30px); } /* در RTL: ورود از سمتِ راست */
+.mo-js .mo-init.mo-left  { transform: translateX(-30px); }
+
+/* حالتِ نهایی (دیده‌شده) */
+.mo-js .mo-init.mo-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* بعد از اتمامِ انیمیشن، will-change را آزاد کن (بهینه‌سازی) */
+.mo-js .mo-init.mo-in {
+  will-change: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   ۲) MICRO-INTERACTIONS  (opt-in با کلاس)
+   --------------------------------------------------------------------------- */
+
+/* press: فشردنِ فنریِ لمسی (دکمه‌ها، لینک‌های مهم، کارت‌های قابلِ کلیک) */
+.mi-press {
+  transition: transform var(--fx-press-dur) var(--fx-spring-back);
+  -webkit-tap-highlight-color: transparent;
+}
+.mi-press:active { transform: scale(0.94); }
+
+/* lift: بالاآمدنِ نرم هنگامِ hover (کارت‌ها/تصاویر) */
+.mi-lift {
+  transition:
+    transform var(--fx-lift-dur) var(--fx-spring),
+    box-shadow var(--fx-lift-dur) var(--fx-spring);
+}
+.mi-lift:hover { transform: translateY(-5px); }
+.mi-lift:active { transform: translateY(-2px) scale(0.99); }
+/* روی دستگاه‌های لمسی، hover-lift غیرفعال شود تا «چسبندگی» ایجاد نکند */
+@media (hover: none) {
+  .mi-lift:hover { transform: none; }
+}
+
+/* bump: پرشِ کوتاهِ توجه‌جلب‌کن (مثلِ عددِ سبد بعد از افزودن) */
+@keyframes fxBump {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.32); }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+.fx-bump { animation: fxBump 0.5s var(--fx-spring-back); }
+
+/* pop-in: ظاهرشدنِ فنریِ عناصرِ کوچک (بَج تخفیف، تولتیپ و ...) */
+@keyframes fxPop {
+  0%   { opacity: 0; transform: scale(0.6); }
+  60%  { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.fx-pop { animation: fxPop 0.42s var(--fx-spring-back) both; }
+
+/* ---------------------------------------------------------------------------
+   ۳) احترام به ترجیحِ کاربر: خاموشیِ کاملِ حرکت
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .mo-js .mo-init {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .mi-press,
+  .mi-lift {
+    transition: none !important;
+  }
+  .mi-press:active,
+  .mi-lift:hover,
+  .mi-lift:active {
+    transform: none !important;
+  }
+  .fx-bump,
+  .fx-pop {
+    animation: none !important;
+  }
+}
