@@ -51,6 +51,7 @@ const programPlanSchema = new Schema(
     },
 
     // ───── ورودیِ فرم (اطلاعاتِ کاربر) ─────
+    fullName: { type: String, default: "", trim: true, maxlength: 80 },
     gender: { type: String, enum: ["male", "female"], required: true },
     age: { type: Number, min: 12, max: 90, required: true },
     height: { type: Number, min: 120, max: 230, required: true }, // سانتی‌متر

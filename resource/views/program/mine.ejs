@@ -20,6 +20,11 @@
                         PDF
                     </a>
                     <% } %>
+                    <form action="/program/<%= p._id %>/delete" method="POST" onsubmit="return confirm('این برنامه حذف شود؟')" style="display:inline">
+                        <button type="submit" aria-label="حذف" class="inline-flex items-center p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1.25rem;height:1.25rem"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                        </button>
+                    </form>
                     <a href="/program/<%= p._id %>"><svg class="size-5 text-gray-400 rtl:rotate-180"><use href="#chevron-left" /></svg></a>
                 </div>
             </div>

@@ -291,3 +291,31 @@
     font-weight: 800; border-radius: .8rem; padding: .6rem 1.3rem; text-decoration: none; box-shadow: 0 10px 24px -10px rgba(0,0,0,.4);
     transition: transform .18s, filter .18s; }
 .prg-pdf-btn:hover { transform: translateY(-2px); filter: brightness(1.03); }
+
+/* ==========================================================================
+   فونت وزیر + انیمیشن‌های نرمِ اپل‌گونه (spring easing + scroll reveal)
+   ========================================================================== */
+@font-face {
+    font-family: "Vazir";
+    src: url("/fonts/Vazir/Vazir.woff2") format("woff2");
+    font-weight: normal; font-display: swap;
+}
+/* فونتِ برنامه‌ساز و بدن‌شناسی: وزیر */
+.prg-wrap, .an-wrap, .prg-loading, .mm { font-family: "Vazir", Tahoma, sans-serif; }
+.prg-wrap [class*="Dana"], .prg-wrap [class*="Morabba"],
+.an-wrap [class*="Dana"], .an-wrap [class*="Morabba"] { font-family: "Vazir", Tahoma, sans-serif !important; }
+
+/* منحنیِ فنریِ اپل‌گونه برای انیمیشن‌های ورود/کارت‌ها */
+.prg-anim, .an-anim, .wz-step.is-active { animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+.prg-card, .prg-opt > span, .prg-btn, .prg-plan, .prg-stat, .an-type, .prg-benefit, .prg-supp, .prg-pdf-btn, .prg-unlock {
+    transition-timing-function: cubic-bezier(0.34, 1.4, 0.5, 1) !important;
+}
+
+/* Scroll reveal: المان‌ها هنگام ورود به دید، نرم ظاهر می‌شوند (مثل صفحاتِ اپل) */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(0.22,1,0.36,1), transform .7s cubic-bezier(0.22,1,0.36,1); will-change: opacity, transform; }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce){ .reveal { opacity: 1; transform: none; transition: none; } }
+
+/* ---- پالیشِ سراسری: micro-interaction فنری روی کارت محصول‌ها ---- */
+.product-card { transition: transform .28s cubic-bezier(.34,1.35,.5,1), box-shadow .28s ease; }
+.product-card:hover { transform: translateY(-5px); box-shadow: 0 20px 38px -20px rgba(2,6,23,.3); }

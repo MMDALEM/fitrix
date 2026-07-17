@@ -12,6 +12,8 @@ router.post("/create", programController.create);
 router.get("/mine", programController.mine);
 // تولیدِ دوباره در صورتِ شکست
 router.post("/:id/regenerate", programController.regenerate);
+// حذفِ برنامه
+router.post("/:id/delete", programController.remove);
 // شروعِ پرداخت برای بازکردنِ کامل
 router.post("/:id/pay", programController.pay);
 // بازگشت از درگاه

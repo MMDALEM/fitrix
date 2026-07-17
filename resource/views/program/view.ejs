@@ -61,7 +61,7 @@
             <!-- NUTRITION -->
             <% if (plan.nutrition){ %>
             <div class="prg-sec-title">برنامه‌ی تغذیه</div>
-            <div class="prg-sec prg-anim">
+            <div class="prg-sec reveal">
                 <% if (plan.nutrition.overview){ %><p style="font-size:.92rem;line-height:1.9;margin-bottom:1rem;color:var(--prg-muted)"><%= plan.nutrition.overview %></p><% } %>
                 <% (plan.nutrition.meals || []).forEach(function(meal){ %>
                 <div class="prg-meal">
@@ -85,7 +85,7 @@
             <!-- SUPPLEMENTS -->
             <% if (plan.supplements && plan.supplements.length){ %>
             <div class="prg-sec-title">مکمل‌های پیشنهادی</div>
-            <div class="prg-sec prg-anim">
+            <div class="prg-sec reveal">
                 <% plan.supplements.forEach(function(sp){ %>
                 <div class="prg-supp">
                     <div>
@@ -100,21 +100,26 @@
 
             <!-- Q&A -->
             <div class="prg-sec-title">سوال درباره‌ی برنامه</div>
-            <div class="prg-sec prg-anim">
+            <div class="prg-sec reveal">
                 <div id="qaList">
                     <% (plan.qa || []).forEach(function(item){ %>
                     <div class="prg-qa-item"><p class="prg-qa-q"><%= item.q %></p><div class="prg-qa-a"><%= item.a %></div></div>
                     <% }) %>
                 </div>
+                <% var _qaCount = (plan.qa || []).length; %>
+                <% if (_qaCount >= 20){ %>
+                <p class="prg-hint" style="margin-top:.5rem;color:#64748b">به سقفِ ۲۰ سوالِ این برنامه رسیدی و دیگر نمی‌توانی سوالِ جدید بپرسی.</p>
+                <% } else { %>
                 <form id="qaForm" class="prg-ask" data-id="<%= plan._id %>">
                     <input class="prg-field" id="qaInput" type="text" maxlength="1000" placeholder="مثلاً: اگر یک روز نتوانم به باشگاه بروم چه کنم؟" required>
                     <button class="prg-buy" type="submit" style="padding:.5rem 1.2rem">بپرس</button>
                 </form>
-                <p class="prg-hint" style="margin-top:.5rem">تا ۲۰ سوال برای این برنامه.</p>
+                <p class="prg-hint" style="margin-top:.5rem"><%= (20 - _qaCount).toLocaleString('fa-IR') %> سوالِ باقی‌مانده از ۲۰ سوالِ این برنامه.</p>
+                <% } %>
             </div>
         <% } else { %>
             <!-- PAYWALL: بازکردنِ نسخه‌ی کامل -->
-            <div id="unlock" class="prg-paywall prg-anim" style="margin-top:1.5rem">
+            <div id="unlock" class="prg-paywall reveal" style="margin-top:1.5rem">
                 <h3>نسخه‌ی کاملِ برنامه‌ات آماده است</h3>
                 <p class="prg-sub" style="margin-bottom:1rem">با باز کردنِ برنامه، همه‌ی این‌ها فعال می‌شود:</p>
                 <div class="prg-benefits" style="text-align:right;margin-bottom:1.2rem">

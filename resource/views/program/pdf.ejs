@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
-    <title>برنامه‌ی <%= (user.firstName || '') + ' ' + (user.lastName || '') %> — <%= siteName %></title>
+    <% var _name = (plan.fullName && plan.fullName.trim()) || ((user.firstName || '') + ' ' + (user.lastName || '')).trim() || 'کاربر'; %>
+    <title>برنامه تمرین و تغذیه - <%= _name %></title>
     <%
         var bmi = (plan.metrics && plan.metrics.bmi) || 0;
         var bmiLabel = bmi < 18.5 ? "کمبود وزن" : bmi < 25 ? "نرمال" : bmi < 30 ? "اضافه وزن" : "چاقی";
@@ -13,8 +14,9 @@
         var fa = function(n){ return Number(n||0).toLocaleString('fa-IR'); };
     %>
     <style>
+        @font-face{font-family:"Vazir";src:url("/fonts/Vazir/Vazir.woff2") format("woff2");font-weight:normal;font-display:swap}
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:Tahoma,'Segoe UI',sans-serif;color:#1e293b;background:#f1f5f9;line-height:1.9;padding:1.5rem}
+        body{font-family:"Vazir",Tahoma,'Segoe UI',sans-serif;color:#1e293b;background:#f1f5f9;line-height:1.9;padding:1.5rem}
         .sheet{max-width:52rem;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 10px 40px rgba(2,6,23,.12)}
         .head{background:linear-gradient(135deg,#0f172a,#2563eb 65%,#1d4ed8);color:#fff;padding:1.6rem 1.8rem;position:relative;overflow:hidden}
         .head h1{font-size:1.5rem;font-weight:800;margin-bottom:.3rem}
@@ -50,8 +52,7 @@
 </head>
 <body>
     <div class="printbar">
-        <button class="btn" onclick="window.print()">دانلود / چاپ PDF</button>
-        <a class="btn ghost" href="/program/<%= plan._id %>" style="text-decoration:none">بازگشت</a>
+        <a class="btn ghost" href="/program/<%= plan._id %>" style="text-decoration:none">بازگشت به برنامه</a>
     </div>
 
     <div class="sheet">
@@ -59,7 +60,7 @@
             <div class="brand"><%= siteName %></div>
             <div class="fig"><%- include('_figure', { figGender: plan.gender }) %></div>
             <h1><%= plan.title || 'برنامه‌ی تمرین و تغذیه' %></h1>
-            <p class="sub"><%= (user.firstName || '') %> <%= (user.lastName || '') %> — تاریخ صدور: <%= new Date().toLocaleDateString('fa-IR') %></p>
+            <p class="sub"><%= _name %> — تاریخ صدور: <%= new Date().toLocaleDateString('fa-IR') %></p>
         </div>
 
         <div class="body">

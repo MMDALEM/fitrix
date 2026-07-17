@@ -32,6 +32,11 @@ module.exports = class Application {
     this.errorHandler();
   }
 
+  // شبکه‌ی ایمنیِ سراسری. یک خطای async ِ مدیریت‌نشده (قطعیِ لحظه‌ایِ
+  // دیتابیس، تایم‌اوتِ یک API بیرونی مثل نرخِ ارز/پیامک/درگاه، و ...) به‌طور
+  // پیش‌فرض کلِ پروسه‌ی Node را می‌کُشد. با max_restarts محدودِ PM2 این یعنی
+  // چند کرشِ پشت‌سرهم و سپس «از دسترس خارج شدنِ» کاملِ سایت — که برای سئو
+  // فاجعه است. این هندلرها خطا را ثبت می‌کنند اما پروسه را زنده نگه می‌دارند.
   installProcessGuards() {
     const { logError } = require("./utils/logError");
     process.on("unhandledRejection", (reason) => {
@@ -105,13 +110,12 @@ module.exports = class Application {
   }
 
   createMongodb() {
+    // خطای اتصالِ اولیه نباید unhandledRejection بسازد؛ Mongoose خودش کوئری‌ها
+    // را بافر و اتصال را به‌صورت خودکار دوباره برقرار می‌کند.
     mongoose
       .connect(DATABASE_MONGODB_URL, { autoIndex: true })
       .catch((e) =>
-        console.error(
-          "خطای اتصالِ اولیه به MongoDB (تلاش مجدد خودکار):",
-          e.message,
-        ),
+        console.error("خطای اتصالِ اولیه به MongoDB (تلاش مجدد خودکار):", e.message),
       );
     mongoose.set("strictPopulate", true);
     mongoose.set("strictQuery", true);
@@ -139,6 +143,9 @@ module.exports = class Application {
   }
 
   exchangeRate() {
+    // یک‌بار در زمان بوت نرخِ مرجعِ درهم را تازه می‌کنیم و سپس طبق زمان‌بندیِ
+    // کرون. این فقط نرخِ ذخیره‌شده را به‌روز می‌کند و قیمتِ محصولات را
+    // خودکار بازنویسی نمی‌کند (قیمت‌ها همچنان از پنل ادمین کنترل می‌شوند).
     refreshExchangeRate().catch((e) =>
       console.error("خطا در به‌روزرسانی اولیه‌ی نرخ ارز:", e.message),
     );
@@ -149,7 +156,6 @@ module.exports = class Application {
     app.use((req, res, next) => {
       next(createError.NotFound("آدرس مورد نظر پیدا نشد"));
     });
-
     app.use((error, req, res, next) => {
       if (error.code === "LIMIT_FILE_SIZE")
         return res
@@ -158,49 +164,48 @@ module.exports = class Application {
       const serverError = createError.InternalServerError(error);
       const status = error.status || serverError.status;
       const isProd = process.env.NODE_ENV === "production";
+      // در production جزئیاتِ خطای داخلی به کاربر نشت نکند
       const message =
         isProd && status >= 500
           ? "خطای داخلی سرور رخ داد. لطفاً بعداً تلاش کنید."
           : error.message || serverError.message;
 
+      // خطاهای واقعیِ سرور (۵۰۰ به بالا) در دیتابیس ثبت می‌شوند تا در تبِ
+      // «خطاها»ی پنل ادمین دیده شوند. ۴۰۴ها ثبت نمی‌شوند (نویز هستند).
       if (status >= 500) {
         console.error("Server error:", error.message);
-        require("./utils/logError").logError(error, {
-          source: "server",
-          req,
-          status,
-        });
+        require("./utils/logError").logError(error, { source: "server", req, status });
       }
 
+      // برای درخواست‌های مرورگر، صفحه‌ی ۴۰۴ واقعی (کد وضعیت درست برای سئو).
+      // اگر خودِ رندرِ قالب هم بشکند، به یک صفحه‌ی ساده‌ی امن برمی‌گردیم تا هرگز
+      // خطای مدیریت‌نشده رخ ندهد.
       if (status === 404 && req.accepts("html")) {
         return res
           .status(404)
-          .render(
-            "home/404",
-            { pageTitle: "صفحه پیدا نشد", noindex: true },
-            (renderErr, html) => {
-              if (renderErr) {
-                console.error("404 render failed:", renderErr.message);
-                return res
-                  .status(404)
-                  .type("html")
-                  .send(
-                    '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8">' +
-                      '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-                      '<meta name="robots" content="noindex"><title>صفحه پیدا نشد</title>' +
-                      "<style>body{font-family:Tahoma,sans-serif;background:#f8fafc;color:#1f2937;" +
-                      "display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}" +
-                      ".box{text-align:center;padding:2rem}.box h1{font-size:3.2rem;margin:0 0 .5rem;" +
-                      "color:#2563eb}a{color:#2563eb;text-decoration:none}</style></head><body>" +
-                      '<div class="box"><h1>۴۰۴</h1><p>صفحه‌ای که دنبالش بودید پیدا نشد.</p>' +
-                      '<a href="/">بازگشت به صفحه اصلی</a></div></body></html>',
-                  );
-              }
-              res.send(html);
-            },
-          );
+          .render("home/404", { pageTitle: "صفحه پیدا نشد", noindex: true }, (renderErr, html) => {
+            if (renderErr) {
+              console.error("404 render failed:", renderErr.message);
+              return res
+                .status(404)
+                .type("html")
+                .send(
+                  '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8">' +
+                    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+                    '<meta name="robots" content="noindex"><title>صفحه پیدا نشد</title>' +
+                    "<style>body{font-family:Tahoma,sans-serif;background:#f8fafc;color:#1f2937;" +
+                    "display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}" +
+                    ".box{text-align:center;padding:2rem}.box h1{font-size:3.2rem;margin:0 0 .5rem;" +
+                    "color:#2563eb}a{color:#2563eb;text-decoration:none}</style></head><body>" +
+                    '<div class="box"><h1>۴۰۴</h1><p>صفحه‌ای که دنبالش بودید پیدا نشد.</p>' +
+                    '<a href="/">بازگشت به صفحه اصلی</a></div></body></html>',
+                );
+            }
+            res.send(html);
+          });
       }
 
+      // خطای سرور روی صفحه‌ی مرورگر → صفحه‌ی خطای دوستانه (نه JSON خام)
       if (req.accepts("html") && status >= 500) {
         return res
           .status(status)
@@ -212,7 +217,7 @@ module.exports = class Application {
               "background:#f8fafc;color:#1f2937;display:flex;min-height:100vh;align-items:" +
               "center;justify-content:center;margin:0}.box{text-align:center;padding:2rem}" +
               ".box h1{font-size:3.2rem;margin:0 0 .5rem;color:#ef4444}a{color:#2563eb;" +
-              'text-decoration:none}</style></head><body><div class="box"><h1>۵۰۰</h1>' +
+              "text-decoration:none}</style></head><body><div class=\"box\"><h1>۵۰۰</h1>" +
               "<p>متأسفانه خطایی رخ داد. لطفاً چند لحظه بعد دوباره تلاش کنید.</p>" +
               '<a href="/">بازگشت به صفحه اصلی</a></div></body></html>',
           );

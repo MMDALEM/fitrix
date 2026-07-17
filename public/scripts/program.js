@@ -1,5 +1,16 @@
 // ── اسکریپت‌های صفحه‌ی برنامه‌ساز (هرکدام فقط اگر عنصرِ مربوطه در صفحه باشد اجرا می‌شود) ──
 
+/* ---------- ۰) Scroll reveal (ظاهرشدنِ نرمِ المان‌ها با اسکرول، مثل صفحاتِ اپل) ---------- */
+(function () {
+  var els = document.querySelectorAll(".reveal");
+  if (!els.length) return;
+  if (!("IntersectionObserver" in window)) { els.forEach(function (el) { el.classList.add("in"); }); return; }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
+  }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+  els.forEach(function (el) { io.observe(el); });
+})();
+
 /* ---------- ۱) کاوشگرِ عضلات ---------- */
 (function () {
   var svg = document.getElementById("mmSvg");

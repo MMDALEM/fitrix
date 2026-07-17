@@ -31,11 +31,13 @@
     background: radial-gradient(120% 80% at 50% 0%, rgba(37,99,235,.06), transparent 70%); border-radius: 1.2rem; padding: 1rem; }
 .body-map { padding: 0; }
 .body-map__container { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; }
-.body-map__body { height: 30rem; }
-@media (min-width: 640px){ .body-map__body { height: 34rem; } }
-/* کلِ بلاکِ هر جنسیت با هم مخفی/نمایش می‌شود (جلو + پشت) */
+/* هر دو بدنِ آقا و خانم کنارِ هم، کوچک‌تر */
+.body-map__body { height: 15rem; }
+@media (min-width: 480px){ .body-map__body { height: 18rem; } }
+@media (min-width: 900px){ .body-map__body { height: 21rem; } }
+/* یک جنسیت در هر لحظه (با toggle عوض می‌شود)؛ خانم به‌صورت پیش‌فرض مخفی */
 .an-sex-map[data-sex="female"] { display: none; }
-.an-sex-map { width: 100%; }
+.an-sex-map .body-map__container { gap: .6rem; }
 
 /* رنگِ بدن و عضلات (currentColor روی path ها) */
 .body-map__model { color: #334155; }
@@ -80,19 +82,22 @@
 .dark .an-type-row { color: #cbd5e1; }
 .an-type-row b { color: #2563eb; white-space: nowrap; }
 
-/* ---- موبایل: پنلِ اطلاعات به‌صورتِ بات‌شیت (تا کاربر همان‌جا ببیند) ---- */
+/* ---- موبایل: پنلِ اطلاعات به‌صورتِ پاپ‌آور، دقیقاً کنارِ عضله‌ی کلیک‌شده ---- */
 .an-info-close { display: none; }
 @media (max-width: 859px) {
     .an-info {
-        position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 60;
-        border-radius: 1.2rem 1.2rem 0 0; border: none; box-shadow: 0 -12px 40px -12px rgba(0,0,0,.35);
-        transform: translateY(110%); transition: transform .3s cubic-bezier(.22,1,.36,1);
-        max-height: 70vh; overflow-y: auto; padding-top: 1.6rem;
+        position: fixed; z-index: 70; width: min(20rem, 88vw); max-height: 62vh; overflow-y: auto;
+        border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 18px 46px -12px rgba(2,6,23,.45); padding: 1.1rem;
+        opacity: 0; transform: scale(.9); pointer-events: none;
+        transition: opacity .18s ease, transform .28s cubic-bezier(.34,1.4,.5,1);
     }
-    .an-info.show { transform: translateY(0); }
-    .an-info-close { display: grid; place-items: center; position: absolute; top: .7rem; left: .9rem;
-        width: 2rem; height: 2rem; border-radius: 99px; border: none; background: #eef2f7; color: #334155; cursor: pointer; font-size: 1rem; }
+    .dark .an-info { border-color: #1e293b; }
+    .an-info.show { opacity: 1; transform: scale(1); pointer-events: auto; }
+    .an-info-close { display: grid; place-items: center; position: absolute; top: .6rem; left: .6rem;
+        width: 1.9rem; height: 1.9rem; border-radius: 99px; border: none; background: #eef2f7; color: #334155; cursor: pointer; font-size: .95rem; }
     .dark .an-info-close { background: #1e293b; color: #cbd5e1; }
-    .an-info::before { content: ""; position: absolute; top: .55rem; left: 50%; transform: translateX(-50%);
-        width: 2.6rem; height: .3rem; border-radius: 99px; background: #cbd5e1; }
 }
+
+/* تیترِ فهرستِ حرکات در پنلِ اطلاعات */
+.an-info-exhead { margin: 1rem 0 .5rem; font-weight: 800; color: #1d4ed8; font-size: .92rem; }
+.dark .an-info-exhead { color: #93c5fd; }

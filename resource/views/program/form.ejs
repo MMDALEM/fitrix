@@ -27,10 +27,16 @@
         <form action="/program/create" method="POST" id="programForm" class="prg-anim" style="animation-delay:.1s">
             <div class="wz">
                 <div class="wz-bar"><div class="wz-bar-fill" id="wzFill"></div></div>
-                <p class="wz-count">مرحله <span id="wzCur">۱</span> از <span id="wzTotal">۱۱</span></p>
+                <p class="wz-count">مرحله <span id="wzCur">۱</span> از <span id="wzTotal">۱۲</span></p>
+
+                <!-- ۰) نام -->
+                <div class="wz-step is-active">
+                    <h2 class="wz-q">اسمت چیه؟</h2>
+                    <input class="prg-field wz-big" type="text" name="fullName" maxlength="80" placeholder="نام و نام خانوادگی" required>
+                </div>
 
                 <!-- ۱) جنسیت -->
-                <div class="wz-step is-active">
+                <div class="wz-step">
                     <h2 class="wz-q">جنسیتت چیه؟</h2>
                     <div class="prg-grid prg-g2">
                         <label class="prg-opt"><input type="radio" name="gender" value="male" required><span>آقا</span></label>
