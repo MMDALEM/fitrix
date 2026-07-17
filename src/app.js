@@ -115,7 +115,10 @@ module.exports = class Application {
     mongoose
       .connect(DATABASE_MONGODB_URL, { autoIndex: true })
       .catch((e) =>
-        console.error("خطای اتصالِ اولیه به MongoDB (تلاش مجدد خودکار):", e.message),
+        console.error(
+          "خطای اتصالِ اولیه به MongoDB (تلاش مجدد خودکار):",
+          e.message,
+        ),
       );
     mongoose.set("strictPopulate", true);
     mongoose.set("strictQuery", true);
@@ -157,6 +160,7 @@ module.exports = class Application {
       next(createError.NotFound("آدرس مورد نظر پیدا نشد"));
     });
     app.use((error, req, res, next) => {
+      console.error("Error handler caught:", error);
       if (error.code === "LIMIT_FILE_SIZE")
         return res
           .status(400)
@@ -174,7 +178,11 @@ module.exports = class Application {
       // «خطاها»ی پنل ادمین دیده شوند. ۴۰۴ها ثبت نمی‌شوند (نویز هستند).
       if (status >= 500) {
         console.error("Server error:", error.message);
-        require("./utils/logError").logError(error, { source: "server", req, status });
+        require("./utils/logError").logError(error, {
+          source: "server",
+          req,
+          status,
+        });
       }
 
       // برای درخواست‌های مرورگر، صفحه‌ی ۴۰۴ واقعی (کد وضعیت درست برای سئو).
@@ -183,26 +191,30 @@ module.exports = class Application {
       if (status === 404 && req.accepts("html")) {
         return res
           .status(404)
-          .render("home/404", { pageTitle: "صفحه پیدا نشد", noindex: true }, (renderErr, html) => {
-            if (renderErr) {
-              console.error("404 render failed:", renderErr.message);
-              return res
-                .status(404)
-                .type("html")
-                .send(
-                  '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8">' +
-                    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-                    '<meta name="robots" content="noindex"><title>صفحه پیدا نشد</title>' +
-                    "<style>body{font-family:Tahoma,sans-serif;background:#f8fafc;color:#1f2937;" +
-                    "display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}" +
-                    ".box{text-align:center;padding:2rem}.box h1{font-size:3.2rem;margin:0 0 .5rem;" +
-                    "color:#2563eb}a{color:#2563eb;text-decoration:none}</style></head><body>" +
-                    '<div class="box"><h1>۴۰۴</h1><p>صفحه‌ای که دنبالش بودید پیدا نشد.</p>' +
-                    '<a href="/">بازگشت به صفحه اصلی</a></div></body></html>',
-                );
-            }
-            res.send(html);
-          });
+          .render(
+            "home/404",
+            { pageTitle: "صفحه پیدا نشد", noindex: true },
+            (renderErr, html) => {
+              if (renderErr) {
+                console.error("404 render failed:", renderErr.message);
+                return res
+                  .status(404)
+                  .type("html")
+                  .send(
+                    '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8">' +
+                      '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+                      '<meta name="robots" content="noindex"><title>صفحه پیدا نشد</title>' +
+                      "<style>body{font-family:Tahoma,sans-serif;background:#f8fafc;color:#1f2937;" +
+                      "display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}" +
+                      ".box{text-align:center;padding:2rem}.box h1{font-size:3.2rem;margin:0 0 .5rem;" +
+                      "color:#2563eb}a{color:#2563eb;text-decoration:none}</style></head><body>" +
+                      '<div class="box"><h1>۴۰۴</h1><p>صفحه‌ای که دنبالش بودید پیدا نشد.</p>' +
+                      '<a href="/">بازگشت به صفحه اصلی</a></div></body></html>',
+                  );
+              }
+              res.send(html);
+            },
+          );
       }
 
       // خطای سرور روی صفحه‌ی مرورگر → صفحه‌ی خطای دوستانه (نه JSON خام)
@@ -217,7 +229,7 @@ module.exports = class Application {
               "background:#f8fafc;color:#1f2937;display:flex;min-height:100vh;align-items:" +
               "center;justify-content:center;margin:0}.box{text-align:center;padding:2rem}" +
               ".box h1{font-size:3.2rem;margin:0 0 .5rem;color:#ef4444}a{color:#2563eb;" +
-              "text-decoration:none}</style></head><body><div class=\"box\"><h1>۵۰۰</h1>" +
+              'text-decoration:none}</style></head><body><div class="box"><h1>۵۰۰</h1>' +
               "<p>متأسفانه خطایی رخ داد. لطفاً چند لحظه بعد دوباره تلاش کنید.</p>" +
               '<a href="/">بازگشت به صفحه اصلی</a></div></body></html>',
           );

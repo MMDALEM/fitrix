@@ -32,26 +32,68 @@ const PROGRAM_MODELS = parseModels(
 
 const ACTIVITY = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very: 1.9 };
 const GOAL_FACTOR = { fatloss: 0.8, muscle: 1.1, recomp: 1.0, strength: 1.05, endurance: 1.0, fitness: 1.0 };
+// اصلاحِ کالری بر اساس تیپ بدنی: اکتومورف کمی بیشتر، اندومورف کمی کمتر
+const BODY_CAL = { ecto: 1.05, meso: 1.0, endo: 0.95 };
 
-// BMR (Mifflin-St Jeor) + TDEE + کالریِ هدف + ماکروها + BMI
+// BMR (Mifflin-St Jeor) + TDEE + کالریِ هدف + ماکروهایِ شخصی‌سازی‌شده + BMI
+// ماکروها بر اساسِ هدف، تیپ بدنی و سطحِ تجربه تنظیم می‌شوند تا دو نفر با
+// شرایطِ متفاوت اعدادِ متفاوت بگیرند (نه یک عددِ ثابت).
 function computeMetrics(p) {
   const w = Number(p.weight), h = Number(p.height), a = Number(p.age);
   const bmrBase = 10 * w + 6.25 * h - 5 * a;
   const bmr = Math.round(p.gender === "female" ? bmrBase - 161 : bmrBase + 5);
   const tdee = Math.round(bmr * (ACTIVITY[p.activity] || 1.55));
-  const calories = Math.round((tdee * (GOAL_FACTOR[p.goal] ?? 1.0)) / 10) * 10;
-  const proteinPerKg = p.goal === "fatloss" ? 2.2 : (p.goal === "muscle" || p.goal === "strength") ? 2.0 : 1.8;
-  const protein = Math.round(w * proteinPerKg);
-  const fat = Math.round(w * 0.9);
+  const bodyAdj = BODY_CAL[p.bodyType] ?? 1.0;
+  const calories = Math.round((tdee * (GOAL_FACTOR[p.goal] ?? 1.0) * bodyAdj) / 10) * 10;
+
+  // پروتئین: چربی‌سوزی و پیشرفته‌ها بالاتر (حفظِ عضله)؛ اندومورف کمی بیشتر (سیری)
+  let proteinPerKg = p.goal === "fatloss" ? 2.2 : (p.goal === "muscle" || p.goal === "strength") ? 2.0 : 1.8;
+  if (p.bodyType === "endo") proteinPerKg += 0.1;
+  if (p.experience === "advanced") proteinPerKg += 0.1;
+  const protein = Math.round(w * Math.min(proteinPerKg, 2.6));
+
+  // چربی: اندومورف نسبتِ چربیِ بالاتر/کربِ کمتر؛ اکتومورف برعکس
+  const fatPerKg = p.bodyType === "endo" ? 1.0 : p.bodyType === "ecto" ? 0.8 : 0.9;
+  const fat = Math.round(w * fatPerKg);
+
   const carb = Math.max(Math.round((calories - protein * 4 - fat * 9) / 4), 0);
   const bmi = Math.round((w / Math.pow(h / 100, 2)) * 10) / 10;
   return { bmr, tdee, calories, protein, carb, fat, bmi };
 }
 
+// اسپلیتِ پیشنهادیِ سمتِ سرور — بر اساسِ تعدادِ روز، سطح و هدف.
+// این «اسکلتِ ساختار» به مدل داده می‌شود تا برنامه‌ها یک‌شکل نشوند و ساختارشان
+// واقعاً با شرایطِ فرد بخواند (به‌جای اینکه مدل هر بار یک الگوی تکراری بسازد).
+function recommendSplit(days, experience, goal) {
+  const d = Math.min(Math.max(Number(days) || 3, 1), 7);
+  const beginner = experience === "beginner";
+  const plans = {
+    1: ["تمامِ بدن (فول‌بادی)"],
+    2: ["بالاتنه", "پایین‌تنه"],
+    3: beginner
+      ? ["فول‌بادی A", "فول‌بادی B", "فول‌بادی C"]
+      : ["سینه/شانه/پشت‌بازو (Push)", "پشت/جلوبازو (Pull)", "پا و شکم (Legs)"],
+    4: ["بالاتنه (قدرت)", "پایین‌تنه (قدرت)", "بالاتنه (حجم)", "پایین‌تنه (حجم)"],
+    5: beginner
+      ? ["بالاتنه", "پایین‌تنه", "فول‌بادی", "بالاتنه", "پایین‌تنه"]
+      : ["سینه", "پشت", "پا", "شانه و بازو", "فول‌بادی/رفعِ ضعف"],
+    6: ["Push (سینه/شانه/پشت‌بازو)", "Pull (پشت/جلوبازو)", "Legs (پا)", "Push", "Pull", "Legs"],
+    7: ["Push", "Pull", "Legs", "بالاتنه", "پایین‌تنه", "فول‌بادی/رفعِ ضعف", "کاردیوی سبک و ریکاوری"],
+  };
+  let split = (plans[d] || plans[3]).slice();
+  // برای استقامت/تناسبِ عمومی، روزِ آخر را کاردیو/متابولیک کن
+  if ((goal === "endurance" || goal === "fitness") && d >= 4) {
+    split[split.length - 1] = "کاردیو و متابولیک (HIIT/دایره‌ای)";
+  }
+  return split;
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // فراخوانیِ AI با fallbackِ چندمدلی + retry. خروجیِ JSON را برمی‌گرداند.
-async function callAIJson({ system, user, maxTokens }) {
+// validate: تابعِ اعتبارسنجیِ خروجی (پیش‌فرض: وجودِ weeklyPlan).
+async function callAIJson({ system, user, maxTokens, validate }) {
+  const isValid = validate || ((p) => p && Array.isArray(p.weeklyPlan));
   let lastErr = null;
   for (const model of PROGRAM_MODELS) {
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -66,7 +108,7 @@ async function callAIJson({ system, user, maxTokens }) {
               { role: "user", content: user },
             ],
             max_tokens: maxTokens,
-            temperature: 0.5,
+            temperature: 0.6,
             response_format: { type: "json_object" },
           }),
         });
@@ -80,7 +122,7 @@ async function callAIJson({ system, user, maxTokens }) {
         const data = await res.json();
         const raw = data?.choices?.[0]?.message?.content?.trim() || "";
         const parsed = parseJsonLoose(raw);
-        if (parsed && Array.isArray(parsed.weeklyPlan)) return parsed;
+        if (isValid(parsed)) return parsed;
         lastErr = new Error("پاسخِ نامعتبر");
       } catch (e) {
         lastErr = e;
@@ -120,31 +162,155 @@ function profileText(p, m) {
   ].filter(Boolean).join("\n");
 }
 
-// تولیدِ برنامه‌ی کاملِ پرجزئیات (همیشه کامل ساخته می‌شود؛ نمایشِ محدود سمتِ سرور)
+// ── تولیدِ برنامه‌ی کامل: تمرین + تغذیه + مکمل ──
+// برای «قطعی» بودنِ هر سه بخش، تولید به دو فراخوانیِ AIِ جدا شکسته می‌شود تا
+// هیچ‌کدام به‌خاطرِ محدودیتِ توکن قیچی نشوند: (۱) تمرینِ حجیم، (۲) تغذیه+مکملِ
+// سبک‌تر. برای هر بخش هم fallbackِ مطمئن گذاشته شده تا حتی در بدترین حالت خالی نماند.
 async function generateProgram({ intake, metrics }) {
   const catalog = await getCatalogText().catch(() => "");
+  const split = recommendSplit(intake.daysPerWeek, intake.experience, intake.goal);
+  const splitText = split.map((s, i) => `روز ${i + 1}: ${s}`).join(" | ");
+  const profile = profileText(intake, metrics);
 
-  const system = [
-    "تو یک مربیِ بدنسازی و متخصصِ تغذیه‌ی ورزشیِ حرفه‌ای و باتجربه هستی. یک برنامه‌ی بسیار دقیق، اصولی، علمی و کاملاً شخصی‌سازی‌شده طراحی کن.",
-    "خروجی را فقط و فقط یک شیء JSON معتبر و بدونِ هیچ متنِ اضافه بده، دقیقاً با این ساختار:",
-    `{"title":"...", "summary":"۲-۳ خط انگیزشی و شخصی", "weeklyPlan":[ {"day":"روز ۱ - نام گروه عضلانی","focus":"عضلاتِ درگیر","exercises":[ {"name":"نام دقیق حرکت","sets":"۴","reps":"۸-۱۲","rest":"۹۰ ثانیه","note":"نکته‌ی فرم/تکنیک"} ] } ], "nutrition":{"overview":"توضیحِ کوتاه + کالریِ کلِ روزانه","meals":[ {"name":"صبحانه","items":["ماده غذایی با مقدار"],"calories":"حدود ۵۵۰ کیلوکالری","note":"..."} ],"tips":["..."]}, "supplements":[ {"query":"پروتئین وی","reason":"چرا برای این فرد"} ] }`,
-    "قوانینِ دقت و کیفیت:",
-    "- summary باید ۳ تا ۴ جمله باشد: وضعیتِ فعلیِ فرد، منطقِ برنامه و انتظارِ نتیجه.",
-    `- تعداد روزهای weeklyPlan دقیقاً ${intake.daysPerWeek} روز و اسپلیت متناسب با هدف، سطح و تیپ بدنیِ فرد باشد.`,
-    "- برای هر روز ۶ تا ۸ حرکت بده. note هر حرکت کامل باشد: نکته‌ی فرمِ صحیح + تمپو/ریتم + یک اشتباهِ رایج که باید از آن پرهیز کرد. حرکات با محل تمرین و آسیب‌های فرد سازگار باشند.",
-    "- تیپ بدنی را جدی بگیر: اکتومورف → حجم و کالریِ بالاتر، استراحتِ بیشتر؛ اندومورف → تراکمِ بالاتر و کاردیوی بیشتر؛ مزومورف → متعادل.",
-    "- بخشِ تغذیه باید کامل و مفصل باشد: overview شاملِ کالریِ کلِ روزانه و توضیحِ استراتژی؛ سپس **دستِ‌کم ۵ وعده** (صبحانه، میان‌وعده، ناهار، میان‌وعده/قبل تمرین، شام و در صورتِ نیاز بعد تمرین). برای هر وعده مقدارِ دقیقِ مواد (گرم/عدد/لیوان)، فیلدِ calories، و یک note بده. مجموعِ کالریِ وعده‌ها نزدیکِ کالریِ هدف باشد. غذاها واقعی، مقرون‌به‌صرفه و در دسترسِ ایران باشند.",
-    "- tips دستِ‌کم ۴ نکته‌ی کاربردیِ تغذیه و ریکاوری (آب، خواب، زمان‌بندیِ وعده‌ها، ...).",
-    "- در supplements فقط نامِ عمومیِ مکمل بده (پروتئین وی، کراتین، گینر، بی سی ای ای، مولتی ویتامین، امگا ۳، گلوتامین) و با بودجه‌ی فرد بخوان؛ اول اقلامِ ضروری. برای هر کدام reason ِ کوتاه بنویس.",
-    "- همه‌ی متن‌ها فارسیِ روان و حرفه‌ای، اعداد فارسی، بدونِ ایموجی.",
-    catalog ? "محصولاتِ موجودِ فروشگاه (query را نزدیک به این‌ها انتخاب کن):\n" + catalog : "",
-  ].filter(Boolean).join("\n");
+  // دو فراخوانی به‌صورتِ موازی (سرعتِ بیشتر)؛ شکستِ یکی دیگری را خراب نمی‌کند
+  const [workout, nutri] = await Promise.all([
+    generateWorkout({ intake, splitText, profile }).catch(() => null),
+    generateNutritionAndSupps({ intake, metrics, catalog, profile }).catch(() => null),
+  ]);
 
-  const user = "مشخصاتِ کاربر:\n" + profileText(intake, metrics) + "\n\nحالا برنامه‌ی کامل و مفصل را طراحی کن.";
-  const out = await callAIJson({ system, user, maxTokens: 4000 });
+  const weeklyPlan =
+    workout && Array.isArray(workout.weeklyPlan) ? workout.weeklyPlan : [];
+  // اگر برنامه‌ی تمرین کاملاً شکست خورد، کلِ تولید ناموفق است (صفحه‌ی failed)
+  if (!weeklyPlan.length) throw new Error("تولیدِ برنامه‌ی تمرین ناموفق بود");
 
-  out.supplements = Array.isArray(out.supplements) ? await mapSupplements(out.supplements) : [];
+  const out = {
+    title: (workout && workout.title) || "برنامه‌ی اختصاصیِ من",
+    summary: (workout && workout.summary) || "",
+    weeklyPlan,
+    nutrition:
+      nutri && nutri.nutrition && Array.isArray(nutri.nutrition.meals) && nutri.nutrition.meals.length
+        ? nutri.nutrition
+        : buildFallbackNutrition(intake, metrics),
+    supplements: [],
+  };
+
+  // مکمل: از خروجیِ تغذیه؛ اگر نبود فراخوانیِ کوچکِ جداگانه؛ اگر باز هم نبود پیش‌فرض
+  let supps = nutri && Array.isArray(nutri.supplements) ? nutri.supplements : [];
+  if (!supps.length)
+    supps = await generateSupplements({ intake, metrics, catalog, profile }).catch(() => []);
+  if (!supps.length) supps = defaultSupplements(intake.goal);
+  out.supplements = await mapSupplements(supps);
+
   return out;
+}
+
+// ── فراخوانیِ ۱: برنامه‌ی تمرین ──
+async function generateWorkout({ intake, splitText, profile }) {
+  const system = [
+    "تو یک مربیِ بدنسازیِ باتجربه در سطحِ حرفه‌ای هستی. یک برنامه‌ی تمرینیِ کاملاً *اختصاصی* برای همین فردِ مشخص طراحی کن؛ نه یک برنامه‌ی عمومی و کلیشه‌ای.",
+    "برنامه باید با تک‌تکِ ورودی‌ها بخواند: جنسیت، سن، قد/وزن/BMI، تیپ بدنی، هدف، سطحِ تجربه، تعدادِ روز، محلِ تمرین (تجهیزات) و آسیب‌ها. دو نفر با شرایطِ متفاوت نباید برنامه‌ی مشابه بگیرند.",
+    "خروجی فقط یک شیء JSON معتبر و بدونِ متنِ اضافه با این ساختار:",
+    `{"title":"...","summary":"۳-۴ جمله‌ی شخصی درباره‌ی وضعیت و هدفِ همین فرد","weeklyPlan":[{"day":"روز ۱ - نام گروهِ عضلانی","focus":"عضلاتِ درگیر","exercises":[{"name":"نام دقیقِ حرکت","sets":"۴","reps":"۸-۱۲","rest":"۹۰ ثانیه","note":"فرمِ صحیح + تمپو + شدت (RIR/RPE) + یک اشتباهِ رایج"}]}]}`,
+    `تعدادِ روز باید دقیقاً ${intake.daysPerWeek} روز باشد. از این اسکلتِ اسپلیت که برای سطح و هدفِ همین فرد انتخاب شده استفاده کن: ${splitText}`,
+    "برای هر روز یک حرکتِ گرم‌کردن + ۵ تا ۷ حرکتِ اصلی. حجم و شدت را با سطح تنظیم کن: مبتدی ۲-۳ ست و تمرکز روی فرم؛ متوسط ۳-۴ ست؛ پیشرفته ۴-۵ ست + یک تکنیکِ شدت در حرکاتِ ایمن.",
+    "حرکات دقیقاً با تجهیزاتِ محلِ تمرین بخوانند: باشگاه → دستگاه + وزنه‌ی آزاد؛ خانه → دمبل/کش/وزنِ بدن؛ بدونِ تجهیزات → فقط وزنِ بدن. حرکتی که تجهیزاتش نیست ننویس.",
+    intake.injuries ? `‼️ آسیب/محدودیت: «${intake.injuries}». حرکاتِ پرفشار روی این ناحیه را حذف یا با جایگزینِ ایمن عوض کن و در note هشدار بده.` : "",
+    "تیپ بدنی را اعمال کن: اکتومورف → ترکیبیِ سنگین و استراحتِ بیشتر؛ اندومورف → تراکمِ بالاتر و استراحتِ کوتاه‌تر؛ مزومورف → متعادل.",
+    "همه‌ی متن‌ها فارسیِ روان و حرفه‌ای، اعداد فارسی، بدونِ ایموجی.",
+  ].filter(Boolean).join("\n");
+  const user = "مشخصاتِ کاربر:\n" + profile + "\n\nحالا فقط برنامه‌ی تمرین را کامل و دقیق طراحی کن.";
+  return callAIJson({
+    system,
+    user,
+    maxTokens: 3500,
+    validate: (p) => p && Array.isArray(p.weeklyPlan) && p.weeklyPlan.length > 0,
+  });
+}
+
+// ── فراخوانیِ ۲: تغذیه + مکمل ──
+async function generateNutritionAndSupps({ intake, metrics, catalog, profile }) {
+  const system = [
+    "تو متخصصِ تغذیه‌ی ورزشی و مکمل هستی. برای همین فردِ مشخص یک برنامه‌ی تغذیه‌ی کامل و فهرستِ مکملِ مناسب طراحی کن.",
+    "خروجی فقط یک شیء JSON معتبر و بدونِ متنِ اضافه با این ساختار:",
+    `{"nutrition":{"overview":"استراتژی + کالریِ کلِ روزانه","meals":[{"name":"صبحانه","items":["ماده با مقدارِ دقیق"],"calories":"حدود ۵۵۰ کیلوکالری","note":"..."}],"tips":["..."]},"supplements":[{"query":"پروتئین وی","reason":"چرا برای همین فرد","dose":"۱ اسکوپ (۳۰ گرم)","timing":"بعد از تمرین","priority":"ضروری"}]}`,
+    `کالریِ هدف ${metrics.calories} کیلوکالری و ماکرو: پروتئین ${metrics.protein}g، کربوهیدرات ${metrics.carb}g، چربی ${metrics.fat}g. overview این اعداد و استراتژی (کات/بالک/ریکامپ) را توضیح دهد.`,
+    "دقیقاً ۵ تا ۶ وعده بده (صبحانه، میان‌وعده، ناهار، قبل/بعدِ تمرین، شام). هر وعده موادِ غذایی با مقدارِ دقیق (گرم/عدد/لیوان) + فیلدِ calories + note. مجموعِ کالریِ وعده‌ها نزدیکِ کالریِ هدف (خطای کمتر از ۱۰٪).",
+    intake.diet ? `‼️ محدودیتِ غذایی: «${intake.diet}». هیچ ماده‌ی مغایری نیاور و جایگزینِ مناسب بده.` : "",
+    "غذاها واقعی، در دسترسِ ایران و مقرون‌به‌صرفه. tips دستِ‌کم ۴ نکته (آب، خواب، زمان‌بندیِ وعده‌ها، پیشرفتِ تدریجی).",
+    "برای supplements فقط نامِ عمومی (پروتئین وی، کراتین، گینر، بی‌سی‌ای‌ای، مولتی‌ویتامین، امگا۳، گلوتامین، ال‌کارنیتین). ۳ تا ۵ قلم، اول اقلامِ ضروری، هر کدام با dose و timing و priority (ضروری/مکمل/اختیاری).",
+    intake.budget ? `بودجه‌ی مکمل حدود ${Number(intake.budget).toLocaleString("fa-IR")} تومان در ماه؛ فراتر نرو.` : "بودجه مشخص نیست؛ فقط اقلامِ پایه و ضروری.",
+    "همه‌ی متن‌ها فارسیِ روان و حرفه‌ای، اعداد فارسی، بدونِ ایموجی.",
+    catalog ? "برای مکمل ترجیحاً از این محصولاتِ موجود انتخاب کن:\n" + catalog : "",
+  ].filter(Boolean).join("\n");
+  const user = "مشخصاتِ کاربر:\n" + profile + "\n\nحالا برنامه‌ی تغذیه و مکملِ مناسب را کامل بده.";
+  return callAIJson({
+    system,
+    user,
+    maxTokens: 2800,
+    validate: (p) => p && p.nutrition && Array.isArray(p.nutrition.meals),
+  });
+}
+
+// ── فراخوانیِ کوچکِ مستقل فقط برای مکمل (fallback وقتی تماسِ تغذیه مکمل نداد) ──
+async function generateSupplements({ intake, catalog, profile }) {
+  const system = [
+    "تو متخصصِ مکملِ ورزشی هستی. ۳ تا ۵ مکملِ مناسبِ همین فرد را پیشنهاد بده.",
+    `خروجی فقط یک شیء JSON: {"supplements":[{"query":"نامِ عمومی","reason":"چرا برای این فرد","dose":"مقدار","timing":"زمانِ مصرف","priority":"ضروری|مکمل|اختیاری"}]}`,
+    "فقط نامِ عمومی (پروتئین وی، کراتین، گینر، بی‌سی‌ای‌ای، مولتی‌ویتامین، امگا۳، گلوتامین، ال‌کارنیتین). اول ضروری‌ها. فارسی، بدونِ ایموجی.",
+    intake.budget ? `بودجه حدود ${Number(intake.budget).toLocaleString("fa-IR")} تومان در ماه.` : "",
+    catalog ? "ترجیحاً از این محصولاتِ موجود:\n" + catalog : "",
+  ].filter(Boolean).join("\n");
+  const user = "مشخصات:\n" + profile + "\n\nمکمل‌های مناسب را بده.";
+  const parsed = await callAIJson({
+    system,
+    user,
+    maxTokens: 700,
+    validate: (p) => p && Array.isArray(p.supplements),
+  });
+  return Array.isArray(parsed.supplements) ? parsed.supplements : [];
+}
+
+// پیشنهادِ مکملِ پیش‌فرضِ متناسب با هدف — اگر AI هیچ مکملی نداد، همیشه چیزی نشان داده شود
+function defaultSupplements(goal) {
+  const list = [
+    { query: "پروتئین وی", reason: "تأمینِ پروتئینِ روزانه برای حفظ و رشدِ عضله", dose: "۱ اسکوپ (۳۰ گرم)", timing: "بعد از تمرین", priority: "ضروری" },
+    { query: "مولتی ویتامین", reason: "پوششِ ریزمغذی‌ها و سلامتِ عمومی", dose: "۱ عدد", timing: "همراهِ صبحانه", priority: "مکمل" },
+  ];
+  if (goal === "muscle" || goal === "strength" || goal === "recomp")
+    list.splice(1, 0, { query: "کراتین", reason: "افزایشِ قدرت و حجمِ عضلانی", dose: "۵ گرم", timing: "روزانه (هر زمان)", priority: "ضروری" });
+  if (goal === "muscle")
+    list.push({ query: "گینر", reason: "کمک به دریافتِ کالریِ مازاد برای افزایشِ وزن", dose: "۱ وعده", timing: "بین وعده‌ها", priority: "اختیاری" });
+  if (goal === "fatloss")
+    list.push({ query: "ال کارنیتین", reason: "کمک به سوخت‌وسازِ چربی همراهِ رژیم و تمرین", dose: "۱۵۰۰ میلی‌گرم", timing: "قبل از تمرین", priority: "اختیاری" });
+  return list;
+}
+
+// تغذیه‌ی پیش‌فرضِ محاسباتی (اگر فراخوانیِ تغذیه شکست خورد) — بر اساسِ ماکروهای همین فرد
+function buildFallbackNutrition(intake, metrics) {
+  const c = metrics.calories || 2200;
+  const fa = (n) => Number(n).toLocaleString("fa-IR");
+  const meals = [
+    { name: "صبحانه", pct: 0.22, items: ["۳ عدد تخم‌مرغ", "۵۰ گرم جو دوسر", "۱ عدد میوه"] },
+    { name: "میان‌وعده", pct: 0.13, items: ["۳۰ گرم مغزها (بادام/گردو)", "۱ عدد میوه"] },
+    { name: "ناهار", pct: 0.28, items: ["۱۵۰ گرم منبعِ پروتئین (مرغ/گوشت/ماهی)", "۱ لیوان برنج یا نان", "سالاد و سبزیجات"] },
+    { name: "قبل/بعد تمرین", pct: 0.15, items: ["۱ عدد موز", "منبعِ پروتئین (وی یا تخم‌مرغ)"] },
+    { name: "شام", pct: 0.22, items: ["۱۲۰ گرم منبعِ پروتئین", "سبزیجات", "منبعِ کربوهیدراتِ سبک"] },
+  ];
+  return {
+    overview: `کالریِ هدفِ روزانه حدود ${fa(c)} کیلوکالری با پروتئین ${fa(metrics.protein)} گرم، کربوهیدرات ${fa(metrics.carb)} گرم و چربی ${fa(metrics.fat)} گرم. وعده‌ها را منظم و با فاصله‌ی مناسب مصرف کن.`,
+    meals: meals.map((m) => ({
+      name: m.name,
+      items: m.items,
+      calories: `حدود ${fa(Math.round((c * m.pct) / 10) * 10)} کیلوکالری`,
+      note: "",
+    })),
+    tips: [
+      "روزانه ۲.۵ تا ۳.۵ لیتر آب بنوش.",
+      "۷ تا ۸ ساعت خوابِ باکیفیت داشته باش.",
+      "پروتئین را در طولِ روز پخش کن (هر وعده منبعِ پروتئین داشته باشد).",
+      "هر ۱ تا ۲ هفته وزن و آینه را بررسی و در صورتِ نیاز کالری را تنظیم کن.",
+    ],
+  };
 }
 
 async function mapSupplements(list) {
@@ -153,6 +319,15 @@ async function mapSupplements(list) {
   for (const s of list.slice(0, 8)) {
     const q = String(s.query || s.title || "").trim();
     if (!q) continue;
+
+    // اطلاعاتِ کاربردیِ مکمل (مقدار/زمان/اولویت) از خروجیِ مدل
+    const extra = {
+      reason: String(s.reason || "").slice(0, 220),
+      dose: String(s.dose || "").slice(0, 80),
+      timing: String(s.timing || "").slice(0, 80),
+      priority: String(s.priority || "").slice(0, 30),
+    };
+
     const words = q.split(/\s+/).slice(0, 3).map(escapeRe).join("|");
     const prod = await productModel
       .findOne({ isActive: true, siteHidden: { $ne: true }, quantity: { $gt: 0 }, title: { $regex: words, $options: "i" } })
@@ -160,9 +335,18 @@ async function mapSupplements(list) {
       .select("title slug")
       .lean()
       .catch(() => null);
-    if (prod && !seen.has(prod.slug)) {
+
+    if (prod) {
+      if (seen.has(prod.slug)) continue;
       seen.add(prod.slug);
-      result.push({ title: prod.title, slug: prod.slug, reason: String(s.reason || "").slice(0, 200) });
+      result.push({ title: prod.title, slug: prod.slug, ...extra });
+    } else {
+      // مکملِ پیشنهادی که در فروشگاه موجود نیست: باز هم در برنامه نمایش داده
+      // می‌شود (بدونِ لینکِ خرید) تا مشاوره کامل بماند
+      const key = "x:" + q;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      result.push({ title: q, slug: "", ...extra });
     }
   }
   return result;

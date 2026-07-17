@@ -29,9 +29,18 @@ const mealSchema = new Schema(
   { _id: false },
 );
 
-// یک مکملِ پیشنهادی که به محصولِ فروشگاه لینک می‌شود (فقط نسخه‌ی پولی)
+// یک مکملِ پیشنهادی که به محصولِ فروشگاه لینک می‌شود (فقط نسخه‌ی پولی).
+// dose (مقدار)، timing (زمانِ مصرف) و priority (ضروری/مکمل/اختیاری) برای
+// حرفه‌ای‌تر و دقیق‌تر شدنِ توصیه‌ی مکمل اضافه شده‌اند.
 const supplementSchema = new Schema(
-  { title: String, slug: String, reason: String },
+  {
+    title: String,
+    slug: String,
+    reason: String,
+    dose: String,
+    timing: String,
+    priority: String,
+  },
   { _id: false },
 );
 

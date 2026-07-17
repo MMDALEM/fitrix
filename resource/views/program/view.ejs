@@ -18,7 +18,7 @@
                 <% }) %>
             </div>
             <% if (unlocked){ %>
-            <a href="/program/<%= plan._id %>/pdf" class="prg-pdf-btn">
+            <a href="/program/<%= plan._id %>/pdf" class="prg-pdf-btn mi-press">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1.1rem;height:1.1rem"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
                 دانلود PDF برنامه
             </a>
@@ -89,10 +89,12 @@
                 <% plan.supplements.forEach(function(sp){ %>
                 <div class="prg-supp">
                     <div>
-                        <a href="/product/<%= sp.slug %>" class="t"><%= sp.title %></a>
+                        <% if (sp.slug){ %><a href="/product/<%= sp.slug %>" class="t"><%= sp.title %></a><% } else { %><span class="t"><%= sp.title %></span><% } %>
+                        <% if (sp.priority){ %><span class="prg-tag" style="margin-inline-start:.4rem"><%= sp.priority %></span><% } %>
                         <% if (sp.reason){ %><p class="prg-ex-note"><%= sp.reason %></p><% } %>
+                        <% if (sp.dose || sp.timing){ %><p class="prg-ex-note"><% if (sp.dose){ %>مقدار: <%= sp.dose %><% } %><% if (sp.dose && sp.timing){ %> — <% } %><% if (sp.timing){ %>زمان: <%= sp.timing %><% } %></p><% } %>
                     </div>
-                    <a href="/product/<%= sp.slug %>" class="prg-buy">مشاهده و خرید</a>
+                    <% if (sp.slug){ %><a href="/product/<%= sp.slug %>" class="prg-buy mi-press">مشاهده و خرید</a><% } %>
                 </div>
                 <% }) %>
             </div>
@@ -112,7 +114,7 @@
                 <% } else { %>
                 <form id="qaForm" class="prg-ask" data-id="<%= plan._id %>">
                     <input class="prg-field" id="qaInput" type="text" maxlength="1000" placeholder="مثلاً: اگر یک روز نتوانم به باشگاه بروم چه کنم؟" required>
-                    <button class="prg-buy" type="submit" style="padding:.5rem 1.2rem">بپرس</button>
+                    <button class="prg-buy mi-press" type="submit" style="padding:.5rem 1.2rem">بپرس</button>
                 </form>
                 <p class="prg-hint" style="margin-top:.5rem"><%= (20 - _qaCount).toLocaleString('fa-IR') %> سوالِ باقی‌مانده از ۲۰ سوالِ این برنامه.</p>
                 <% } %>
@@ -139,7 +141,7 @@
                         <label><input type="radio" name="gateway" value="zarinpal" checked><span>زرین‌پال</span></label>
                         <label><input type="radio" name="gateway" value="digipay"><span>دیجی‌پی</span></label>
                     </div>
-                    <button class="prg-btn prg-btn-primary" type="submit">پرداخت و بازکردنِ برنامه‌ی کامل</button>
+                    <button class="prg-btn prg-btn-primary mi-press" type="submit">پرداخت و بازکردنِ برنامه‌ی کامل</button>
                 </form>
             </div>
         <% } %>

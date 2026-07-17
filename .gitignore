@@ -16,4 +16,5 @@ coverage/
 .gitignore
 مکمل
 public/uploads
+storage/
 ecosystem.config.js

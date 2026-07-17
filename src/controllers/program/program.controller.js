@@ -270,20 +270,47 @@ class programController extends controller {
     }
   }
 
-  // خروجیِ PDF (صفحه‌ی چاپِ مستقل) — فقط برنامه‌های بازشده
+  // خروجیِ PDF — فقط برنامه‌های بازشده.
+  // جریان: رندرِ HTML → تولیدِ PDF با هدلس‌کروم → ذخیره روی دیسک → دانلودِ
+  // مستقیمِ فایل. اگر نسخه‌ای از قبل ساخته شده و برنامه تغییر نکرده باشد،
+  // همان فایلِ ذخیره‌شده دانلود می‌شود (بدونِ تولیدِ دوباره).
   async pdf(req, res, next) {
     try {
       const plan = await this._own(req);
-      if (!plan) return this.alertAndReview(req, res, { title: "برنامه یافت نشد", icon: "error" }, "/program");
-      if (!plan.unlocked || plan.status !== "ready") return res.redirect(`/program/${plan._id}`);
-      const s = await settingModel.getSingleton();
-      const siteName = (res.locals.settings && res.locals.settings.siteName) || "فیت ریکس شاپ";
-      const name = (plan.fullName || `${req.user.firstName || ""} ${req.user.lastName || ""}`).trim() || "کاربر";
-      const fileName = ("برنامه-" + name).replace(/[\\/:*?"<>|]+/g, "-").slice(0, 60);
+      if (!plan)
+        return this.alertAndReview(req, res, { title: "برنامه یافت نشد", icon: "error" }, "/program");
+      if (!plan.unlocked || plan.status !== "ready")
+        return res.redirect(`/program/${plan._id}`);
 
-      // HTML صفحه‌ی PDF را می‌سازیم، سپس با هدلس‌کروم به فایلِ PDF تبدیل و
-      // مستقیم دانلود می‌کنیم. اگر کروم در دسترس نبود، همان HTML (چاپِ مرورگر)
-      // را می‌فرستیم تا قابلیت هرگز از کار نیفتد.
+      const fs = require("fs");
+      const path = require("path");
+
+      const siteName =
+        (res.locals.settings && res.locals.settings.siteName) || "فیت ریکس شاپ";
+      const name =
+        (plan.fullName || `${req.user.firstName || ""} ${req.user.lastName || ""}`).trim() ||
+        "کاربر";
+      // نامِ فایلِ دانلود (نامِ فارسیِ کاربر) — کاراکترهای غیرمجاز حذف می‌شوند
+      const downloadName =
+        ("برنامه-" + name).replace(/[\\/:*?"<>|]+/g, "-").slice(0, 60) + ".pdf";
+
+      // فایل در پوشه‌ی خصوصیِ storage ذخیره می‌شود (نه public) تا برنامه‌ی
+      // شخصیِ کاربران عمومی نشود. دسترسی از طریقِ همین روتِ محافظت‌شده است.
+      const dir = path.join(process.cwd(), "storage", "program-pdfs");
+      const filePath = path.join(dir, `${plan._id}.pdf`);
+
+      // کَش: اگر PDF ساخته‌شده جدیدتر از آخرین تغییرِ برنامه باشد، همان را بده
+      try {
+        const st = fs.statSync(filePath);
+        const planTime = plan.updatedAt ? new Date(plan.updatedAt).getTime() : 0;
+        if (st && st.size > 0 && st.mtimeMs >= planTime) {
+          return res.download(filePath, downloadName);
+        }
+      } catch (e) {
+        /* فایلی نبود — پایین ساخته می‌شود */
+      }
+
+      // رندرِ HTMLِ برنامه، سپس تبدیل به PDF
       return res.render(
         "program/pdf",
         { layout: false, plan, user: req.user, siteName },
@@ -291,16 +318,35 @@ class programController extends controller {
           if (err) return next(err);
           try {
             const { htmlToPdf } = require("../../utils/pdf");
-            const buf = await htmlToPdf(html.replace(/window\.print\(\)/g, "void 0"));
+            const buf = await htmlToPdf(
+              html.replace(/window\.print\(\)/g, "void 0"),
+            );
+
+            // ذخیره روی دیسک (خطای ذخیره نباید دانلود را متوقف کند)
+            try {
+              fs.mkdirSync(dir, { recursive: true });
+              fs.writeFileSync(filePath, buf);
+            } catch (wErr) {
+              require("../../utils/logError").logError(wErr, {
+                source: "program-pdf-save",
+              });
+            }
+
+            // دانلودِ مستقیمِ فایل
             res.setHeader("Content-Type", "application/pdf");
             res.setHeader(
               "Content-Disposition",
-              "attachment; filename*=UTF-8''" + encodeURIComponent(fileName + ".pdf"),
+              "attachment; filename*=UTF-8''" + encodeURIComponent(downloadName),
             );
             return res.send(buf);
           } catch (e) {
             require("../../utils/logError").logError(e, { source: "program-pdf" });
-            return res.type("html").send(html); // fallback: چاپِ مرورگر
+            return this.alertAndReview(
+              req,
+              res,
+              { title: "ساختِ فایل PDF ناموفق بود؛ چند لحظه بعد دوباره تلاش کن", icon: "error" },
+              `/program/${plan._id}`,
+            );
           }
         },
       );

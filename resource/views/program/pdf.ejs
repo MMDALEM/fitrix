@@ -14,14 +14,17 @@
         var fa = function(n){ return Number(n||0).toLocaleString('fa-IR'); };
     %>
     <style>
-        @font-face{font-family:"Vazir";src:url("/fonts/Vazir/Vazir.woff2") format("woff2");font-weight:normal;font-display:swap}
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:"Vazir",Tahoma,'Segoe UI',sans-serif;color:#1e293b;background:#f1f5f9;line-height:1.9;padding:1.5rem}
+        @font-face{font-family:"Vazir";src:url("/fonts/Vazir/Vazir-Light.woff2") format("woff2");font-weight:300;font-display:block}
+        @font-face{font-family:"Vazir";src:url("/fonts/Vazir/Vazir.woff2") format("woff2");font-weight:400;font-display:block}
+        @font-face{font-family:"Vazir";src:url("/fonts/Vazir/Vazir-Medium.woff2") format("woff2");font-weight:500;font-display:block}
+        @font-face{font-family:"Vazir";src:url("/fonts/Vazir/Vazir-Bold.woff2") format("woff2");font-weight:700;font-display:block}
+        *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+        body{font-family:"Vazir",Tahoma,'Segoe UI',sans-serif;color:#1e293b;background:#f1f5f9;line-height:1.9;padding:1.5rem;font-weight:400;-webkit-font-smoothing:antialiased}
         .sheet{max-width:52rem;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 10px 40px rgba(2,6,23,.12)}
         .head{background:linear-gradient(135deg,#0f172a,#2563eb 65%,#1d4ed8);color:#fff;padding:1.6rem 1.8rem;position:relative;overflow:hidden}
-        .head h1{font-size:1.5rem;font-weight:800;margin-bottom:.3rem}
+        .head h1{font-size:1.5rem;font-weight:700;margin-bottom:.3rem}
         .head .sub{opacity:.9;font-size:.9rem}
-        .head .brand{position:absolute;top:1.4rem;left:1.8rem;font-weight:800;font-size:1.1rem;opacity:.95}
+        .head .brand{position:absolute;top:1.4rem;left:1.8rem;font-weight:700;font-size:1.1rem;opacity:.95}
         .head .fig{position:absolute;bottom:-2rem;left:8rem;height:12rem;opacity:.22;color:#fff}
         .head .fig svg{height:100%;width:auto}
         .body{padding:1.6rem 1.8rem}
@@ -30,22 +33,22 @@
         .info b{color:#2563eb}
         .stats{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.6rem}
         .stat{flex:1;min-width:6rem;border:1px solid #e6ecf3;border-radius:10px;padding:.6rem;text-align:center}
-        .stat b{display:block;font-size:1.25rem;color:#1d4ed8;font-weight:800}
+        .stat b{display:block;font-size:1.25rem;color:#1d4ed8;font-weight:700}
         .stat span{font-size:.72rem;color:#64748b}
-        h2.sec{font-size:1.1rem;font-weight:800;color:#0f172a;margin:1.4rem 0 .7rem;padding-bottom:.35rem;border-bottom:2px solid #2563eb;display:inline-block}
+        h2.sec{font-size:1.1rem;font-weight:700;color:#0f172a;margin:1.4rem 0 .7rem;padding-bottom:.35rem;border-bottom:2px solid #2563eb;display:inline-block}
         .day{border:1px solid #e6ecf3;border-radius:10px;margin-bottom:.8rem;overflow:hidden;break-inside:avoid}
-        .day h3{background:#eef4ff;color:#1e3a8a;font-weight:800;padding:.6rem .9rem;font-size:.95rem}
+        .day h3{background:#eef4ff;color:#1e3a8a;font-weight:700;padding:.6rem .9rem;font-size:.95rem}
         .ex{display:flex;justify-content:space-between;gap:.6rem;padding:.5rem .9rem;border-top:1px dashed #eef2f7;font-size:.88rem}
         .ex:first-of-type{border-top:none}
         .ex .tags{color:#2563eb;white-space:nowrap;font-size:.8rem;font-weight:700}
         .ex .note{color:#94a3b8;font-size:.76rem}
-        .meal{margin-bottom:.7rem}.meal h4{color:#2563eb;font-weight:800;display:flex;justify-content:space-between}
+        .meal{margin-bottom:.7rem}.meal h4{color:#2563eb;font-weight:700;display:flex;justify-content:space-between}
         .meal ul{padding-inline-start:1.2rem;color:#475569;font-size:.86rem}
         .supp{display:flex;justify-content:space-between;border:1px solid #e6ecf3;border-radius:8px;padding:.5rem .8rem;margin:.4rem 0;font-size:.88rem}
         .supp b{color:#1d4ed8}
         .foot{text-align:center;color:#94a3b8;font-size:.75rem;padding:1rem;border-top:1px solid #eef2f7}
         .printbar{max-width:52rem;margin:0 auto 1rem;display:flex;justify-content:flex-end;gap:.5rem}
-        .btn{background:#2563eb;color:#fff;border:none;border-radius:9px;padding:.6rem 1.4rem;font-weight:800;cursor:pointer;font-family:inherit}
+        .btn{background:#2563eb;color:#fff;border:none;border-radius:9px;padding:.6rem 1.4rem;font-weight:700;cursor:pointer;font-family:inherit}
         .btn.ghost{background:#e2e8f0;color:#334155}
         @media print{ body{background:#fff;padding:0} .sheet{box-shadow:none;border-radius:0;max-width:100%} .printbar{display:none} @page{margin:1cm} }
     </style>
@@ -111,7 +114,7 @@
             </div>
             <% }) %>
             <% if (plan.nutrition.tips && plan.nutrition.tips.length){ %>
-            <p style="font-weight:800;margin:.4rem 0 .2rem">نکته‌ها:</p>
+            <p style="font-weight:700;margin:.4rem 0 .2rem">نکته‌ها:</p>
             <ul style="padding-inline-start:1.2rem;color:#475569;font-size:.86rem"><% plan.nutrition.tips.forEach(function(t){ %><li><%= t %></li><% }) %></ul>
             <% } %>
             <% } %>
@@ -120,7 +123,13 @@
             <% if (plan.supplements && plan.supplements.length){ %>
             <h2 class="sec">مکمل‌های پیشنهادی</h2>
             <% plan.supplements.forEach(function(sp){ %>
-            <div class="supp"><b><%= sp.title %></b><span style="color:#64748b"><%= sp.reason || '' %></span></div>
+            <div class="supp">
+                <div>
+                    <b><%= sp.title %></b><% if (sp.priority){ %> <span style="font-size:.72rem;color:#2563eb">(<%= sp.priority %>)</span><% } %>
+                    <% if (sp.dose || sp.timing){ %><div style="font-size:.74rem;color:#64748b;font-weight:400"><% if (sp.dose){ %>مقدار: <%= sp.dose %><% } %><% if (sp.dose && sp.timing){ %> — <% } %><% if (sp.timing){ %>زمان: <%= sp.timing %><% } %></div><% } %>
+                </div>
+                <span style="color:#64748b;max-width:52%;text-align:left"><%= sp.reason || '' %></span>
+            </div>
             <% }) %>
             <% } %>
         </div>

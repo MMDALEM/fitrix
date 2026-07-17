@@ -29,8 +29,6 @@ class GlobalData {
 
   static async categories(req, res, next) {
     try {
-      // فقط دسته‌های اصلی؛ زیر‌دسته‌های فعال داخل subCategories می‌آیند
-      // (قبلاً همه‌ی دسته‌ها flat برمی‌گشتند و زیر‌دسته‌ها در منو تکرار می‌شدند)
       res.locals.categories = await categoriesModel
         .find({ isActive: true, parent: null })
         .sort({ displayOrder: 1, title: 1 })

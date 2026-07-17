@@ -416,5 +416,7 @@
             if (n > 0) badge.classList.remove("hidden");
             else badge.classList.add("hidden");
         }
+        // میکرو-اینتراکشنِ سبک اپل: پرشِ فنریِ بَجِ سبد هنگام تغییرِ تعداد
+        if (n > 0 && badge && typeof window.fxBump === "function") window.fxBump(badge);
     };
 </script>

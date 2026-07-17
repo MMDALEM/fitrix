@@ -6,7 +6,14 @@ const {
   saveReturnTo,
 } = require("../utils/token");
 
-const USER_FIELDS = { phone: 1, isActive: 1, roles: 1, name: 1, avatar: 1 };
+const USER_FIELDS = {
+  phone: 1,
+  isActive: 1,
+  roles: 1,
+  firstName: 1,
+  lastName: 1,
+  avatar: 1,
+};
 
 // تلاش برای احراز هویت: اول اکسس‌توکن، بعد رفرش‌توکن (تمدید بی‌صدا)
 async function resolveUser(req, res) {

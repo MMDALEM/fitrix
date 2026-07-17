@@ -11,17 +11,12 @@
                         </a>
                         <% }) %>
                     <% } else { %>
-                        <a href="/shop" class="swiper-slide">
-                            <img src="/images/slider/4.webp" class="rounded-xl" alt="فروشگاه مکمل ورزشی فیت ریکس شاپ">
-                        </a>
-                        <a href="/shop" class="swiper-slide">
-                            <img src="/images/slider/1.jpg" class="rounded-xl" alt="خرید مکمل ورزشی با تخفیف ویژه">
-                        </a>
-                        <a href="/shop" class="swiper-slide">
-                            <img src="/images/slider/2.jpg" class="rounded-xl" alt="جدیدترین مکمل‌های ورزشی">
-                        </a>
-                        <a href="/shop" class="swiper-slide">
-                            <img src="/images/slider/3.gif" class="rounded-xl" alt="پیشنهادهای شگفت‌انگیز فیت ریکس شاپ">
+                        <%# اسلایدِ پیش‌فرض (وقتی اسلایدی از پنل ثبت نشده) — بدونِ تصویرِ خارجی تا هیچ ۴۰۴/عکسِ شکسته‌ای رخ ندهد %>
+                        <a href="/shop" class="swiper-slide rounded-xl" style="display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#0f172a,#2563eb 60%,#0ea5e9);color:#fff;height:100%">
+                            <div style="padding:1rem">
+                                <p style="font-size:clamp(1.3rem,4.5vw,2.2rem);font-weight:800;margin-bottom:.5rem">فیت ریکس شاپ</p>
+                                <p style="opacity:.92;font-size:clamp(.85rem,2.6vw,1.05rem)">خرید مکملِ ورزشیِ اورجینال با ارسالِ سریع به سراسرِ ایران</p>
+                            </div>
                         </a>
                     <% } %>
                 </div>
@@ -54,7 +49,7 @@
         <!-- CATEGORY -->
         <section class="mx-4 lg:container mt-20">
             <!-- SECTION TITLE -->
-            <div
+            <div data-reveal="up"
                 class="flex flex-col gap-y-4 xs:flex-row items-center justify-between w-full text-center xs:text-start">
                 <div class="flex items-center gap-x-2 sm:gap-x-4">
                     <span class="size-12 hidden xs:flex rounded-lg bg-white shadow-lg dark:bg-gray-800 flex-center">
@@ -72,7 +67,7 @@
                 </div>
                 <div class="w-full xs:w-auto flex justify-center items-center gap-x-2">
                     <a href="/shop"
-                        class="group shadow-xl text-sm md:text-base flex gap-x-1.5 items-center px-2 h-10 md:px-3 text-white bg-blue-600 rounded-xl">
+                        class="mi-press group shadow-xl text-sm md:text-base flex gap-x-1.5 items-center px-2 h-10 md:px-3 text-white bg-blue-600 rounded-xl">
                         <p>مشاهده همه</p>
                         <span
                             class="w-7 h-7 rounded-full bg-blue-500 flex-center md:group-hover:-translate-x-1 transition-transform duration-300">
@@ -84,9 +79,9 @@
                 </div>
             </div>
             <!-- ITEMS -->
-            <div
+            <div data-reveal-group
                 class="flex items-center justify-evenly flex-wrap mt-12 child:mb-8 gap-x-8 child:items-center child:flex-col child:duration-300 child:cursor-pointer child:gap-y-1 child:text-gray-800 child:dark:text-gray-300 child:relative">
-                <a href="/shop?category=پروتئینها" class="group flex">
+                <a href="/shop?category=پروتئینها" class="group flex mi-lift" data-reveal="up-sm">
                     <img src="/images/category/5.png"
                         class="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
                         alt="پروتئین " />
@@ -94,7 +89,7 @@
                         پروتئین 
                     </p>
                 </a>
-                <a href="/shop?category=گینر-و-کربوهیدرات" class="group flex">
+                <a href="/shop?category=گینر-و-کربوهیدرات" class="group flex mi-lift" data-reveal="up-sm">
                     <img src="/images/category/6.png"
                         class="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
                         alt="گینر" />
@@ -102,7 +97,7 @@
                         گینر
                     </p>
                 </a>
-                <a href="/shop?category=کراتین" class="group flex">
+                <a href="/shop?category=کراتین" class="group flex mi-lift" data-reveal="up-sm">
                     <img src="/images/category/7.png" 
                         class="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
                         alt="کراتین" />
@@ -110,7 +105,7 @@
                         کراتین
                     </p>
                 </a>
-                <a href="/shop?category=گلوتامین" class="group flex">
+                <a href="/shop?category=گلوتامین" class="group flex mi-lift" data-reveal="up-sm">
                     <img src="/images/category/8.png"
                         class="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
                         alt="گلوتامین" />
@@ -118,7 +113,7 @@
                         گلوتامین
                     </p>
                 </a>
-                <a href="/shop?category=چربیسوز-و-کاهش-وزن" class="group flex">
+                <a href="/shop?category=چربیسوز-و-کاهش-وزن" class="group flex mi-lift" data-reveal="up-sm">
                     <img src="/images/category/9.png"
                         class="w-[80px] h-[100px] lg:w-[80px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
                         alt=" چربی سوز" />
@@ -127,7 +122,7 @@
                     </p>
 
                 </a>
-                <a href="/shop?category=آمینواسیدها" class="group flex">
+                <a href="/shop?category=آمینواسیدها" class="group flex mi-lift" data-reveal="up-sm">
                     <img src="/images/category/10.png"
                         class="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] object-cover group-hover:grayscale group-hover:opacity-90 duration-300"
                         alt="آمینو" />
@@ -139,7 +134,7 @@
         </section>
 
         <!-- AMAZING SLIDER -->
-        <section class="mx-4 lg:container mt-20">
+        <section data-reveal="fade" class="mx-4 lg:container mt-20">
             <div class="w-full h-80 rounded-xl bg-blue-500 dark:bg-blue-700 p-4 relative">
                 <!-- AmazingSlider products Slider -->
                 <div class="swiper AmazingSlider w-full rounded-xl">
@@ -234,7 +229,7 @@
         <!-- BRAND -->
         <section class="mx-4 lg:container mt-10 lg:mt-20">
             <!-- SECTION TITLE -->
-            <div 
+            <div data-reveal="up"
                 class="flex flex-col gap-y-4 xs:flex-row items-center justify-between w-full text-center xs:text-start">
                 <div class="flex items-center gap-x-2 sm:gap-x-4">
                     <span class="size-12 hidden xs:flex rounded-lg bg-white shadow-lg dark:bg-gray-800 flex-center">
@@ -278,18 +273,18 @@
         </section>
 
         <!-- Features -->
-        <div
+        <div data-reveal-group
             class="container w-full mt-10 lg:mt-20 flex flex-wrap items-center  justify-center md:justify-between gap-6 child:text-sm child:gap-y-1 child:cursor-pointer">
             <!-- item -->
-            <span class="flex flex-col items-center justify-center">
+            <span data-reveal="up-sm" class="mi-press flex flex-col items-center justify-center">
                 <img class="w-14 h-14" src="/images/svg/3.svg" alt="ضمانت بازگشت کالا">
                 <p class="text-gray-500 dark:text-gray-300">ضمانت بازگشت کالا</p>
             </span>
-            <span class="flex flex-col items-center justify-center">
+            <span data-reveal="up-sm" class="mi-press flex flex-col items-center justify-center">
                 <img class="w-14 h-14" src="/images/svg/2.svg" alt="ضمانت اصل بودن کالا">
                 <p class="text-gray-500 dark:text-gray-300">ضمانت اصل بودن کالا</p>
             </span>
-            <span class="flex flex-col items-center justify-center">
+            <span data-reveal="up-sm" class="mi-press flex flex-col items-center justify-center">
                 <img class="w-14 h-14" src="/images/svg/4.svg" alt="پشتیبانی ۲۴ ساعته">
                 <p class="text-gray-500 dark:text-gray-300">پشتیبانی 24 ساعته</p>
             </span>
