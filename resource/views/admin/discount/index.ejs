@@ -145,7 +145,7 @@
                                             <button type="button"
                                                 class="edit-discount text-blue-500 text-xs font-DanaMedium whitespace-nowrap"
                                                 data-id="<%= p._id %>">ویرایش</button>
-                                            <form action="/admin/discounts/<%= p._id %>/clear" method="POST">
+                                            <form action="/admin/discounts/<%= p._id %>/clear" method="POST" data-confirm="تخفیف این محصول حذف شود؟" data-confirm-btn="بله، حذف کن">
                                                 <button type="submit" class="text-red-500 hover:text-red-700 flex items-center">
                                                     <svg class="w-5 h-5"><use href="#trash" /></svg>
                                                 </button>

@@ -23,7 +23,7 @@
                         </form>
                     <% } %>
                     <% if (total > 0) { %>
-                        <form method="post" action="/admin/logs/clear" class="inline" onsubmit="return confirm('همه‌ی خطاها پاک شوند؟')">
+                        <form method="post" action="/admin/logs/clear" class="inline" data-confirm="همه‌ی خطاها پاک شوند؟" data-confirm-btn="بله، پاک کن">
                             <button type="submit" class="text-xs text-red-500 hover:underline">پاک کردن همه</button>
                         </form>
                     <% } %>
@@ -68,7 +68,7 @@
                                     </details>
                                 <% } %>
                             </div>
-                            <form method="post" action="/admin/logs/<%= log._id %>/delete" class="shrink-0">
+                            <form method="post" action="/admin/logs/<%= log._id %>/delete" class="shrink-0" data-confirm="این خطا حذف شود؟" data-confirm-btn="بله، حذف کن">
                                 <button type="submit" class="text-gray-400 hover:text-red-500" title="حذف">
                                     <svg class="size-5"><use href="#x-mark" /></svg>
                                 </button>

@@ -24,8 +24,44 @@
                        class="px-4 py-2 rounded-lg border-2 <%= filter==='shipped' ? 'border-green-500 text-green-600 bg-green-50 dark:bg-green-900/10' : 'border-gray-200 dark:border-white/20' %>">
                         ارسال‌شده (<%= counts.shipped.toLocaleString('fa-IR') %>)
                     </a>
+                    <a href="/admin/orders?filter=programs"
+                       class="px-4 py-2 rounded-lg border-2 <%= filter==='programs' ? 'border-teal-500 text-teal-600 bg-teal-50 dark:bg-teal-900/10' : 'border-gray-200 dark:border-white/20' %>">
+                        برنامه‌ها (<%= (counts.programs || 0).toLocaleString('fa-IR') %>)
+                    </a>
                 </div>
             </div>
+
+            <!-- ===== تبِ برنامه‌ها: خریدارانِ نسخه‌ی کاملِ برنامه ===== -->
+            <% if (filter === 'programs') { %>
+                <% if (!programs || !programs.length) { %>
+                    <div class="shadow rounded-lg p-10 text-center text-gray-400 dark:bg-gray-800 bg-white">
+                        هنوز کسی برنامه‌ی کامل نخریده است.
+                    </div>
+                <% } %>
+                <% (programs || []).forEach(function (p) { %>
+                    <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white flex flex-col gap-y-3">
+                        <div class="flex items-center justify-between flex-wrap gap-y-2 border-b border-gray-200 dark:border-white/10 pb-3">
+                            <span class="flex items-center gap-x-2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-6 text-teal-500"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg>
+                                <span class="font-DanaMedium"><%= p.title || 'برنامه‌ی اختصاصی' %></span>
+                            </span>
+                            <span class="text-sm text-gray-500">
+                                <%= p.paidAt ? date(p.paidAt).format('jYYYY/jMM/jDD - HH:mm') : '-' %>
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-12 gap-3 text-sm text-gray-600 dark:text-gray-300">
+                            <div class="col-span-12 md:col-span-6 flex flex-col gap-y-1">
+                                <p><span class="font-DanaMedium">کاربر:</span> <%= p.user ? (((p.user.firstName||'') + ' ' + (p.user.lastName||'')).trim() || '—') : '—' %></p>
+                                <p><span class="font-DanaMedium">تلفن:</span> <%= (p.user && p.user.phone) || '—' %></p>
+                            </div>
+                            <div class="col-span-12 md:col-span-6 flex flex-col gap-y-1">
+                                <p><span class="font-DanaMedium">مبلغ:</span> <%= Number(p.price || 0).toLocaleString('fa-IR') %> تومان</p>
+                                <p><span class="font-DanaMedium">درگاه:</span> <%= p.gateway === 'digipay' ? 'دیجی‌پی' : (p.gateway === 'zarinpal' ? 'زرین‌پال' : (p.gateway || '—')) %></p>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
 
             <% if (!orders.length) { %>
                 <div class="shadow rounded-lg p-10 text-center text-gray-400 dark:bg-gray-800 bg-white">
@@ -105,6 +141,7 @@
                     </div>
                 </div>
             <% }) %>
+            <% } %>
 
         </div>
     </div>

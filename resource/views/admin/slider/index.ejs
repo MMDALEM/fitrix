@@ -68,7 +68,7 @@
                                             <%= s.isActive ? 'غیرفعال کن' : 'فعال کن' %>
                                         </button>
                                     </form>
-                                    <form action="/admin/slider/<%= s._id %>/delete" method="POST" class="flex-1">
+                                    <form action="/admin/slider/<%= s._id %>/delete" method="POST" class="flex-1" data-confirm="این اسلاید حذف شود؟" data-confirm-btn="بله، حذف کن">
                                         <button type="submit" class="w-full text-xs font-DanaMedium rounded-lg px-3 py-2 bg-red-500 hover:bg-red-600 text-white">حذف</button>
                                     </form>
                                 </div>

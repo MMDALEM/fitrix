@@ -1,6 +1,7 @@
 const basketModel = require("../../../models/basket.model");
 const expenseModel = require("../../../models/expense.model");
 const settlementModel = require("../../../models/settlement.model");
+const programPlanModel = require("../../../models/programPlan.model");
 const controller = require("../../.controller");
 
 const TAX_RATE = 0.1;
@@ -159,10 +160,25 @@ class partnerController extends controller {
       // باقیمانده‌ی هزینه سایت = هزینه سایت − هزینه‌های اضافه
       const siteCostBalance = totalSiteCost - totalExpenses;
 
-      // سود خالص = سود ناخالص − تخفیف کدها − هزینه سایت (۱۵٪)
+      // درآمدِ فروشِ برنامه‌ی تمرین/تغذیه. چون این محصولِ دیجیتال هزینه‌ی
+      // تمام‌شده ندارد، کلِ مبلغِ هر برنامه سودِ خالص است و مستقیماً ۵۰/۵۰
+      // بین دو شریک تقسیم می‌شود (بدونِ سرمایه/هزینه‌ی سایت/مالیات).
+      const paidPrograms = await programPlanModel
+        .find({ unlocked: true, price: { $gt: 0 } }, "price paidAt title user")
+        .populate("user", "phone firstName lastName")
+        .sort({ paidAt: -1 })
+        .lean();
+      const programRevenue = paidPrograms.reduce(
+        (s, p) => s + (p.price || 0),
+        0,
+      );
+      const programCount = paidPrograms.length;
+
+      // سود خالص = سود ناخالص − تخفیف کدها − هزینه سایت (۱۵٪) + درآمدِ برنامه‌ها
       // (هزینه‌های اضافه دیگر از سود/حساب شرکا کم نمی‌شوند)
-      const netProfit = grossProfit - totalDiscount - totalSiteCost;
-      // سهم سودِ هر شریک = نصف سود خالص
+      const netProfit =
+        grossProfit - totalDiscount - totalSiteCost + programRevenue;
+      // سهم سودِ هر شریک = نصف سود خالص (شاملِ نصفِ درآمدِ برنامه‌ها)
       const profitShare = Math.round(netProfit / 2);
 
       // کل مبلغی که باید به هر شریک پرداخت شود:
@@ -190,6 +206,7 @@ class partnerController extends controller {
         partners: PARTNERS,
         productRows,
         discountRows,
+        programRows: paidPrograms,
         siteCostRate: SITE_COST_RATE,
         totals: {
           totalSales,
@@ -203,6 +220,8 @@ class partnerController extends controller {
           siteCostBalance,
           netProfit,
           totalTax,
+          programRevenue,
+          programCount,
         },
         costOfGoods,
         profitShare,
@@ -236,6 +255,9 @@ class partnerController extends controller {
       const settlements = await settlementModel
         .find({ partner: pk })
         .sort({ createdAt: 1 });
+      const paidPrograms = await programPlanModel
+        .find({ unlocked: true, price: { $gt: 0 } }, "price paidAt title")
+        .lean();
 
       const entries = [];
 
@@ -320,6 +342,19 @@ class partnerController extends controller {
             order: order.orderNumber,
           });
         }
+      });
+
+      // سهمِ هر شریک از فروشِ برنامه = نصفِ مبلغِ هر برنامه (چون هزینه ندارد،
+      // کلِ مبلغ سود است و ۵۰/۵۰ تقسیم می‌شود)
+      paidPrograms.forEach((p) => {
+        entries.push({
+          date: p.paidAt,
+          sign: 1,
+          amount: Math.round((p.price || 0) / 2),
+          reason: "سهم فروش برنامه‌ی تمرین/تغذیه",
+          product: p.title || "برنامه‌ی اختصاصی",
+          order: "—",
+        });
       });
 
       // توجه: هزینه‌های اضافه از پولِ «هزینه سایت» کسر می‌شوند و دیگر از

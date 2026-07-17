@@ -160,7 +160,6 @@ module.exports = class Application {
       next(createError.NotFound("آدرس مورد نظر پیدا نشد"));
     });
     app.use((error, req, res, next) => {
-      console.error("Error handler caught:", error);
       if (error.code === "LIMIT_FILE_SIZE")
         return res
           .status(400)

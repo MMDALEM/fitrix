@@ -724,7 +724,8 @@
                     }
                 }
                 } catch (e) {
-                    alert('خطا در ارتباط با سرور');
+                    if (window.Swal) Swal.fire({ title: 'خطا در ارتباط با سرور', icon: 'error' });
+                    else alert('خطا در ارتباط با سرور');
                 } finally {
                     addBtn.disabled = false;
                 }

@@ -11,16 +11,7 @@ class adminOrderController extends controller {
   async orders(req, res, next) {
     try {
       const { filter } = req.query;
-
-      const query = { status: "paid" };
-      if (filter === "new") query.isShipped = false;
-      else if (filter === "shipped") query.isShipped = true;
-
-      const orders = await basketModel
-        .find(query)
-        .populate("items.product", ITEM_SELECT)
-        .populate("user", "phone firstName lastName")
-        .sort({ paidAt: -1 });
+      const programPlanModel = require("../../../models/programPlan.model");
 
       const counts = {
         all: await basketModel.countDocuments({ status: "paid" }),
@@ -32,10 +23,40 @@ class adminOrderController extends controller {
           status: "paid",
           isShipped: true,
         }),
+        programs: await programPlanModel.countDocuments({
+          unlocked: true,
+          price: { $gt: 0 },
+        }),
       };
+
+      // تبِ «برنامه‌ها» — فهرستِ کسانی که نسخه‌ی کاملِ برنامه را خریده‌اند
+      if (filter === "programs") {
+        const programs = await programPlanModel
+          .find({ unlocked: true, price: { $gt: 0 } })
+          .populate("user", "phone firstName lastName")
+          .sort({ paidAt: -1 })
+          .lean();
+        return res.render("admin/order/index", {
+          orders: [],
+          programs,
+          counts,
+          filter: "programs",
+        });
+      }
+
+      const query = { status: "paid" };
+      if (filter === "new") query.isShipped = false;
+      else if (filter === "shipped") query.isShipped = true;
+
+      const orders = await basketModel
+        .find(query)
+        .populate("items.product", ITEM_SELECT)
+        .populate("user", "phone firstName lastName")
+        .sort({ paidAt: -1 });
 
       return res.render("admin/order/index", {
         orders,
+        programs: [],
         counts,
         filter: filter || "all",
       });

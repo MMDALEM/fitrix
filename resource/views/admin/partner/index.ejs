@@ -56,8 +56,12 @@
                     <p class="text-gray-500 text-sm">سهم سودِ هر شریک (نصف)</p>
                     <p class="font-DanaDemiBold text-blue-600 text-lg"><%= Number(profitShare).toLocaleString('fa-IR') %></p>
                 </div>
+                <div class="flex flex-col gap-y-1">
+                    <p class="text-gray-500 text-sm">درآمد برنامه‌ها (<%= Number(totals.programCount || 0).toLocaleString('fa-IR') %> برنامه)</p>
+                    <p class="font-DanaDemiBold text-teal-600"><%= Number(totals.programRevenue || 0).toLocaleString('fa-IR') %></p>
+                </div>
             </div>
-            <p class="text-xs text-gray-400 -mt-2">سود خالص = سود ناخالص − تخفیف کدها − هزینه سایت (۱۵٪ از سود هر تک محصول). هزینه‌های اضافه از پولِ «هزینه سایت» کسر می‌شوند (باقیمانده هزینه سایت = هزینه سایت − هزینه‌ها) و از سهم شرکا کم نمی‌شوند. تخفیف محصولات از قبل در سود ناخالص لحاظ شده است. مالیات جداست و تقسیم نمی‌شود.</p>
+            <p class="text-xs text-gray-400 -mt-2">سود خالص = سود ناخالص − تخفیف کدها − هزینه سایت (۱۵٪ از سود هر تک محصول) + درآمدِ فروشِ برنامه‌ها. درآمدِ برنامه‌ها چون هزینه‌ی تمام‌شده ندارد کاملاً سود است و ۵۰/۵۰ بین شرکا تقسیم می‌شود (در «سهم سودِ هر شریک» لحاظ شده). هزینه‌های اضافه از پولِ «هزینه سایت» کسر می‌شوند (باقیمانده هزینه سایت = هزینه سایت − هزینه‌ها) و از سهم شرکا کم نمی‌شوند. تخفیف محصولات از قبل در سود ناخالص لحاظ شده است. مالیات جداست و تقسیم نمی‌شود.</p>
 
             <!-- کل مبلغی که باید به هر شریک داده شود -->
             <div class="grid grid-cols-12 gap-4 child:col-span-12 md:child:col-span-6 child:rounded-lg child:shadow child:p-4">
@@ -124,6 +128,51 @@
                                 </tr>
                             <% }) %>
                         </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- سود به تفکیک برنامه‌ها -->
+            <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <h2 class="font-DanaMedium text-lg mb-1">سود به تفکیک برنامه‌ها</h2>
+                <p class="text-xs text-gray-400 mb-4">هر برنامه هزینه‌ی تمام‌شده ندارد؛ پس کلِ مبلغ سود است و ۵۰/۵۰ بین دو شریک تقسیم می‌شود.</p>
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 bg-gray-100 dark:bg-gray-900 dark:text-gray-200">
+                            <tr>
+                                <th class="px-4 py-3">کاربر</th>
+                                <th class="px-4 py-3">برنامه</th>
+                                <th class="px-4 py-3">تاریخ</th>
+                                <th class="px-4 py-3">مبلغ (سود)</th>
+                                <th class="px-4 py-3">سهم هر شریک</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (!programRows || !programRows.length) { %>
+                                <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">هنوز برنامه‌ای فروخته نشده است.</td></tr>
+                            <% } %>
+                            <% (programRows || []).forEach(function (p) { %>
+                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                    <th class="px-4 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                        <%= p.user ? (((p.user.firstName||'') + ' ' + (p.user.lastName||'')).trim() || '—') : '—' %>
+                                        <% if (p.user && p.user.phone) { %><span class="block text-xs text-gray-400 font-normal"><%= p.user.phone %></span><% } %>
+                                    </th>
+                                    <td class="px-4 py-3"><span class="line-clamp-1"><%= p.title || 'برنامه‌ی اختصاصی' %></span></td>
+                                    <td class="px-4 py-3 whitespace-nowrap"><%= p.paidAt ? date(p.paidAt).format('jYYYY/jMM/jDD') : '—' %></td>
+                                    <td class="px-4 py-3 text-green-600 font-DanaMedium"><%= Number(p.price || 0).toLocaleString('fa-IR') %></td>
+                                    <td class="px-4 py-3 text-blue-600"><%= Number(Math.round((p.price || 0) / 2)).toLocaleString('fa-IR') %></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                        <% if (programRows && programRows.length) { %>
+                        <tfoot class="text-xs text-gray-700 bg-gray-100 dark:bg-gray-900 dark:text-gray-200 font-DanaDemiBold">
+                            <tr>
+                                <td class="px-4 py-3" colspan="3">مجموع (<%= Number(totals.programCount || 0).toLocaleString('fa-IR') %> برنامه)</td>
+                                <td class="px-4 py-3 text-green-600"><%= Number(totals.programRevenue || 0).toLocaleString('fa-IR') %></td>
+                                <td class="px-4 py-3 text-blue-600"><%= Number(Math.round((totals.programRevenue || 0) / 2)).toLocaleString('fa-IR') %></td>
+                            </tr>
+                        </tfoot>
+                        <% } %>
                     </table>
                 </div>
             </div>
