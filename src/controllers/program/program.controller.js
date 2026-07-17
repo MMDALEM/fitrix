@@ -78,7 +78,7 @@ class programController extends controller {
         budget: clampNum(b.budget, 0, 100000000, 0),
       };
       intake.metrics = programService.computeMetrics(intake);
-      intake.status = "draft";
+      intake.status = "generating";
 
       const plan = await ProgramPlan.create(intake);
 
@@ -93,8 +93,10 @@ class programController extends controller {
         } catch (e) {}
       }
 
-      const ok = await this._generate(plan);
-      if (!ok) return res.redirect(`/program/${plan._id}`); // صفحه‌ی failed با دکمه‌ی تلاش دوباره
+      // تولید در پس‌زمینه انجام می‌شود؛ کاربر بلافاصله به صفحه‌ی «در حال ساخت»
+      // هدایت می‌شود و آن‌جا با poll منتظرِ آماده‌شدن می‌ماند. این‌طور درخواستِ
+      // HTTP فوری برمی‌گردد و هرگز به تایم‌اوتِ nginx (۵۰۴) نمی‌خورد.
+      this._generate(plan).catch((e) => plan_fail_note(e));
       return res.redirect(`/program/${plan._id}`);
     } catch (err) {
       next(err);
@@ -114,8 +116,10 @@ class programController extends controller {
     try {
       const plan = await this._own(req);
       if (!plan) return this.alertAndReview(req, res, { title: "برنامه یافت نشد", icon: "error" }, "/program");
-      const ok = await this._generate(plan);
-      if (!ok) return this.alertAndReview(req, res, { title: "ساختِ دوباره ناموفق بود؛ چند لحظه بعد تلاش کن", icon: "error" }, `/program/${plan._id}`);
+      // تولیدِ دوباره هم در پس‌زمینه؛ کاربر به صفحه‌ی «در حال ساخت» می‌رود
+      plan.status = "generating";
+      await plan.save();
+      this._generate(plan).catch((e) => plan_fail_note(e));
       return res.redirect(`/program/${plan._id}`);
     } catch (err) {
       next(err);
@@ -254,6 +258,15 @@ class programController extends controller {
       if (!plan) return this.alertAndReview(req, res, { title: "برنامه یافت نشد", icon: "error" }, "/program");
       if (plan.status === "failed")
         return res.render("program/failed", { pageTitle: "ساخت برنامه", noindex: true, plan });
+
+      // در حال ساخت (پس‌زمینه). اگر مدتِ زیادی در این حالت مانده باشد
+      // (مثلاً به‌خاطرِ ری‌استارتِ فرآیند) به‌جای معطلیِ بی‌پایان، ناموفق در نظر گرفته می‌شود.
+      if (plan.status === "generating" || plan.status === "draft") {
+        if (isStaleGenerating(plan))
+          return res.render("program/failed", { pageTitle: "ساخت برنامه", noindex: true, plan });
+        return res.render("program/generating", { pageTitle: "در حال ساختِ برنامه", noindex: true, plan });
+      }
+
       if (plan.status !== "ready") return res.redirect(`/program`);
 
       const s = await settingModel.getSingleton();
@@ -267,6 +280,20 @@ class programController extends controller {
       });
     } catch (err) {
       next(err);
+    }
+  }
+
+  // وضعیتِ ساختِ برنامه (JSON) — برای poll از صفحه‌ی «در حال ساخت»
+  async status(req, res, next) {
+    try {
+      const plan = await this._own(req);
+      if (!plan) return res.status(404).json({ status: "notfound" });
+      let st = plan.status;
+      if ((st === "generating" || st === "draft") && isStaleGenerating(plan))
+        st = "failed";
+      return res.json({ status: st });
+    } catch (err) {
+      return res.status(500).json({ status: "error" });
     }
   }
 
@@ -393,6 +420,13 @@ class programController extends controller {
 
 function plan_fail_note(err) {
   try { require("../../utils/logError").logError(err, { source: "program" }); } catch {}
+}
+
+// آیا برنامه مدتِ زیادی در حالتِ «در حال ساخت» مانده؟ (تولیدِ عادی خیلی زودتر
+// تمام می‌شود؛ این فقط برای موارد نادرِ ری‌استارتِ فرآیندِ حینِ تولید است)
+function isStaleGenerating(plan) {
+  const t = plan && plan.updatedAt ? new Date(plan.updatedAt).getTime() : 0;
+  return t > 0 && Date.now() - t > 5 * 60 * 1000;
 }
 
 module.exports = new programController();

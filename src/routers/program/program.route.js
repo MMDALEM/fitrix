@@ -21,6 +21,8 @@ router.get("/:id/verify/:gateway", programController.verify);
 router.post("/:id/verify/:gateway", programController.verify);
 // پرسش‌وپاسخ
 router.post("/:id/ask", programController.ask);
+// وضعیتِ ساخت (برای poll از صفحه‌ی «در حال ساخت»)
+router.get("/:id/status", programController.status);
 // خروجیِ PDF (چاپ)
 router.get("/:id/pdf", programController.pdf);
 // نمایشِ برنامه

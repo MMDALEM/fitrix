@@ -90,6 +90,17 @@ function recommendSplit(days, experience, goal) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+const AI_FETCH_TIMEOUT_MS = 45000;
+async function fetchAI(url, opts) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AI_FETCH_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...opts, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // فراخوانیِ AI با fallbackِ چندمدلی + retry. خروجیِ JSON را برمی‌گرداند.
 // validate: تابعِ اعتبارسنجیِ خروجی (پیش‌فرض: وجودِ weeklyPlan).
 async function callAIJson({ system, user, maxTokens, validate }) {
@@ -98,7 +109,7 @@ async function callAIJson({ system, user, maxTokens, validate }) {
   for (const model of PROGRAM_MODELS) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        const res = await fetch(AI_API_URL, {
+        const res = await fetchAI(AI_API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey()}` },
           body: JSON.stringify({
@@ -382,7 +393,7 @@ async function askAboutProgram({ plan, question }) {
   let lastErr = null;
   for (const model of PROGRAM_MODELS) {
     try {
-      const res = await fetch(AI_API_URL, {
+      const res = await fetchAI(AI_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey()}` },
         body: JSON.stringify({

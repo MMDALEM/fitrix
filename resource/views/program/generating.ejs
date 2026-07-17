@@ -1,0 +1,62 @@
+<main class="container mt-8 mb-16" style="max-width:40rem;margin-inline:auto">
+    <div class="prg-wrap" style="text-align:center;padding:3rem 1.2rem">
+        <div class="prg-gen-spinner" aria-hidden="true"></div>
+
+        <h1 class="prg-h1" style="margin-top:1.4rem">در حال ساختِ برنامه‌ی اختصاصیِ تو…</h1>
+        <p style="color:var(--prg-muted,#64748b);line-height:2;margin-top:.6rem">
+            چند لحظه صبر کن؛ داریم برنامه‌ی <b>تمرین</b>، <b>تغذیه</b> و <b>مکمل</b>ت را دقیق و شخصی‌سازی‌شده می‌سازیم.
+            این صفحه خودش به‌روز می‌شود — لازم نیست کاری کنی یا صفحه را ببندی.
+        </p>
+
+        <div id="prgGenDots" style="margin-top:1.2rem;color:#2563eb;font-weight:800;letter-spacing:.2rem">···</div>
+        <p id="prgGenHint" style="margin-top:1.6rem;font-size:.85rem;color:#94a3b8">معمولاً کمتر از یک دقیقه طول می‌کشد.</p>
+    </div>
+</main>
+
+<style>
+    .prg-gen-spinner{
+        width:64px;height:64px;margin:0 auto;border-radius:50%;
+        border:5px solid rgba(37,99,235,.15);border-top-color:#2563eb;
+        animation:prgGenSpin .9s linear infinite;
+    }
+    @keyframes prgGenSpin{ to{ transform:rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce){ .prg-gen-spinner{ animation-duration:2s; } }
+</style>
+
+<script>
+    (function () {
+        var id = "<%= plan._id %>";
+        var tries = 0;
+        var dotsEl = document.getElementById("prgGenDots");
+        var hintEl = document.getElementById("prgGenHint");
+
+        // انیمیشنِ نقطه‌ها
+        var dotStep = 0;
+        setInterval(function () {
+            dotStep = (dotStep + 1) % 4;
+            if (dotsEl) dotsEl.textContent = "·".repeat(dotStep + 1);
+        }, 450);
+
+        function go() { window.location.href = "/program/" + id; }
+
+        function poll() {
+            tries++;
+            // بعد از ~۹۰ ثانیه پیام را نرم‌تر کن
+            if (tries === 30 && hintEl)
+                hintEl.textContent = "کمی بیشتر طول کشید؛ داریم برنامه‌ی کامل‌تری می‌سازیم…";
+            // سقفِ امنیتی: بعد از ~۳ دقیقه به صفحه‌ی برنامه برو (وضعیت آن‌جا نمایش داده می‌شود)
+            if (tries > 60) return go();
+
+            fetch("/program/" + id + "/status", { headers: { "Accept": "application/json" }, cache: "no-store" })
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    if (!d) return setTimeout(poll, 3000);
+                    if (d.status === "ready" || d.status === "failed" || d.status === "notfound") return go();
+                    setTimeout(poll, 3000);
+                })
+                .catch(function () { setTimeout(poll, 3000); });
+        }
+
+        setTimeout(poll, 2500);
+    })();
+</script>
