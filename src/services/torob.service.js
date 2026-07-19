@@ -1,3 +1,16 @@
+// ───────────────────────────────────────────────────────────────
+// وبهوکِ ترب (اختیاری) — Product Webhook v1
+// هر بار محصولی اضافه یا ویرایش شد، با فراخوانیِ این تابع به ترب خبر
+// می‌دهیم تا سریع‌تر همگام شود (به‌جای انتظار برای کراولِ دوره‌ای).
+//
+// استفاده (fire-and-forget، بدونِ await تا جریانِ اصلی کند نشود):
+//   const { notifyTorob } = require("../../services/torob.service");
+//   notifyTorob([{ page_url, page_unique }]);
+//
+// .env:
+//   TOROB_WEBHOOK_TOKEN  توکنِ Bearer که ترب به فروشگاه می‌دهد
+//   (اگر ست نشده باشد، تابع بی‌صدا هیچ کاری نمی‌کند)
+// ───────────────────────────────────────────────────────────────
 const WEBHOOK_URL = "https://api.torob.com/update/webhook/v1/";
 const TIMEOUT_MS = 8000;
 
@@ -5,6 +18,8 @@ function isConfigured() {
   return !!String(process.env.TOROB_WEBHOOK_TOKEN || "").trim();
 }
 
+// items: آرایه‌ای از { page_url, page_unique } — حداکثر ۱۰۰ در هر درخواست،
+// همه از یک دامنه. در صورتِ بیشتر بودن، خودکار تکه‌تکه ارسال می‌شود.
 async function notifyTorob(items) {
   try {
     if (!isConfigured()) return false;
