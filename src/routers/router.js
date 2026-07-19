@@ -78,6 +78,9 @@ router.use("/admin/slider", verifyAdmin, adminSliderRouter);
 const adminNotificationRouter = require("./admin/notification.route");
 router.use("/admin/notifications", verifyAdmin, adminNotificationRouter);
 
+const torobRouter = require("./torob/torob.route");
+router.use("/torob_api", torobRouter);
+
 router.use("/logout", logout);
 
 module.exports = { AllRouters: router };

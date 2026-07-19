@@ -97,22 +97,42 @@ class shopController extends controller {
 
       // ---------- SEO ----------
       const siteUrl = `${req.protocol}://${req.get("host")}`;
-      let pageTitle = "فروشگاه";
+      const pageNum = Number(page) || 1;
+      let pageTitle = "خرید مکمل ورزشی، پروتئین وی و کراتین";
       let metaDescription =
-        "خرید انواع مکمل ورزشی، پروتئین، کراتین، گینر و ویتامین با بهترین قیمت از فروشگاه فیت ریکس شاپ.";
+        "خرید مکمل ورزشی، پروتئین وی، کراتین، خرید کراتین، گینر، آمینو و ویتامین با بهترین قیمت و ارسال سریع از فروشگاه فیت ریکس شاپ.";
+      let metaKeywords =
+        "خرید مکمل, خرید مکمل ورزشی, مکمل بدنسازی, پروتئین وی, خرید پروتئین وی, کراتین, خرید کراتین, گینر, آمینو اسید, بی سی ای ای, مولتی ویتامین";
       let canonicalUrl = `${siteUrl}/shop`;
 
       if (selectedCategory) {
-        pageTitle = `خرید ${selectedCategory.title}`;
-        metaDescription = `خرید ${selectedCategory.title} اورجینال با بهترین قیمت و ارسال سریع از فروشگاه فیت ریکس شاپ.`;
+        // اگر ادمین متادیتای اختصاصی ست کرده باشد، همان اولویت دارد
+        pageTitle = selectedCategory.metaTitle || `خرید ${selectedCategory.title}`;
+        metaDescription =
+          selectedCategory.metaDescription ||
+          `خرید ${selectedCategory.title} اورجینال با بهترین قیمت و ارسال سریع از فروشگاه فیت ریکس شاپ.`;
+        if (Array.isArray(selectedCategory.metaKeywords) && selectedCategory.metaKeywords.length)
+          metaKeywords = selectedCategory.metaKeywords.filter(Boolean).join(", ");
+        else
+          metaKeywords = `خرید ${selectedCategory.title}, ${selectedCategory.title}, ${metaKeywords}`;
         canonicalUrl = `${siteUrl}/shop?category=${encodeURIComponent(selectedCategory.slug)}`;
       } else if (selectedBrand) {
-        pageTitle = `محصولات برند ${selectedBrand.title}`;
-        metaDescription = `خرید محصولات اورجینال برند ${selectedBrand.title} با بهترین قیمت از فروشگاه فیت ریکس شاپ.`;
+        pageTitle = selectedBrand.metaTitle || `خرید محصولات برند ${selectedBrand.title}`;
+        metaDescription =
+          selectedBrand.metaDescription ||
+          `خرید محصولات اورجینال برند ${selectedBrand.title} با بهترین قیمت از فروشگاه فیت ریکس شاپ.`;
+        if (Array.isArray(selectedBrand.metaKeywords) && selectedBrand.metaKeywords.length)
+          metaKeywords = selectedBrand.metaKeywords.filter(Boolean).join(", ");
+        else
+          metaKeywords = `${selectedBrand.title}, خرید ${selectedBrand.title}, ${metaKeywords}`;
         canonicalUrl = `${siteUrl}/shop?brand=${encodeURIComponent(selectedBrand.slug)}`;
       } else if (search) {
         pageTitle = `جستجوی «${search}»`;
       }
+
+      // صفحاتِ دوم به بعدِ فهرست ایندکس نمی‌شوند (محتوای نازک/تکراری) اما
+      // لینک‌هایشان دنبال می‌شوند تا محصولات کشف شوند.
+      const listNoindex = Boolean(search) || pageNum > 1;
 
       return res.render("shop/shop", {
         products,
@@ -121,9 +141,9 @@ class shopController extends controller {
         currentFilters,
         pageTitle,
         metaDescription,
+        metaKeywords,
         canonicalUrl,
-        // نتایج جستجو نباید ایندکس شوند
-        noindex: Boolean(search),
+        noindex: listNoindex,
       });
     } catch (err) {
       next(err);

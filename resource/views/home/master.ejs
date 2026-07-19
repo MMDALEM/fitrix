@@ -17,18 +17,30 @@
         var _ogType = (typeof ogType !== "undefined" && ogType) ? ogType : "website";
         var _noindex = (typeof noindex !== "undefined" && noindex) ? true : false;
         var _siteUrl = (typeof siteUrl !== "undefined" && siteUrl) ? siteUrl : "";
+        var _keywords = (typeof metaKeywords !== "undefined" && metaKeywords)
+            ? (Array.isArray(metaKeywords) ? metaKeywords.filter(Boolean).join(", ") : metaKeywords)
+            : "";
+        // og:image باید همیشه آدرسِ مطلق باشد؛ اگر نسبی بود، دامنه را جلویش می‌گذاریم
+        var _ogImageAbs = /^https?:\/\//i.test(_ogImage) ? _ogImage : (_siteUrl + _ogImage);
     %>
     <title><%= _title %></title>
     <meta name="description" content="<%= _desc %>" />
+    <% if (_keywords) { %>
+    <meta name="keywords" content="<%= _keywords %>" />
+    <% } %>
     <% if (_noindex) { %>
     <meta name="robots" content="noindex, nofollow" />
     <% } else { %>
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <% } %>
     <% if (_canonical) { %>
     <link rel="canonical" href="<%= _canonical %>" />
     <% } %>
     <meta name="theme-color" content="#2563eb" />
+
+    <!-- سرعتِ اتصال به سرویس‌های شخص ثالث (بهبودِ Core Web Vitals) -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
     <!-- Open Graph -->
     <meta property="og:site_name" content="<%= _siteName %>" />
@@ -39,13 +51,13 @@
     <% if (_canonical) { %>
     <meta property="og:url" content="<%= _canonical %>" />
     <% } %>
-    <meta property="og:image" content="<%= _ogImage %>" />
+    <meta property="og:image" content="<%= _ogImageAbs %>" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="<%= _title %>" />
     <meta name="twitter:description" content="<%= _desc %>" />
-    <meta name="twitter:image" content="<%= _ogImage %>" />
+    <meta name="twitter:image" content="<%= _ogImageAbs %>" />
 
     <!-- Structured Data: Organization + WebSite -->
     <script type="application/ld+json">

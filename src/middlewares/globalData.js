@@ -74,7 +74,10 @@ class GlobalData {
     res.locals.canonicalUrl = siteUrl + req.path;
     res.locals.pageTitle = null;
     res.locals.metaDescription =
-      "فروشگاه اینترنتی فیت ریکس (FitRix | fitrix.ir)؛ خرید انواع مکمل ورزشی، پروتئین وی، کراتین، گینر و ویتامین از برندهای معتبر جهانی با قیمت مناسب و ارسال سریع.";
+      "فروشگاه اینترنتی فیت ریکس (FitRix | fitrix.ir)؛ خرید مکمل ورزشی، پروتئین وی، کراتین، گینر، آمینو و ویتامین از برندهای معتبر جهانی با قیمت مناسب و ارسال سریع به سراسر ایران.";
+    // کلمات کلیدیِ پیش‌فرض — هر کنترلر می‌تواند بازنویسی کند
+    res.locals.metaKeywords =
+      "خرید مکمل, خرید مکمل ورزشی, مکمل بدنسازی, پروتئین وی, خرید پروتئین وی, کراتین, خرید کراتین, گینر, آمینو اسید, بی سی ای ای, ال کارنیتین, مولتی ویتامین, فیت ریکس, fitrix";
     res.locals.ogImage = siteUrl + "/images/logo.png";
     res.locals.ogType = "website";
     res.locals.noindex = false;

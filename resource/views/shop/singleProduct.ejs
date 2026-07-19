@@ -781,6 +781,10 @@
     .trim()
     .slice(0, 300);
   var _ldPrice = ((product.onSale && product.salePrice ? product.salePrice : product.priceSingle) || 0) * 10;
+  // اعتبارِ قیمت تا پایانِ سالِ میلادیِ جاری (گوگل برای Offer این فیلد را توصیه می‌کند)
+  var _priceValidUntil = new Date(new Date().getFullYear() + 1, 0, 1)
+    .toISOString()
+    .slice(0, 10);
 %>
 <script type="application/ld+json">
 {
@@ -790,6 +794,9 @@
   "image": <%- j(siteUrl + product.image) %>,
   "description": <%- j(_ldDesc) %>,
   "sku": <%- j(product._id) %>,
+  <% if (product.category && product.category.title) { %>
+  "category": <%- j(product.category.title) %>,
+  <% } %>
   <% if (product.brand && product.brand.title) { %>
   "brand": { "@type": "Brand", "name": <%- j(product.brand.title) %> },
   <% } %>
@@ -798,7 +805,10 @@
     "url": <%- j(siteUrl + "/product/" + product.slug) %>,
     "priceCurrency": "IRR",
     "price": "<%= _ldPrice %>",
-    "availability": "<%= product.quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' %>"
+    "priceValidUntil": "<%= _priceValidUntil %>",
+    "itemCondition": "https://schema.org/NewCondition",
+    "availability": "<%= product.quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' %>",
+    "seller": { "@type": "Organization", "name": <%- j(settings.siteName || 'فیت ریکس شاپ') %> }
   }
 }
 </script>
