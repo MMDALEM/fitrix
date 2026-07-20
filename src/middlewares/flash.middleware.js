@@ -27,7 +27,16 @@ const flash = (req, res, next) => {
       flashData[type] = [flashData[type], message];
     }
 
-    res.cookie('flash', JSON.stringify(flashData), {
+    // محافظِ اندازه: کوکی‌ها سقفِ ~۴KB دارند و اگر هدرِ Set-Cookie خیلی
+    // بزرگ شود nginx خطای «upstream sent too big header» و ۵۰۲ می‌دهد.
+    // اگر داده‌ی فلش از حدِ امن بزرگ‌تر شد، آن را نمی‌نویسیم (به‌جای کرشِ کلِ پاسخ).
+    const serialized = JSON.stringify(flashData);
+    if (serialized.length > 3500) {
+      console.warn('flash cookie skipped (too large):', serialized.length, 'bytes');
+      return;
+    }
+
+    res.cookie('flash', serialized, {
       httpOnly: false,
       maxAge: 5000,
       path: '/'

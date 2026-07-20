@@ -5,13 +5,16 @@ module.exports = class controller {
     autoBind(this);
   }
 
+  // نکته‌ی مهم: formData ِ کاملِ req.body دیگر در فلش ذخیره نمی‌شود.
+  // میدل‌ویرِ فلش داده را در «کوکی» می‌گذارد؛ ذخیره‌ی کلِ فرم (مثلاً
+  // توضیحاتِ بلندِ محصول) کوکی را چند کیلوبایت می‌کرد و هدرِ Set-Cookie از
+  // حدِ nginx بزرگ‌تر می‌شد → خطای «upstream sent too big header» و ۵۰۲.
+  // این داده هم هیچ‌جا خوانده نمی‌شد، پس حذفش بی‌خطر است.
   back(req, res) {
-    req.flash("formData", req.body);
     return res.redirect(req.header("Referer") || "/");
   }
 
   review(req, res, url) {
-    req.flash("formData", req.body);
     const target = url.startsWith("/") ? url : `/${url}`;
     return res.redirect(target);
   }

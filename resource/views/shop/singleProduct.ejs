@@ -1,3 +1,27 @@
+    <style>
+        /* ── بَج پرداخت اقساطی (کوچک، کم‌رنگ، تک‌خطی، زیر دکمه‌ی خرید) ── */
+        .installment-badge {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            margin-top: -.15rem;
+            padding: .3rem .1rem;
+            font-size: .7rem;
+            color: #9ca3af;
+            line-height: 1.4;
+        }
+        .installment-badge__icon {
+            flex: 0 0 auto;
+            display: inline-flex;
+            color: #a5b4fc;
+        }
+        .installment-badge__text { color: #9ca3af; }
+        .installment-badge__text b { color: #818cf8; font-weight: 700; }
+        /* دارک‌مود */
+        .dark .installment-badge__text { color: #6b7280; }
+        .dark .installment-badge__icon { color: #6366f1; }
+        .dark .installment-badge__text b { color: #818cf8; }
+    </style>
     <svg class="hidden">
         <symbol id="share" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
             <path fill-rule="evenodd" d="M15.75 4.5a3 3 0 1 1 .825 2.066l-8.421 4.679a3.002 3.002 0 0 1 0 1.51l8.421 4.679a3 3 0 1 1-.729 1.31l-8.421-4.678a3 3 0 1 1 0-4.132l8.421-4.679a3 3 0 0 1-.096-.755Z" clip-rule="evenodd" />
@@ -508,8 +532,22 @@
                         ناموجود
                     </button>
                 <% } %>
+
+                <!-- بَج پرداخت اقساطی (اسنپ‌پی و دیجی‌پی) — کوچک و کم‌رنگ، زیر دکمه‌ی خرید -->
+                <% if (product.quantity > 0) { %>
+                <% var _inst4 = Math.max(Math.round(finalPrice / 4 / 1000) * 1000, 0); %>
+                <div class="installment-badge"  style=" text-align: center;">
+                    <span class="installment-badge__text" style=" font-size: small; color: rgb(107 114 128 / var(--tw-text-opacity, 1)); ">
+                        <svg viewBox="0 0 24 24" style="display: inline; " width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2.5"></rect>
+                            <line x1="2" y1="10" x2="22" y2="10"></line>
+                            <line x1="6" y1="15" x2="10" y2="15"></line>
+                        </svg>
+                        پرداخت اقساطی با اسنپ‌پی و دیجی‌پی  <br>۴ قسط از <b><%= _inst4.toLocaleString('fa-IR') %></b> تومان 
+                    </span>
+                </div>
+                <% } %>
             </div>
-  
         </section>
 
         <!-- Related products -->
@@ -543,7 +581,12 @@
             <div class="swiper BestSelling mt-5 w-full">
                 <div class="swiper-wrapper py-5">
                     <% products.forEach(function (productss) { %>
-                    <div class="swiper-slide product-card group">
+                    <% var _ss = saleActive(productss); %>
+                    <div class="swiper-slide product-card group" style="<%= _ss ? 'position:relative;border:2px solid #ef4444;box-shadow:0 8px 22px rgba(239,68,68,.18) !important' : '' %>">
+                        <% if (_ss) { %>
+                        <!-- ریبون پیشنهاد ویژه -->
+                        <span style="position:absolute;top:16px;right:1px;z-index:5;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;font-size:11px;font-weight:800;padding:3px 10px 3px 8px;border-radius:5px 0px 0px 5px;box-shadow:0 4px 10px rgba(239,68,68,.4);display:inline-flex;align-items:center;gap:.2rem"><svg viewBox="0 0 24 24" style="width:.8rem;height:.8rem;fill:currentColor;flex:0 0 auto" aria-hidden="true"><path d="M13 2c.5 3-1.5 4.2-2.7 5.6C9 9 8 10.3 8 12.4A4.7 4.7 0 0 0 17.4 13c0-2.4-1.3-3.7-1.3-3.7-.2 1.2-1 1.7-1.6 1.7.8-2.6-.2-6.7-1.5-9Z"/></svg> پیشنهاد ویژه</span>
+                        <% } %>
                         <div class="product-card_header">
                             <div class="flex items-center gap-x-2">
                                 <div class="tooltip">
@@ -559,6 +602,13 @@
                                     <div class="tooltiptext">علاقه مندی</div>
                                 </div>
                             </div>
+                            <% if (productss.quantity <= 0) { %>
+                            <span class="product-card_badge" style="color:#6b7280">ناموجود</span>
+                            <% } else if (_ss) { %>
+                            <span class="product-card_badge" style="background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;font-weight:800;box-shadow:0 4px 10px rgba(239,68,68,.35) !important; padding:3px 7px 2px 6px;border-radius:6px;">
+                                <%= Number(productss.salePercent).toLocaleString('fa-IR') %>٪ تخفیف
+                            </span>
+                            <% } %>
                         </div>
                         <a href="/product/<%= productss.slug %>">
                             <img style="object-fit:scale-down;" class="product-card_img group-hover:opacity-0 absolute" loading="lazy" src="<%= productss.image %>" alt="">

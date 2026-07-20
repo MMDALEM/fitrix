@@ -1,9 +1,13 @@
 // ───────────────────────────────────────────────────────────────
 // وبهوکِ ترب (اختیاری) — Product Webhook v1
-// هر بار محصولی اضافه یا ویرایش شد، با فراخوانیِ این تابع به ترب خبر
-// می‌دهیم تا سریع‌تر همگام شود (به‌جای انتظار برای کراولِ دوره‌ای).
+// هر بار محصولی اضافه یا ویرایش شد، به ترب خبر می‌دهیم تا سریع‌تر همگام
+// شود. این کار «کاملاً پس‌زمینه» است و هیچ‌وقت روی پاسخِ کاربر یا nginx
+// اثر نمی‌گذارد:
+//   • کارِ شبکه روی setImmediate اجرا می‌شود (بعد از ارسالِ پاسخ به کاربر).
+//   • هر خطا فقط در کنسول لاگ می‌شود (نه در دیتابیس/تبِ خطاهای پنل) چون
+//     شکستِ همگام‌سازیِ ترب یک خطای غیربحرانی است و نباید نویز بسازد.
 //
-// استفاده (fire-and-forget، بدونِ await تا جریانِ اصلی کند نشود):
+// استفاده (بدون await):
 //   const { notifyTorob } = require("../../services/torob.service");
 //   notifyTorob([{ page_url, page_unique }]);
 //
@@ -18,30 +22,35 @@ function isConfigured() {
   return !!String(process.env.TOROB_WEBHOOK_TOKEN || "").trim();
 }
 
-// items: آرایه‌ای از { page_url, page_unique } — حداکثر ۱۰۰ در هر درخواست،
-// همه از یک دامنه. در صورتِ بیشتر بودن، خودکار تکه‌تکه ارسال می‌شود.
-async function notifyTorob(items) {
+// اطلاع به ترب — همیشه فوری برمی‌گردد و کارِ واقعی را به پس‌زمینه می‌سپارد.
+// items: آرایه‌ای از { page_url, page_unique } (حداکثر ۱۰۰ در هر درخواست).
+function notifyTorob(items) {
   try {
-    if (!isConfigured()) return false;
+    if (!isConfigured()) return;
     const list = (Array.isArray(items) ? items : [items])
       .filter((x) => x && x.page_url && x.page_unique)
       .map((x) => ({
         page_url: String(x.page_url),
         page_unique: String(x.page_unique),
       }));
-    if (!list.length) return false;
+    if (!list.length) return;
 
-    const token = String(process.env.TOROB_WEBHOOK_TOKEN).trim();
-    for (let i = 0; i < list.length; i += 100) {
-      const chunk = list.slice(i, i + 100);
-      await sendChunk(chunk, token);
-    }
-    return true;
+    // اجرا بعد از بازگشتِ پاسخ به کاربر؛ خطاها بلعیده می‌شوند تا هرگز به
+    // unhandledRejection یا کندیِ درخواست منجر نشوند.
+    setImmediate(() => {
+      _send(list).catch((e) =>
+        console.warn("Torob webhook (نادیده گرفته شد):", e.message),
+      );
+    });
   } catch (e) {
-    try {
-      require("../utils/logError").logError(e, { source: "torob-webhook" });
-    } catch {}
-    return false;
+    console.warn("Torob webhook (نادیده گرفته شد):", e.message);
+  }
+}
+
+async function _send(list) {
+  const token = String(process.env.TOROB_WEBHOOK_TOKEN).trim();
+  for (let i = 0; i < list.length; i += 100) {
+    await sendChunk(list.slice(i, i + 100), token);
   }
 }
 

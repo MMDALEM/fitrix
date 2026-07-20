@@ -4,7 +4,8 @@
   "description": "shop fitrix",
   "main": "server.js",
   "scripts": {
-    "start": "bun --watch server.js",
+    "start": "nodemon server.js",
+    "start2": "bun --watch server.js",
     "prod": "bun server.js",
     "dev": "node server.js"
   },
@@ -34,9 +35,8 @@
     "multer-s3": "^3.0.1",
     "next-themes": "^0.4.6",
     "node-cron": "^4.6.0",
-    "puppeteer": "^23.11.1",
-    "nodemon": "^3.1.14",
     "openai": "^6.45.0",
+    "puppeteer": "^23.11.1",
     "randomstring": "^1.3.1",
     "sweetalert2": "^11.26.25",
     "swiper": "^12.2.0",
@@ -44,6 +44,7 @@
     "zarinpal-node-sdk": "^2.2.0"
   },
   "devDependencies": {
+    "nodemon": "^3.1.14",
     "tailwindcss": "^4.3.2"
   }
 }

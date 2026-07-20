@@ -7,6 +7,16 @@ const ExchangeRate = require("../../../models/exchangeRate.model");
 const moment = require("moment-jalaali");
 const mongoose = require("mongoose");
 const fs = require("fs");
+const { notifyTorob } = require("../../../services/torob.service");
+
+// آدرسِ مطلقِ صفحه‌ی محصول برای وبهوکِ ترب.
+// اولویت با SITE_URL؛ اگر نبود از هاستِ همین درخواست ساخته می‌شود.
+function productPageUrl(req, slug) {
+  const base = String(
+    process.env.SITE_URL || `${req.protocol}://${req.get("host")}`,
+  ).replace(/\/+$/, "");
+  return `${base}/product/${slug}`;
+}
 
 class productController extends controller {
   async products(req, res, next) {
@@ -195,7 +205,7 @@ class productController extends controller {
 
       const sale = this.calcSale(priceSingle, salePercent);
 
-      await productModel.create({
+      const createdProduct = await productModel.create({
         title,
         slug,
         image,
@@ -227,6 +237,17 @@ class productController extends controller {
         AED: aedRate,
         type,
       });
+
+      // اطلاع به ترب برای همگام‌سازیِ سریع‌تر (فقط اگر محصول در سایت دیده می‌شود).
+      // fire-and-forget: خطا/کندیِ ترب نباید ذخیره‌ی محصول را تحت‌تأثیر بگذارد.
+      if (createdProduct && !createdProduct.siteHidden) {
+        notifyTorob([
+          {
+            page_url: productPageUrl(req, createdProduct.slug),
+            page_unique: String(createdProduct._id),
+          },
+        ]);
+      }
 
       return this.alertAndBack(req, res, {
         title: "محصول با موفقیت ایجاد شد",
@@ -390,6 +411,17 @@ class productController extends controller {
       await productModel.findByIdAndUpdate(objectId, updateData, {
         runValidators: true,
       });
+
+      // اطلاع به ترب از تغییرِ محصول (fire-and-forget). محصولاتِ مخفیِ سایت
+      // به ترب داده نمی‌شوند، پس برایشان وبهوک هم نمی‌فرستیم.
+      if (!updateData.siteHidden) {
+        notifyTorob([
+          {
+            page_url: productPageUrl(req, updateData.slug),
+            page_unique: String(id),
+          },
+        ]);
+      }
 
       return this.alertAndReview(
         req,
