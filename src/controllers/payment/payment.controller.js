@@ -8,6 +8,7 @@ const notificationModel = require("../../models/notification.model");
 const paymentService = require("../../services/payment.service");
 const controller = require("../.controller");
 const { manager, successpayment } = require("../../utils/sms");
+const { sendBale } = require("../../utils/bale");
 
 const DEFAULT_TAX_RATE = 0.1;
 
@@ -298,7 +299,6 @@ class paymentController extends controller {
         Object.assign(params, req.body);
       }
 
-
       // basketId از مسیر (path) خوانده می‌شود تا در URL تمیز بماند؛
       // برای سازگاری، query هم پشتیبانی می‌شود.
       const basketId = req.params.basketId || params.basketId || params.orderId;
@@ -434,10 +434,44 @@ class paymentController extends controller {
             basket.shippingDetails?.phone + "",
             basket.orderNumber + "",
           );
-          await manager("09167728327", basket.orderNumber + "");
-          await manager("09373640517", basket.orderNumber + "");
+          // await manager("09167728327", basket.orderNumber + "");
+          // await manager("09373640517", basket.orderNumber + "");
         } catch (smsErr) {
           console.error("SMS notify failed:", smsErr.message);
+        }
+
+        // اعلانِ خریدِ جدید به مدیران در پیام‌رسانِ بله (پس‌زمینه و بی‌صدا).
+        // به chatهای تعیین‌شده در BALE_CHAT_ID می‌رود؛ پیامک‌ها دست‌نخورده‌اند.
+        try {
+          const amountFa = Number(
+            basket.finalPrice || basket.totalPrice || 0,
+          ).toLocaleString("fa-IR");
+          const itemsCount = (basket.items || []).reduce(
+            (s, it) => s + (it.quantity || 0),
+            0,
+          );
+          const itemLines = (basket.items || [])
+            .map(
+              (it) =>
+                `• ${it.productName || "کالا"} ×${Number(
+                  it.quantity || 0,
+                ).toLocaleString("fa-IR")}`,
+            )
+            .join("\n");
+          const receiver = basket.shippingDetails?.receiver || "-";
+          const phone = basket.shippingDetails?.phone || "-";
+          const baleText =
+            `🟢 خریدِ جدیدِ پرداخت‌شده\n\n` +
+            `🧾 شماره سفارش: ${basket.orderNumber || "-"}\n` +
+            `👤 مشتری: ${receiver} — ${phone}\n` +
+            `💰 مبلغ: ${amountFa} تومان\n` +
+            `📦 تعداد اقلام: ${Number(itemsCount).toLocaleString("fa-IR")}\n` +
+            (itemLines ? `\n${itemLines}\n` : "") +
+            `\nبرای آماده‌سازی و ارسال اقدام کنید.\n` +
+            `fitrix.ir/admin/orders`;
+          sendBale(baleText);
+        } catch (baleErr) {
+          console.error("Bale notify failed:", baleErr.message);
         }
 
         // وضعیت دوستانه: در دست اقدام
@@ -485,9 +519,7 @@ class paymentController extends controller {
       if (req.flash)
         req.flash(
           "payMessage",
-          failReason
-            ? `پرداخت ناموفق بود: ${failReason}`
-            : "پرداخت ناموفق بود",
+          failReason ? `پرداخت ناموفق بود: ${failReason}` : "پرداخت ناموفق بود",
         );
       return res.redirect("/payment/result/" + basket._id);
     } catch (err) {
