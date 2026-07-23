@@ -1,0 +1,276 @@
+<main class="container relative">
+    <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+        <!-- SIDE MENU -->
+        <%- include(viewPath('layout/menu')) %>
+
+        <div class="flex flex-col gap-y-5 mt-5 lg:mt-0 w-full">
+
+            <span class="flex items-center gap-x-2 shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+                <svg class="size-7 text-blue-500"><use href="#tag" /></svg>
+                <h2 class="font-DanaMedium text-lg">کدهای تخفیف</h2>
+                <span class="text-gray-400 text-sm">(<%= Number(coupons.length).toLocaleString('fa-IR') %> کد)</span>
+            </span>
+
+            <!-- فرم ساخت / ویرایش کد تخفیف -->
+            <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white flex flex-col gap-y-4">
+                <h2 class="font-DanaMedium text-lg" id="formTitle">ساخت کد تخفیف جدید</h2>
+                <p class="text-xs text-gray-400 -mt-2 leading-6">
+                    کد می‌تواند روی «همه‌ی محصولات»، «محصولات انتخاب‌شده» یا «دسته‌بندی‌های انتخاب‌شده» اعمال شود.
+                    تخفیف فقط روی اقلامِ مشمول در سبد حساب می‌شود.
+                </p>
+
+                <form action="/admin/coupons/save" method="POST" class="grid grid-cols-12 gap-3 items-end" id="couponForm">
+                    <input type="hidden" name="id" id="c_id" value="">
+
+                    <div class="col-span-12 md:col-span-4">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">عنوان</label>
+                        <input type="text" name="title" id="c_title" required placeholder="مثلاً: تخفیف نوروزی"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400">
+                    </div>
+
+                    <div class="col-span-12 md:col-span-4">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">کد تخفیف</label>
+                        <input type="text" name="code" id="c_code" required placeholder="مثلاً: NOWRUZ1403"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-blue-400 uppercase">
+                    </div>
+
+                    <div class="col-span-6 md:col-span-2">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">نوع</label>
+                        <select name="discountType" id="c_type"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none">
+                            <option value="percentage">درصدی</option>
+                            <option value="fixed">مبلغ ثابت</option>
+                        </select>
+                    </div>
+
+                    <div class="col-span-6 md:col-span-2">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">مقدار</label>
+                        <input type="number" name="value" id="c_value" required min="1" placeholder="مثلاً ۲۰"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none">
+                    </div>
+
+                    <!-- دامنه‌ی اعمال -->
+                    <div class="col-span-12 md:col-span-4">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">دامنه‌ی اعمال</label>
+                        <select name="scope" id="c_scope"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none">
+                            <option value="all">همه‌ی محصولات</option>
+                            <option value="product">محصولات انتخاب‌شده</option>
+                            <option value="category">دسته‌بندی‌های انتخاب‌شده</option>
+                        </select>
+                    </div>
+
+                    <!-- انتخاب محصولات (چندتایی) -->
+                    <div class="col-span-12 md:col-span-8 scope-box" data-scope="product" style="display:none">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">محصولات (چند انتخاب با Ctrl/کلیک)</label>
+                        <select name="products" id="c_products" multiple size="5"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none">
+                            <% products.forEach(function (p) { %>
+                            <option value="<%= p._id %>"><%= p.title %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <!-- انتخاب دسته‌ها (چندتایی) -->
+                    <div class="col-span-12 md:col-span-8 scope-box" data-scope="category" style="display:none">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">دسته‌بندی‌ها (چند انتخاب با Ctrl/کلیک)</label>
+                        <select name="categories" id="c_categories" multiple size="5"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none">
+                            <% categories.forEach(function (c) { %>
+                            <option value="<%= c._id %>"><%= c.title %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="col-span-6 md:col-span-3">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">حداقل مبلغ خرید (تومان)</label>
+                        <input type="number" name="minPurchaseAmount" id="c_min" min="0" placeholder="۰"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none">
+                    </div>
+
+                    <div class="col-span-6 md:col-span-3">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">سقف تخفیف (اختیاری)</label>
+                        <input type="number" name="maxDiscountAmount" id="c_max" min="0" placeholder="بدون سقف"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none">
+                    </div>
+
+                    <div class="col-span-6 md:col-span-3">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">تاریخ شروع</label>
+                        <input type="date" name="startDate" id="c_start"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none">
+                    </div>
+
+                    <div class="col-span-6 md:col-span-3">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">تاریخ پایان</label>
+                        <input type="date" name="endDate" id="c_end" required
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none">
+                    </div>
+
+                    <div class="col-span-6 md:col-span-3">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">حداکثر استفاده کل (اختیاری)</label>
+                        <input type="number" name="maxUsage" id="c_maxUsage" min="1" placeholder="نامحدود"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none">
+                    </div>
+
+                    <div class="col-span-6 md:col-span-3">
+                        <label class="block text-sm font-DanaMedium text-gray-500 dark:text-gray-300 mb-2">حداکثر استفاده هر کاربر</label>
+                        <input type="number" name="maxUsagePerUser" id="c_maxPerUser" min="1" value="1"
+                            class="block w-full p-2.5 text-sm dark:text-gray-100 dark:bg-gray-900 bg-slate-100 border border-transparent rounded-md outline-none">
+                    </div>
+
+                    <div class="col-span-12 md:col-span-3 flex items-center gap-x-2 pb-2">
+                        <input type="checkbox" name="isActive" id="c_active" checked class="size-5 accent-blue-500">
+                        <label for="c_active" class="text-sm font-DanaMedium text-gray-600 dark:text-gray-300">فعال باشد</label>
+                    </div>
+
+                    <div class="col-span-12 flex items-center gap-x-3 mt-2">
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-DanaMedium py-2.5 px-6 rounded-md transition-colors">
+                            ذخیره کد تخفیف
+                        </button>
+                        <button type="button" id="resetForm" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 font-DanaMedium py-2.5 px-6 rounded-md transition-colors">
+                            فرم جدید
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- فهرست کدهای تخفیف -->
+            <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white overflow-x-auto">
+                <h2 class="font-DanaMedium text-lg mb-3">فهرست کدها</h2>
+                <table class="w-full text-sm text-right">
+                    <thead class="text-gray-400 border-b border-gray-200 dark:border-white/10">
+                        <tr class="child:py-2 child:px-2 child:font-DanaMedium">
+                            <th>کد</th>
+                            <th>عنوان</th>
+                            <th>مقدار</th>
+                            <th>دامنه</th>
+                            <th>پایان</th>
+                            <th>استفاده</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="child:border-b child:border-gray-100 dark:child:border-white/5">
+                        <% if (!coupons.length) { %>
+                        <tr><td colspan="8" class="py-6 text-center text-gray-400">هنوز کدی ساخته نشده است</td></tr>
+                        <% } %>
+                        <% coupons.forEach(function (c) { %>
+                        <tr class="child:py-2.5 child:px-2">
+                            <td class="font-DanaMedium text-blue-500"><%= c.code %></td>
+                            <td><%= c.title %></td>
+                            <td>
+                                <% if (c.discountType === 'percentage') { %>
+                                    <%= Number(c.value).toLocaleString('fa-IR') %>٪
+                                <% } else { %>
+                                    <%= Number(c.value).toLocaleString('fa-IR') %> تومان
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (c._scope === 'product') { %>
+                                    <span class="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded"><%= c._productIds.length %> محصول</span>
+                                <% } else if (c._scope === 'category') { %>
+                                    <span class="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300 px-2 py-0.5 rounded"><%= c._categoryIds.length %> دسته</span>
+                                <% } else { %>
+                                    <span class="text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300 px-2 py-0.5 rounded">همه محصولات</span>
+                                <% } %>
+                            </td>
+                            <td class="text-gray-500"><%= c._endInput %></td>
+                            <td class="text-gray-500"><%= Number(c.usedCount || 0).toLocaleString('fa-IR') %><%= c.maxUsage ? ' / ' + Number(c.maxUsage).toLocaleString('fa-IR') : '' %></td>
+                            <td>
+                                <% if (c.isActive) { %>
+                                    <span class="text-xs text-green-600 dark:text-green-400">فعال</span>
+                                <% } else { %>
+                                    <span class="text-xs text-red-500">غیرفعال</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <div class="flex items-center gap-x-2">
+                                    <button type="button" class="text-blue-500 hover:text-blue-600 js-edit"
+                                        data-id="<%= c._id %>"
+                                        data-title="<%= c.title %>"
+                                        data-code="<%= c.code %>"
+                                        data-type="<%= c.discountType %>"
+                                        data-value="<%= c.value %>"
+                                        data-scope="<%= c._scope %>"
+                                        data-products="<%= c._productIds.join(',') %>"
+                                        data-categories="<%= c._categoryIds.join(',') %>"
+                                        data-min="<%= c.minPurchaseAmount || '' %>"
+                                        data-max="<%= c.maxDiscountAmount || '' %>"
+                                        data-start="<%= c._startInput %>"
+                                        data-end="<%= c._endInput %>"
+                                        data-maxusage="<%= c.maxUsage || '' %>"
+                                        data-maxperuser="<%= c.maxUsagePerUser || 1 %>"
+                                        data-active="<%= c.isActive ? '1' : '0' %>">ویرایش</button>
+                                    <form action="/admin/coupons/<%= c._id %>/toggle" method="POST" class="inline">
+                                        <button class="text-amber-500 hover:text-amber-600"><%= c.isActive ? 'غیرفعال' : 'فعال' %></button>
+                                    </form>
+                                    <form action="/admin/coupons/<%= c._id %>/delete" method="POST" class="inline" onsubmit="return confirm('این کد حذف شود؟')">
+                                        <button class="text-red-500 hover:text-red-600">حذف</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+(function () {
+    var scopeSel = document.getElementById('c_scope');
+    var boxes = document.querySelectorAll('.scope-box');
+
+    function refreshScope() {
+        boxes.forEach(function (b) {
+            b.style.display = (b.getAttribute('data-scope') === scopeSel.value) ? '' : 'none';
+        });
+    }
+    scopeSel.addEventListener('change', refreshScope);
+    refreshScope();
+
+    // انتخاب چندتایی از یک رشته‌ی id ها (برای حالت ویرایش)
+    function setMulti(selectId, csv) {
+        var sel = document.getElementById(selectId);
+        var ids = (csv || '').split(',').filter(Boolean);
+        Array.prototype.forEach.call(sel.options, function (o) {
+            o.selected = ids.indexOf(o.value) !== -1;
+        });
+    }
+
+    // پرکردن فرم برای ویرایش
+    document.querySelectorAll('.js-edit').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var d = btn.dataset;
+            document.getElementById('c_id').value = d.id;
+            document.getElementById('c_title').value = d.title;
+            document.getElementById('c_code').value = d.code;
+            document.getElementById('c_type').value = d.type;
+            document.getElementById('c_value').value = d.value;
+            document.getElementById('c_scope').value = d.scope;
+            document.getElementById('c_min').value = d.min;
+            document.getElementById('c_max').value = d.max;
+            document.getElementById('c_start').value = d.start;
+            document.getElementById('c_end').value = d.end;
+            document.getElementById('c_maxUsage').value = d.maxusage;
+            document.getElementById('c_maxPerUser').value = d.maxperuser;
+            document.getElementById('c_active').checked = d.active === '1';
+            refreshScope();
+            setMulti('c_products', d.products);
+            setMulti('c_categories', d.categories);
+            document.getElementById('formTitle').textContent = 'ویرایش کد: ' + d.code;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+
+    // ریست فرم به حالت «ساخت جدید»
+    document.getElementById('resetForm').addEventListener('click', function () {
+        document.getElementById('couponForm').reset();
+        document.getElementById('c_id').value = '';
+        document.getElementById('formTitle').textContent = 'ساخت کد تخفیف جدید';
+        refreshScope();
+    });
+})();
+</script>

@@ -149,6 +149,9 @@
                 <h2 class="font-DanaMedium"></h2>
               </span>
               <div class="space-y-1.5 text-gray-600 dark:text-gray-300 mt-3 mr-2">
+                <% if (address.state || address.city) { %>
+                <p>استان و شهرستان: <%= address.state || '' %><%= address.city ? ' - ' + address.city : '' %></p>
+                <% } %>
                 <p>آدرس : <%= address.address %></p>
                 <p>کد پستی: <%= address.postalCode %></p>
                 <p>گیرنده: <%= address.receiver %></p>
@@ -201,9 +204,24 @@
           <input type="text" name="title" placeholder="مثلاً: منزل، محل کار" required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
         </div>
 
+        <div class="grid grid-cols-2 gap-x-3">
+          <div>
+            <label class="block text-sm font-DanaMedium mb-1.5">استان</label>
+            <select id="addr_state" name="state" required class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
+              <option value="">در حال بارگذاری...</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-DanaMedium mb-1.5">شهرستان</label>
+            <select id="addr_city" name="city" required disabled class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all disabled:opacity-60">
+              <option value="">ابتدا استان را انتخاب کنید</option>
+            </select>
+          </div>
+        </div>
+
         <div>
           <label class="block text-sm font-DanaMedium mb-1.5">آدرس کامل</label>
-          <textarea name="address" rows="3" placeholder="استان، شهر، خیابان، کوچه، پلاک..." required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition-all"></textarea>
+          <textarea name="address" rows="3" placeholder="خیابان، کوچه، پلاک، واحد..." required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition-all"></textarea>
         </div>
 
         <div>
@@ -304,4 +322,12 @@
       }
     });
 
+  </script>
+
+  <!-- استان و شهر (آبشاری) -->
+  <script src="/js/iran-provinces.js"></script>
+  <script>
+    if (window.initProvinceCity) {
+      window.initProvinceCity('addr_state', 'addr_city');
+    }
   </script>

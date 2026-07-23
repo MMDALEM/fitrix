@@ -86,15 +86,27 @@ class dashboradController extends controller {
 
   async addAddress(req, res, next) {
     try {
-      const { title, address, postalCode, receiver, phone } = req.body;
-      if (!title || !address || !postalCode || !receiver || !phone)
+      const { title, state, city, address, postalCode, receiver, phone } =
+        req.body;
+      // همه‌ی فیلدها اجباری‌اند (به‌ویژه استان و شهر)
+      if (
+        !title ||
+        !state ||
+        !city ||
+        !address ||
+        !postalCode ||
+        !receiver ||
+        !phone
+      )
         return this.alertAndBack(req, res, {
-          title: "لطفا تمام فیلدهای مورد نیاز را پر کنید",
+          title: "لطفا تمام فیلدها از جمله استان و شهر را پر کنید",
           icon: "error",
         });
 
       await addressModel.create({
         title,
+        state,
+        city,
         address,
         postalCode,
         receiver,
@@ -115,15 +127,26 @@ class dashboradController extends controller {
   // JSON و خودِ آدرسِ ساخته‌شده را برمی‌گرداند تا بدون ترک صفحه اضافه شود
   async addAddressAjax(req, res, next) {
     try {
-      const { title, address, postalCode, receiver, phone } = req.body;
-      if (!title || !address || !postalCode || !receiver || !phone)
+      const { title, state, city, address, postalCode, receiver, phone } =
+        req.body;
+      if (
+        !title ||
+        !state ||
+        !city ||
+        !address ||
+        !postalCode ||
+        !receiver ||
+        !phone
+      )
         return res.status(400).json({
           success: false,
-          message: "لطفا تمام فیلدهای مورد نیاز را پر کنید",
+          message: "لطفا تمام فیلدها از جمله استان و شهر را پر کنید",
         });
 
       const doc = await addressModel.create({
         title,
+        state,
+        city,
         address,
         postalCode,
         receiver,
@@ -137,6 +160,8 @@ class dashboradController extends controller {
         address: {
           _id: doc._id,
           title: doc.title,
+          state: doc.state,
+          city: doc.city,
           address: doc.address,
           receiver: doc.receiver,
           phone: doc.phone,

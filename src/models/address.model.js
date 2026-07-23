@@ -4,6 +4,8 @@ const addressSchema = new mongoose.Schema(
   {
     title: { type: String },
     country: { type: String, default: "ایران" },
+    state: { type: String }, // استان
+    city: { type: String }, // شهر
     address: { type: String },
     receiver: { type: String },
     postalCode: { type: String },

@@ -351,10 +351,18 @@
                                         <span style="background:#ef4444;color:#fff;border-radius:9999px;padding:1px 8px;font-size:11px;font-weight:700;white-space:nowrap"><%= Number(p.salePercent).toLocaleString('fa-IR') %>٪ تخفیف</span>
                                     </span>
                                     <% } %>
-                                    <span class="flex items-center gap-x-1 font-DanaMedium <%= saleActive(p) ? 'text-red-500' : 'text-gray-700 dark:text-gray-300' %>">
+                                    <span class="row-price flex items-center gap-x-1 font-DanaMedium <%= saleActive(p) ? 'text-red-500' : 'text-gray-700 dark:text-gray-300' %>">
                                         <p class="font-DanaMedium text-xl row-total"><%= Number(unitPrice * item.quantity).toLocaleString('fa-IR') %></p>
                                         <p class="text-lg">تومان</p>
                                     </span>
+                                    <!-- قیمتِ پس از کد تخفیف روی همین محصول (با اعمالِ کد پر می‌شود) -->
+                                    <div class="coupon-line hidden mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-lg bg-green-50 dark:bg-green-900/15 border border-green-200 dark:border-green-700/40 px-2 py-1 w-fit text-xs">
+                                        <svg class="w-3.5 h-3.5 text-green-600 dark:text-green-400"><use href="#tag"></use></svg>
+                                        <span class="text-green-700 dark:text-green-300 font-DanaMedium">با کد تخفیف:</span>
+                                        <span class="coupon-after text-green-600 dark:text-green-400 font-DanaMedium text-sm"></span>
+                                        <span>تومان</span>
+                                        <span class="coupon-amount text-red-500"></span>
+                                    </div>
                                 </div>
                                 <svg class="flex sm:hidden absolute top-0 left-0 w-5 h-5 cursor-pointer remove-item" data-product-id="<%= p._id %>">
                                     <use href="#close"></use>
@@ -544,6 +552,32 @@
             discountMsg.classList.add(ok ? "text-green-600" : "text-red-500");
         }
 
+        // نمایشِ تخفیفِ کد «روی خودِ محصول در سبد»:
+        //   قیمتِ اصلیِ ردیف خط می‌خورد و قیمتِ جدید (پس از کد) زیرش نشان داده می‌شود.
+        // ابتدا همه‌ی ردیف‌ها پاک می‌شوند، سپس فقط محصولاتِ مشمول علامت می‌خورند.
+        function applyCouponToRows(list) {
+            document.querySelectorAll(".cart-row").forEach(function (row) {
+                var line = row.querySelector(".coupon-line");
+                if (line) line.classList.add("hidden");
+                var price = row.querySelector(".row-price");
+                if (price) price.classList.remove("line-through", "opacity-50");
+            });
+            if (!list || !list.length) return;
+            list.forEach(function (it) {
+                var row = document.querySelector('.cart-row[data-product-id="' + it.id + '"]');
+                if (!row) return;
+                // قیمتِ قبلی را خط بزن
+                var price = row.querySelector(".row-price");
+                if (price) price.classList.add("line-through", "opacity-50");
+                // قیمتِ جدید را نشان بده
+                var line = row.querySelector(".coupon-line");
+                if (!line) return;
+                line.querySelector(".coupon-after").textContent = faNum(it.after);
+                line.querySelector(".coupon-amount").textContent = "(" + faNum(it.discount) + "− تخفیف)";
+                line.classList.remove("hidden");
+            });
+        }
+
         if (applyDiscountBtn) {
             applyDiscountBtn.addEventListener("click", async function () {
                 const code = (discountInput.value || "").trim();
@@ -558,6 +592,7 @@
                     if (res.redirected) { window.location.href = res.url; return; }
                     const data = await res.json();
                     renderTotals(data);
+                    applyCouponToRows(data.success ? data.discountItems : null);
                     showDiscountMsg(data.message || (data.success ? "کد تخفیف اعمال شد" : "کد تخفیف نامعتبر است"), !!data.success);
                 } catch (_) {
                     showDiscountMsg("خطا در ارتباط با سرور", false);
@@ -725,8 +760,22 @@ refreshGateways();
       </div>
 
       <div class="caddr-field">
+        <label class="caddr-label font-DanaMedium">استان</label>
+        <select class="caddr-input" id="cart_addr_state" name="state" required>
+          <option value="">در حال بارگذاری...</option>
+        </select>
+      </div>
+
+      <div class="caddr-field">
+        <label class="caddr-label font-DanaMedium">شهرستان</label>
+        <select class="caddr-input" id="cart_addr_city" name="city" required disabled>
+          <option value="">ابتدا استان را انتخاب کنید</option>
+        </select>
+      </div>
+
+      <div class="caddr-field">
         <label class="caddr-label font-DanaMedium">آدرس کامل</label>
-        <textarea class="caddr-input caddr-textarea" name="address" rows="3" placeholder="استان، شهر، خیابان، کوچه، پلاک..." required></textarea>
+        <textarea class="caddr-input caddr-textarea" name="address" rows="3" placeholder="خیابان، کوچه، پلاک، واحد..." required></textarea>
       </div>
 
       <div class="caddr-field">
@@ -866,7 +915,8 @@ refreshGateways();
 
       var a = document.createElement("span");
       a.className = "text-xs text-gray-500 dark:text-gray-400";
-      a.textContent = addr.address || "";
+      var loc = [addr.state, addr.city].filter(Boolean).join(" - ");
+      a.textContent = (loc ? loc + " — " : "") + (addr.address || "");
 
       wrap.appendChild(t);
       wrap.appendChild(a);
@@ -879,13 +929,15 @@ refreshGateways();
       e.preventDefault();
       var body = {
         title: (form.elements["title"].value || "").trim(),
+        state: (form.elements["state"].value || "").trim(),
+        city: (form.elements["city"].value || "").trim(),
         address: (form.elements["address"].value || "").trim(),
         postalCode: (form.elements["postalCode"].value || "").trim(),
         receiver: (form.elements["receiver"].value || "").trim(),
         phone: (form.elements["phone"].value || "").trim(),
       };
-      if (!body.title || !body.address || !body.postalCode || !body.receiver || !body.phone) {
-        toast("لطفاً همه‌ی فیلدها را کامل کنید", "error");
+      if (!body.title || !body.state || !body.city || !body.address || !body.postalCode || !body.receiver || !body.phone) {
+        toast("لطفاً همه‌ی فیلدها از جمله استان و شهر را کامل کنید", "error");
         return;
       }
 
@@ -918,4 +970,12 @@ refreshGateways();
         });
     });
   })();
+</script>
+
+<!-- استان و شهر (آبشاری) برای مودالِ آدرسِ سبد -->
+<script src="/js/iran-provinces.js"></script>
+<script>
+  if (window.initProvinceCity) {
+    window.initProvinceCity('cart_addr_state', 'cart_addr_city');
+  }
 </script>

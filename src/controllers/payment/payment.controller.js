@@ -40,7 +40,7 @@ class paymentController extends controller {
       .findOne({ user: userId, status: "active" })
       .populate(
         "items.product",
-        "title image priceSingle salePrice salePercent onSale saleStartDate saleEndDate quantity isActive",
+        "title image priceSingle salePrice salePercent onSale saleStartDate saleEndDate quantity isActive category brand",
       );
 
     const items =
@@ -61,6 +61,7 @@ class paymentController extends controller {
     let discountAmount = 0;
     let discountDoc = null;
     let discountMessage = null;
+    let discountItems = []; // ریزِ تخفیفِ هر محصولِ مشمول (قبل/بعد)
     const code = (discountCodeRaw || "").toString().trim().toUpperCase();
 
     if (code && items.length) {
@@ -82,8 +83,63 @@ class paymentController extends controller {
           ).toLocaleString("fa-IR")} تومان است`;
           discountDoc = null;
         } else {
-          discountAmount = discountDoc.calculateDiscount(itemsPrice);
-          discountMessage = "کد تخفیف اعمال شد";
+          // دامنه‌ی کد: اگر محصول/دسته مشخص شده باشد، تخفیف فقط روی «اقلامِ
+          // مشمول» حساب می‌شود؛ اگر هیچ‌کدام مشخص نباشد روی همه‌ی اقلام.
+          const prodIds = (discountDoc.products || []).map((id) => id.toString());
+          const catIds = (discountDoc.categories || []).map((id) => id.toString());
+          const brandIds = (discountDoc.brands || []).map((id) => id.toString());
+          const hasScope = prodIds.length || catIds.length || brandIds.length;
+
+          const isEligible = (p) => {
+            if (!hasScope) return true;
+            if (prodIds.length && prodIds.includes(p._id.toString())) return true;
+            if (
+              catIds.length &&
+              p.category &&
+              catIds.includes(p.category.toString())
+            )
+              return true;
+            if (
+              brandIds.length &&
+              p.brand &&
+              brandIds.includes(p.brand.toString())
+            )
+              return true;
+            return false;
+          };
+
+          let eligibleSubtotal = 0;
+          items.forEach((it) => {
+            if (isEligible(it.product))
+              eligibleSubtotal += effectivePrice(it.product) * it.quantity;
+          });
+
+          if (eligibleSubtotal <= 0) {
+            discountMessage =
+              "این کد تخفیف برای هیچ‌کدام از اقلامِ سبد شما معتبر نیست";
+            discountDoc = null;
+          } else {
+            discountAmount = discountDoc.calculateDiscount(eligibleSubtotal);
+            discountMessage = "کد تخفیف اعمال شد";
+
+            // ریزِ تخفیفِ هر قلمِ مشمول (توزیعِ سهمی — هم برای درصدی هم مبلغِ ثابت
+            // درست است، حتی با سقفِ تخفیف). «قبل» = مبلغِ همان قلم، «بعد» = پس از کسر.
+            items.forEach((it) => {
+              if (!isEligible(it.product)) return;
+              const lineBefore = effectivePrice(it.product) * it.quantity;
+              const share = Math.round(
+                (lineBefore / eligibleSubtotal) * discountAmount,
+              );
+              discountItems.push({
+                id: String(it.product._id),
+                title: it.product.title,
+                quantity: it.quantity,
+                before: lineBefore,
+                discount: share,
+                after: Math.max(lineBefore - share, 0),
+              });
+            });
+          }
         }
       }
     }
@@ -107,6 +163,7 @@ class paymentController extends controller {
       discountAmount,
       discountDoc,
       discountMessage,
+      discountItems,
       taxPrice,
       finalPrice,
     };
@@ -134,6 +191,7 @@ class paymentController extends controller {
           (applied ? "کد تخفیف اعمال شد" : "کد تخفیف نامعتبر است"),
         itemsPrice: totals.itemsPrice,
         discountAmount: totals.discountAmount,
+        discountItems: totals.discountItems || [],
         taxPrice: totals.taxPrice,
         finalPrice: totals.finalPrice,
       });
@@ -205,6 +263,8 @@ class paymentController extends controller {
         phone: address.phone,
         address: address.address,
         postalCode: address.postalCode,
+        city: address.city,
+        state: address.state,
       };
       basket.paymentMethod = gateway;
       basket.paymentMethodLabel =
@@ -298,6 +358,7 @@ class paymentController extends controller {
       if (req.method === "POST" && req.body && typeof req.body === "object") {
         Object.assign(params, req.body);
       }
+
 
       // basketId از مسیر (path) خوانده می‌شود تا در URL تمیز بماند؛
       // برای سازگاری، query هم پشتیبانی می‌شود.
@@ -434,8 +495,8 @@ class paymentController extends controller {
             basket.shippingDetails?.phone + "",
             basket.orderNumber + "",
           );
-          // await manager("09167728327", basket.orderNumber + "");
-          // await manager("09373640517", basket.orderNumber + "");
+          await manager("09167728327", basket.orderNumber + "");
+          await manager("09373640517", basket.orderNumber + "");
         } catch (smsErr) {
           console.error("SMS notify failed:", smsErr.message);
         }
@@ -519,7 +580,9 @@ class paymentController extends controller {
       if (req.flash)
         req.flash(
           "payMessage",
-          failReason ? `پرداخت ناموفق بود: ${failReason}` : "پرداخت ناموفق بود",
+          failReason
+            ? `پرداخت ناموفق بود: ${failReason}`
+            : "پرداخت ناموفق بود",
         );
       return res.redirect("/payment/result/" + basket._id);
     } catch (err) {

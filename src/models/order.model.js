@@ -330,7 +330,9 @@ OrderSchema.methods.calculateTotal = function () {
 };
 
 // Middleware قبل از ذخیره
-OrderSchema.pre("save", async function (next) {
+// سبکِ مدرنِ Mongoose (async بدون next). فراخوانیِ next در هوکِ document در
+// نسخه‌های جدید «next is not a function» می‌دهد؛ حذفِ next امن و سازگار است.
+OrderSchema.pre("save", async function () {
   // اگر شماره سفارش وجود نداشت، تولید کن
   if (this.isNew && !this.orderNumber) {
     this.orderNumber = await this.constructor.generateOrderNumber();
@@ -343,8 +345,6 @@ OrderSchema.pre("save", async function (next) {
 
   // محاسبه مجموع
   this.calculateTotal();
-
-  next();
 });
 
 module.exports = mongoose.model("Order", OrderSchema);

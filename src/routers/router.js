@@ -19,6 +19,10 @@ router.use("/shop", verifyTokenPublic, shopRouter);
 const consultRouter = require("./consult/consult.route");
 router.use("/consult", consultRouter);
 
+// Torob Product API v3 — عمومی؛ احراز هویت با توکنِ EdDSA ِ خودِ ترب
+const torobRouter = require("./torob/torob.route");
+router.use("/torob_api", torobRouter);
+
 const programRouter = require("./program/program.route");
 router.use("/program", verifyUser, programRouter);
 
@@ -72,14 +76,14 @@ router.use("/admin/logs", verifyAdmin, adminLogRouter);
 const adminDiscountRouter = require("./admin/discount.route");
 router.use("/admin/discounts", verifyAdmin, adminDiscountRouter);
 
+const adminCouponRouter = require("./admin/coupon.route");
+router.use("/admin/coupons", verifyAdmin, adminCouponRouter);
+
 const adminSliderRouter = require("./admin/slider.route");
 router.use("/admin/slider", verifyAdmin, adminSliderRouter);
 
 const adminNotificationRouter = require("./admin/notification.route");
 router.use("/admin/notifications", verifyAdmin, adminNotificationRouter);
-
-const torobRouter = require("./torob/torob.route");
-router.use("/torob_api", torobRouter);
 
 router.use("/logout", logout);
 

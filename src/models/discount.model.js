@@ -208,25 +208,25 @@ discountSchema.methods.recordUsage = function(userId, orderId, discountAmount) {
 };
 
 // Middleware برای بررسی خودکار انقضا
-discountSchema.pre('save', function(next) {
+// سبکِ مدرنِ Mongoose (بدون next) — در نسخه‌های جدید فراخوانیِ next در هوکِ
+// document باعثِ «next is not a function» می‌شود؛ این نسخه سازگار و امن است.
+discountSchema.pre('save', function () {
     const now = new Date();
-    
+
     // اگر تاریخ پایان گذشته باشد، غیرفعال کن
     if (this.endDate < now) {
         this.isActive = false;
     }
-    
+
     // اگر تعداد استفاده به حداکثر رسیده باشد، غیرفعال کن
     if (this.maxUsage && this.usedCount >= this.maxUsage) {
         this.isActive = false;
     }
-    
+
     // تبدیل code به حروف بزرگ
     if (this.code) {
         this.code = this.code.toUpperCase();
     }
-    
-    next();
 });
 
 module.exports = mongoose.model('Discount', discountSchema);
