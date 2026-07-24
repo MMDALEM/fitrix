@@ -1,12 +1,11 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>آدرس های من</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+
+    button {
+        padding: 0.625rem 1.5rem !important;
+    }
+
     @font-face {
       font-family: 'Dana';
       src: local('Dana');
@@ -57,11 +56,11 @@
       animation: slide-up 0.3s ease-out;
     }
   </style>
-</head>
 
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white min-h-screen font-Dana">
 
-  <main class="container relative mx-auto px-4">
+
+
+  <main class="container relative ">
     <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
       <!-- SIDE MENU -->
         <div class="lg:sticky mb-8 top-1 h-fit lg:w-1/4 hidden lg:flex flex-col gap-y-4 items-center shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
@@ -81,47 +80,58 @@
                         <p class="text-gray-400"><%= user?.phone %></p>
                     </span>
                 </div>
-                <span>
-                    <svg class="w-6 h-6 cursor-pointer text-blue-500">
-                        <use href="#edit"></use>
-                    </svg>
-                </span>
             </div> 
             <ul
-            class="w-full relative space-y-2 child:duration-300 child:transition-all child:py-3  child:px-2 child:flex child:gap-x-2 text-lg child:cursor-pointer child:rounded-lg">
-            <li class="bg-blue-500/10 text-blue-500">
-                <svg class="w-6 h-6 ">
-                    <use href="#squares"></use>
-                </svg>
-                <a href="/dashboard">داشبورد</a>
-            </li>
-            <li class="hover:text-blue-500">
-                <svg class="w-6 h-6 ">
-                    <use href="#shopping-bag"></use>
-                </svg>
-                <a href="/dashboard">
-                    سفارش ها
-                </a>
-            </li>
-            <li class="hover:text-blue-500">
-                <svg class="w-6 h-6 ">
-                    <use href="#map"></use>
-                </svg>
-                <a href="/dashboard/address">آدرس ها</a>
-            </li>
-            <li class="hover:text-blue-500">
-                <svg class="w-6 h-6 ">
-                    <use href="#cog"></use>
-                </svg>
-                <a href="/dashboard">اطلاعات حساب </a>
-            </li>
-            <li class="text-red-400">
-                <svg class="w-6 h-6 ">
-                    <use href="#arrow-left-end"></use>
-                </svg>
-                <a href="/logout">خروج</a>
-            </li>
-        </ul>
+                class="w-full relative space-y-2 child:duration-300 child:transition-all child:py-3  child:px-2 child:flex child:gap-x-2 text-lg child:cursor-pointer child:rounded-lg">
+                <li <% if (req.path === '/') { %> class="bg-blue-500/10 text-blue-500" <%} else {%> class="hover:text-blue-500"<% } %>>
+                    <a href="/dashboard">
+                    <svg class="w-6 h-6 ">
+                        <use href="#squares"></use>
+                    </svg>
+                    </a>
+                    <a href="/dashboard">داشبورد</a>
+                </li>
+                <li <% if (req.path === '/orders') { %>class="bg-blue-500/10 text-blue-500" <%} else {%> class="hover:text-blue-500"<% } %>>
+                <a href="/dashboard/orders">
+                    <svg class="w-6 h-6 ">
+                        <use href="#shopping-bag"></use>
+                    </svg>
+                    </a>
+                    <a href="/dashboard/orders">سفارش ها</a>
+                </li>
+                <li <% if (req.path === '/address') { %>class="bg-blue-500/10 text-blue-500" <%} else {%> class="hover:text-blue-500"<% } %>>
+                    <a href="/dashboard/address">
+                    <svg class="w-6 h-6 ">
+                        <use href="#map"></use>
+                    </svg>
+                    </a>
+                    <a href="/dashboard/address">آدرس ها</a>
+                </li>
+                <li <% if (req.path === '/mine') { %>class="bg-blue-500/10 text-blue-500" <%} else {%> class="hover:text-blue-500"<% } %>>
+                    <a href="/program/mine">
+                    <svg class="w-6 h-6 ">
+                        <use href="#document"></use>
+                    </svg>
+                    </a>
+                    <a href="/program/mine">برنامه‌های من</a>
+                </li>
+                <li <% if (req.path === '/account') { %>class="bg-blue-500/10 text-blue-500" <%} else {%> class="hover:text-blue-500"<% } %>>
+                    <a href="/dashboard/account">
+                    <svg class="w-6 h-6 ">
+                        <use href="#cog"></use>
+                    </svg>
+                    </a>
+                    <a href="/dashboard/account">اطلاعات حساب </a>
+                </li>
+                <li class="text-red-400">
+                    <a href="/logout">
+                    <svg class="w-6 h-6 ">
+                        <use href="#arrow-left-end"></use>
+                    </svg>
+                    </a>
+                    <a href="/logout">خروج</a>
+                </li>
+            </ul>
         </div>
 
       <!-- محتوای اصلی -->

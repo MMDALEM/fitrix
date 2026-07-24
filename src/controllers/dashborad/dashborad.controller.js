@@ -40,7 +40,22 @@ class dashboradController extends controller {
     }
   }
 
-  // به‌روزرسانی اطلاعات حساب (نام، نام خانوادگی، ایمیل)
+  async accountinfo(req, res, next) {
+    try {
+      const profile = await userModel
+        .findById(req.user._id, "firstName lastName email phone")
+        .lean();
+
+      return res.render("dashborad/account", {
+        profile: profile || {},
+        pageTitle: "حساب کاربری",
+        noindex: true,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async updateProfile(req, res, next) {
     try {
       const { firstName, lastName, email } = req.body;
@@ -65,6 +80,48 @@ class dashboradController extends controller {
       return this.alertAndBack(req, res, {
         title: "اطلاعات حساب با موفقیت ذخیره شد",
         icon: "success",
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async orders(req, res, next) {
+    try {
+      const orders = await basketModel
+        .find({ user: req.user._id, status: { $in: ["paid", "cancelled"] } })
+        .populate("items.product", "title image slug")
+        .sort({ paidAt: -1, updatedAt: -1 })
+        .lean();
+
+      return res.render("dashborad/orders", {
+        orders,
+        pageTitle: "سفارش‌های من",
+        noindex: true,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async orderDetail(req, res, next) {
+    try {
+      const mongoose = require("mongoose");
+      const { id } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(id))
+        return res.redirect("/dashboard/orders");
+
+      const order = await basketModel
+        .findOne({ _id: id, user: req.user._id })
+        .populate("items.product", "title image slug")
+        .lean();
+
+      if (!order) return res.redirect("/dashboard/orders");
+
+      return res.render("dashborad/order-detail", {
+        order,
+        pageTitle: `سفارش ${order.orderNumber || ""}`,
+        noindex: true,
       });
     } catch (err) {
       next(err);
@@ -123,8 +180,6 @@ class dashboradController extends controller {
     }
   }
 
-  // افزودن آدرس به‌صورت AJAX (برای مودالِ صفحه‌ی سبد) — به‌جای ریدایرکت،
-  // JSON و خودِ آدرسِ ساخته‌شده را برمی‌گرداند تا بدون ترک صفحه اضافه شود
   async addAddressAjax(req, res, next) {
     try {
       const { title, state, city, address, postalCode, receiver, phone } =

@@ -1,0 +1,158 @@
+<style>
+    button {
+        padding: 0.625rem 1.5rem !important;
+    }
+</style>
+
+<main class="container relative">
+  <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
+    <!-- منوی مشترک داشبورد -->
+            <div class="lg:sticky mb-8 top-1 h-fit lg:w-1/4 hidden lg:flex flex-col gap-y-4 items-center shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+             <!-- NAME AND AVATAR  -->
+             <div class="w-full flex items-center justify-between border-b border-gray-200 dark:border-white/20 py-3">
+                <div class="flex items-center gap-x-3">
+                    <img src="/images/svg/user.png" class="size-10 ring-2 ring-gray-400/20 rounded-full"
+                        alt="AVATAR">
+                    <span class="felx flex-col gap-y-2">
+                        <p class="font-DanaMedium text-lg">
+                            <% if(user?.firstName && user?.lastName){ %>
+                                <%= user?.firstName %><%= user?.lastName %>
+                            <% }else{ %>
+                                کاربر گرامی
+                            <% } %>
+                        </p>
+                        <p class="text-gray-400"><%= user?.phone %></p>
+                    </span>
+                </div>
+            </div> 
+            <ul
+                class="w-full relative space-y-2 child:duration-300 child:transition-all child:py-3  child:px-2 child:flex child:gap-x-2 text-lg child:cursor-pointer child:rounded-lg">
+                <li <% if (req.path === '/') { %> class="bg-blue-500/10 text-blue-500" <%} else {%> class="hover:text-blue-500"<% } %>>
+                    <a href="/dashboard">
+                    <svg class="w-6 h-6 ">
+                        <use href="#squares"></use>
+                    </svg>
+                    </a>
+                    <a href="/dashboard">داشبورد</a>
+                </li>
+                <li <% if (req.path === '/orders') { %>class="bg-blue-500/10 text-blue-500" <%} else {%> class="hover:text-blue-500"<% } %>>
+                <a href="/dashboard/orders">
+                    <svg class="w-6 h-6 ">
+                        <use href="#shopping-bag"></use>
+                    </svg>
+                    </a>
+                    <a href="/dashboard/orders">سفارش ها</a>
+                </li>
+                <li <% if (req.path === '/address') { %>class="bg-blue-500/10 text-blue-500" <%} else {%> class="hover:text-blue-500"<% } %>>
+                    <a href="/dashboard/address">
+                    <svg class="w-6 h-6 ">
+                        <use href="#map"></use>
+                    </svg>
+                    </a>
+                    <a href="/dashboard/address">آدرس ها</a>
+                </li>
+                <li <% if (req.path === '/mine') { %>class="bg-blue-500/10 text-blue-500" <%} else {%> class="hover:text-blue-500"<% } %>>
+                    <a href="/program/mine">
+                    <svg class="w-6 h-6 ">
+                        <use href="#document"></use>
+                    </svg>
+                    </a>
+                    <a href="/program/mine">برنامه‌های من</a>
+                </li>
+                <li <% if (req.path === '/account') { %>class="bg-blue-500/10 text-blue-500" <%} else {%> class="hover:text-blue-500"<% } %>>
+                    <a href="/dashboard/account">
+                    <svg class="w-6 h-6 ">
+                        <use href="#cog"></use>
+                    </svg>
+                    </a>
+                    <a href="/dashboard/account">اطلاعات حساب </a>
+                </li>
+                <li class="text-red-400">
+                    <a href="/logout">
+                    <svg class="w-6 h-6 ">
+                        <use href="#arrow-left-end"></use>
+                    </svg>
+                    </a>
+                    <a href="/logout">خروج</a>
+                </li>
+            </ul>
+        </div>
+
+    <div class="lg:w-3/4 flex flex-col gap-y-5">
+      <!-- سرصفحه سفارش -->
+      <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 dark:border-white/20 pb-3">
+          <div class="flex items-center gap-x-2">
+            <a href="/dashboard/orders" class="text-gray-400 hover:text-blue-500"><svg class="size-6 rotate-180"><use href="#arrow"></use></svg></a>
+            <h2 class="font-DanaMedium text-lg">سفارش #<%= order.orderNumber || '—' %></h2>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-full
+            <%= order.status === 'cancelled' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300'
+                : (order.isShipped ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300'
+                : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300') %>">
+            <%= order.statusLabel || (order.status === 'paid' ? 'پرداخت شده' : order.status) %>
+          </span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 text-sm">
+          <div><p class="text-gray-400">تاریخ ثبت</p><p class="font-DanaMedium mt-1"><%= date(order.paidAt || order.createdAt).format('jYYYY/jMM/jDD') %></p></div>
+          <div><p class="text-gray-400">روش پرداخت</p><p class="font-DanaMedium mt-1"><%= order.paymentMethodLabel || 'آنلاین' %></p></div>
+          <div><p class="text-gray-400">وضعیت ارسال</p><p class="font-DanaMedium mt-1"><%= order.isShipped ? 'ارسال شده' : 'در حال آماده‌سازی' %></p></div>
+          <% if (order.trackingCode) { %>
+          <div><p class="text-gray-400">کد رهگیری پستی</p><p class="font-DanaMedium mt-1 text-blue-500"><%= order.trackingCode %></p></div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- اقلام سفارش -->
+      <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+        <h3 class="font-DanaMedium mb-3">اقلام سفارش</h3>
+        <ul class="divide-y divide-gray-100 dark:divide-white/10">
+          <% (order.items || []).forEach(function (it) { %>
+          <li class="flex items-center gap-3 py-3">
+            <% if (it.product && it.product.image) { %>
+            <a href="<%= it.product && it.product.slug ? '/product/' + it.product.slug : '#' %>">
+              <img src="<%= it.product.image %>" class="size-14 w-10 rounded-lg object-contain dark:border-white/10" alt="">
+            </a>
+            <% } %>
+            <div class="flex-1 min-w-0">
+              <p class="font-DanaMedium text-sm line-clamp-1"><%= it.product ? it.product.title : 'کالا' %></p>
+              <p class="text-gray-400 text-xs mt-1"><%= Number(it.quantity).toLocaleString('fa-IR') %> عدد × <%= Number(it.price).toLocaleString('fa-IR') %> تومان</p>
+            </div>
+            <p class="font-DanaMedium text-sm whitespace-nowrap"><%= Number((it.price||0) * (it.quantity||0)).toLocaleString('fa-IR') %> تومان</p>
+          </li>
+          <% }) %>
+        </ul>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <!-- آدرس ارسال -->
+        <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+          <h3 class="font-DanaMedium mb-3">آدرس ارسال</h3>
+          <% var sh = order.shippingDetails || {}; %>
+          <div class="space-y-1.5 text-sm text-gray-600 dark:text-gray-300">
+            <p>گیرنده: <%= sh.receiver || '—' %></p>
+            <p>تلفن: <%= sh.phone || '—' %></p>
+            <% if (sh.state || sh.city) { %><p>استان/شهرستان: <%= sh.state || '' %><%= sh.city ? ' - ' + sh.city : '' %></p><% } %>
+            <p>آدرس: <%= sh.address || '—' %></p>
+            <p>کد پستی: <%= sh.postalCode || '—' %></p>
+          </div>
+        </div>
+
+        <!-- خلاصه مالی -->
+        <div class="shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+          <h3 class="font-DanaMedium mb-3">خلاصه پرداخت</h3>
+          <ul class="space-y-2 text-sm">
+            <li class="flex justify-between text-gray-500 dark:text-gray-300"><span>مبلغ کالاها</span><span><%= Number(order.totalPrice || 0).toLocaleString('fa-IR') %> تومان</span></li>
+            <% if (order.discountAmount > 0) { %>
+            <li class="flex justify-between text-green-600 dark:text-green-400"><span>تخفیف<%= order.discountCodeString ? ' ('+order.discountCodeString+')' : '' %></span><span>−<%= Number(order.discountAmount).toLocaleString('fa-IR') %> تومان</span></li>
+            <% } %>
+            <% if (order.taxPrice > 0) { %>
+            <li class="flex justify-between text-gray-500 dark:text-gray-300"><span>مالیات</span><span><%= Number(order.taxPrice).toLocaleString('fa-IR') %> تومان</span></li>
+            <% } %>
+            <li class="flex justify-between font-DanaMedium text-base border-t border-gray-200 dark:border-white/20 pt-2 mt-2"><span>مبلغ نهایی</span><span class="text-blue-500"><%= Number(order.finalPrice || order.totalPrice || 0).toLocaleString('fa-IR') %> تومان</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

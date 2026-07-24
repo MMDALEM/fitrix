@@ -7,9 +7,12 @@ const dashboradController = require("../../controllers/dashborad/dashborad.contr
 // //home Rouer
 router.get("/", dashboradController.dashborad);
 router.post("/profile", dashboradController.updateProfile);
+router.get("/orders", dashboradController.orders);
+router.get("/orders/:id", dashboradController.orderDetail);
 router.get("/address", dashboradController.address);
 router.post("/address", dashboradController.addAddress);
 router.post("/address/ajax", dashboradController.addAddressAjax);
 router.post("/address/:id", dashboradController.deleteAddress);
+router.get("/account", dashboradController.accountinfo);
 
 module.exports = router;

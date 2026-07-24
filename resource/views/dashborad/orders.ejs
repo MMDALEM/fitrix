@@ -1,3 +1,9 @@
+<style>
+    button {
+        padding: 0.625rem 1.5rem !important;
+    }
+</style>
+
 <main class="container relative">
   <div class="flex flex-col lg:flex-row gap-x-8 mt-10">
     <!-- منوی مشترک داشبورد -->
@@ -72,40 +78,63 @@
             </ul>
         </div>
 
-    <div class="lg:w-3/4 shadow rounded-lg p-4 dark:bg-gray-800 bg-white mb-16">
-    <h1 class="text-2xl font-DanaDemiBold mb-6">برنامه‌های من</h1>
-    <% if (!plans || !plans.length){ %>
-        <div class="text-center py-16 text-gray-500">
-            <p class="mb-5">هنوز برنامه‌ای نساخته‌ای.</p>
-            <a href="/program" class="prg-btn prg-btn-primary mi-press" style="width:auto;display:inline-flex;padding:.7rem 1.6rem">ساختِ برنامه‌ی جدید</a>
+    <div class="lg:w-3/4">
+      <div class="flex flex-col shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+        <div class="flex items-center gap-x-2 border-b border-gray-200 dark:border-white/20 pb-3">
+          <svg class="size-7 text-blue-500"><use href="#shopping-bag"></use></svg>
+          <h2 class="font-DanaMedium text-lg">سفارش‌های من</h2>
+          <span class="text-gray-400 text-sm">(<%= Number(orders.length).toLocaleString('fa-IR') %> سفارش)</span>
         </div>
-    <% } else { %>
-        <div class="space-y-3" data-reveal-group>
-            <% plans.forEach(function(p){ %>
-            <div data-reveal="up-sm" class="mi-lift flex items-center justify-between gap-3 p-4 rounded-xl border dark:border-gray-700 hover:border-blue-400 transition-all bg-white dark:bg-gray-900">
-                <a href="/program/<%= p._id %>" class="flex-1 min-w-0">
-                    <p class="font-DanaDemiBold truncate"><%= p.title || 'برنامه‌ی اختصاصی' %></p>
-                    <span class="text-xs px-2 py-0.5 rounded-full <%= p.unlocked ? 'bg-blue-100 text-blue-700' : 'bg-sky-100 text-sky-700' %>"><%= p.unlocked ? 'باز شده (کامل)' : 'پیش‌نمایش — قابلِ بازکردن' %></span>
-                </a>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                    <% if (p.unlocked){ %>
-                    <a href="/program/<%= p._id %>/pdf" class="mi-press inline-flex items-center gap-1 text-xs font-DanaMedium py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:.9rem;height:.9rem"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-                        PDF
-                    </a>
-                    <% } %>
-                    <form action="/program/<%= p._id %>/delete" method="POST" data-confirm="این برنامه حذف شود؟" data-confirm-btn="بله، حذف کن" style="display:inline">
-                        <button type="submit" aria-label="حذف" class="mi-press inline-flex items-center p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1.25rem;height:1.25rem"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
-                        </button>
-                    </form>
-                    <a href="/program/<%= p._id %>"><svg class="size-5 text-gray-400 rtl:rotate-180"><use href="#chevron-left" /></svg></a>
-                </div>
+
+        <% if (!orders.length) { %>
+        <div class="flex flex-col items-center justify-center py-14 text-gray-400">
+          <svg class="size-16 mb-3"><use href="#shopping-bag"></use></svg>
+          <p class="font-DanaMedium">هنوز سفارشی ثبت نکرده‌اید</p>
+          <a href="/shop" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-5 py-2 text-sm">شروع خرید</a>
+        </div>
+        <% } %>
+
+        <ul class="mt-4 space-y-4">
+          <% orders.forEach(function (o) { %>
+          <li class="border border-gray-200 dark:border-white/15 rounded-xl p-4 hover:border-blue-300 transition-colors">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-x-2">
+                <span class="font-DanaMedium">سفارش</span>
+                <span class="text-blue-500 font-DanaMedium">#<%= o.orderNumber || '—' %></span>
+              </div>
+              <span class="text-xs px-2.5 py-1 rounded-full
+                <%= o.status === 'cancelled' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300'
+                    : (o.isShipped ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300'
+                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300') %>">
+                <%= o.statusLabel || (o.status === 'paid' ? 'پرداخت شده' : o.status) %>
+              </span>
             </div>
-            <% }) %>
-        </div>
-        <a href="/program" class="inline-block mt-6 prg-btn prg-btn-primary mi-press" style="width:auto;padding:.7rem 1.6rem">ساختِ برنامه‌ی جدید</a>
-    <% } %>
+
+            <div class="flex items-center gap-2 mt-3 flex-wrap">
+              <% (o.items || []).slice(0, 5).forEach(function (it) { %>
+                <% if (it.product && it.product.image) { %>
+                <img src="<%= it.product.image %>" class="size-12 w-10 rounded-lg object-contain dark:border-white/10" alt="">
+                <% } %>
+              <% }) %>
+              <% if ((o.items || []).length > 5) { %>
+              <span class="text-gray-400 text-sm">+<%= Number(o.items.length - 5).toLocaleString('fa-IR') %></span>
+              <% } %>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 mt-3 text-sm text-gray-500 dark:text-gray-300">
+              <div class="flex items-center gap-x-4">
+                <span><%= o.paidAt ? date(o.paidAt).format('jYYYY/jMM/jDD') : (date(o.createdAt).format('jYYYY/jMM/jDD')) %></span>
+                <span><%= Number((o.items||[]).reduce(function(s,i){return s+(i.quantity||0)},0)).toLocaleString('fa-IR') %> کالا</span>
+              </div>
+              <div class="flex items-center gap-x-3">
+                <span class="font-DanaMedium text-gray-800 dark:text-gray-100"><%= Number(o.finalPrice || o.totalPrice || 0).toLocaleString('fa-IR') %> تومان</span>
+                <a href="/dashboard/orders/<%= o._id %>" class="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-4 py-1.5 text-xs">جزئیات</a>
+              </div>
+            </div>
+          </li>
+          <% }) %>
+        </ul>
+      </div>
     </div>
   </div>
 </main>

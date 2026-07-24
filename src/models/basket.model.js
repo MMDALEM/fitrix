@@ -84,6 +84,8 @@ const BasketSchema = new Schema(
       phone: String,
       address: String,
       postalCode: String,
+      city: String, // شهرستان
+      state: String, // استان
     },
     paymentMethod: { type: String, default: null }, // zarinpal | digipay
     paymentMethodLabel: { type: String, default: null },

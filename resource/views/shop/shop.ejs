@@ -1,4 +1,9 @@
 
+<style>
+    button {
+        padding: 0.625rem 1.5rem !important;
+    }
+</style>
 
 <main class="container">
 <h1 class="sr-only"><%= (typeof pageTitle !== 'undefined' && pageTitle) ? pageTitle : 'فروشگاه مکمل ورزشی' %></h1>
@@ -364,13 +369,13 @@
                     
                     <!-- دکمه قبلی -->
                     <% if (products.hasPrevPage) { %>
-                    <li class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="location.href='<%= pageUrl(products.prevPage) %>'">
+                    <li style="padding:6px !important;" class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="location.href='<%= pageUrl(products.prevPage) %>'">
                         <svg class="size-5 rotate-180">
                             <use href="#chevron-left"></use>
                         </svg>
                     </li>
                     <% } else { %>
-                    <li class="bg-gray-100 dark:bg-gray-700 cursor-not-allowed opacity-50">
+                    <li style="padding:6px !important;" class="bg-gray-100 dark:bg-gray-700 cursor-not-allowed opacity-50">
                         <svg class="size-5 rotate-180">
                             <use href="#chevron-left"></use>
                         </svg>
@@ -407,17 +412,17 @@
 
                     <!-- صفحه اول -->
                     <% if (startPage > 1) { %>
-                    <li class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white">
+                    <li style="padding:6px !important;" class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white">
                         <a href="<%= pageUrl(1) %>">1</a>
                     </li>
                     <% if (startPage > 2) { %>
-                    <li class="bg-white dark:bg-gray-800 cursor-default">...</li>
+                    <li style="padding:6px !important;" class="bg-white dark:bg-gray-800 cursor-default">...</li>
                     <% } %>
                     <% } %>
 
                     <!-- صفحات وسط -->
                     <% for (let i = startPage; i <= endPage; i++) { %>
-                    <li class="<%= i === currentPage ? 'text-white bg-blue-500' : 'bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white' %>">
+                    <li style="padding:6px !important;" class="<%= i === currentPage ? 'text-white bg-blue-500' : 'bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white' %>">
                         <a href="<%= pageUrl(i) %>"><%= i %></a>
                     </li>
                     <% } %>
@@ -425,22 +430,22 @@
                     <!-- صفحه آخر -->
                     <% if (endPage < totalPages) { %>
                     <% if (endPage < totalPages - 1) { %>
-                    <li class="bg-white dark:bg-gray-800 cursor-default">...</li>
+                    <li style="padding:6px !important;" class="bg-white dark:bg-gray-800 cursor-default">...</li>
                     <% } %>
-                    <li class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white">
+                    <li style="padding:6px !important;" class="bg-white dark:bg-gray-800 hover:bg-blue-500 hover:text-white">
                         <a href="<%= pageUrl(totalPages) %>"><%= totalPages %></a>
                     </li>
                     <% } %>
 
                     <!-- دکمه بعدی -->
                     <% if (products.hasNextPage) { %>
-                    <li class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="location.href='<%= pageUrl(products.nextPage) %>'">
+                    <li style="padding:6px !important;" class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="location.href='<%= pageUrl(products.nextPage) %>'">
                         <svg class="size-5">
                             <use href="#chevron-left"></use>
                         </svg>
                     </li>
                     <% } else { %>
-                    <li class="bg-gray-100 dark:bg-gray-700 cursor-not-allowed opacity-50">
+                    <li style="padding:6px !important;" class="bg-gray-100 dark:bg-gray-700 cursor-not-allowed opacity-50">
                         <svg class="size-5">
                             <use href="#chevron-left"></use>
                         </svg>

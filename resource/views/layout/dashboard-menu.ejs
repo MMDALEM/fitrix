@@ -1,0 +1,49 @@
+<%
+  // منوی مشترکِ داشبوردِ کاربر — با حالتِ فعال بر اساسِ مسیرِ جاری.
+  var _dp = (typeof req !== "undefined" && req && req.path) ? req.path : "";
+  var _dActive = function (match, exact) {
+    if (exact) return _dp === match;
+    return _dp === match || _dp.indexOf(match + "/") === 0 || _dp === match;
+  };
+  var _on = "bg-blue-500/10 text-blue-500";
+  var _off = "hover:text-blue-500";
+  var _u = (typeof user !== "undefined" && user) ? user : null;
+  var _name = (_u && (_u.firstName || _u.lastName))
+    ? ((_u.firstName || "") + " " + (_u.lastName || "")).trim()
+    : "کاربر گرامی";
+%>
+<div class="lg:sticky mb-8 top-1 h-fit lg:w-1/4 flex flex-col gap-y-4 items-center shadow rounded-lg p-4 dark:bg-gray-800 bg-white">
+  <div class="w-full flex items-center gap-x-3 border-b border-gray-200 dark:border-white/20 py-3">
+    <img src="/images/svg/user.png" class="size-10 ring-2 ring-gray-400/20 rounded-full" alt="کاربر">
+    <span class="flex flex-col gap-y-1">
+      <p class="font-DanaMedium text-lg"><%= _name %></p>
+      <% if (_u && _u.phone) { %><p class="text-gray-400 text-sm"><%= _u.phone %></p><% } %>
+    </span>
+  </div>
+  <ul class="w-full relative space-y-2 child:duration-300 child:transition-all child:py-3 child:px-2 child:flex child:gap-x-2 child:items-center text-lg child:cursor-pointer child:rounded-lg">
+    <li class="<%= _dActive('/dashboard', true) ? _on : _off %>">
+      <svg class="w-6 h-6"><use href="#squares"></use></svg>
+      <a href="/dashboard">داشبورد</a>
+    </li>
+    <li class="<%= _dActive('/dashboard/orders') ? _on : _off %>">
+      <svg class="w-6 h-6"><use href="#shopping-bag"></use></svg>
+      <a href="/dashboard/orders">سفارش‌ها</a>
+    </li>
+    <li class="<%= _dActive('/dashboard/address') ? _on : _off %>">
+      <svg class="w-6 h-6"><use href="#map"></use></svg>
+      <a href="/dashboard/address">آدرس‌ها</a>
+    </li>
+    <li class="<%= _dActive('/program') ? _on : _off %>">
+      <svg class="w-6 h-6"><use href="#document"></use></svg>
+      <a href="/program/mine">برنامه‌های من</a>
+    </li>
+    <li class="<%= _dActive('/dashboard/account') ? _on : _off %>">
+      <svg class="w-6 h-6"><use href="#cog"></use></svg>
+      <a href="/dashboard#account">اطلاعات حساب</a>
+    </li>
+    <li class="text-red-400">
+      <svg class="w-6 h-6"><use href="#arrow-left-end"></use></svg>
+      <a href="/logout">خروج</a>
+    </li>
+  </ul>
+</div>
