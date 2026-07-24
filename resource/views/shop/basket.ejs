@@ -351,18 +351,20 @@
                                         <span style="background:#ef4444;color:#fff;border-radius:9999px;padding:1px 8px;font-size:11px;font-weight:700;white-space:nowrap"><%= Number(p.salePercent).toLocaleString('fa-IR') %>٪ تخفیف</span>
                                     </span>
                                     <% } %>
-                                    <span class="row-price flex items-center gap-x-1 font-DanaMedium <%= saleActive(p) ? 'text-red-500' : 'text-gray-700 dark:text-gray-300' %>">
+                                    <!-- بلوکِ کد تخفیف — دقیقاً مثلِ تخفیفِ فروشِ محصول (del + بَج + قیمتِ جدید) -->
+                                    <span class="coupon-badge-row hidden items-center gap-x-2">
+                                        <del class="coupon-before text-gray-400 text-sm"></del>
+                                        <span style="background:#ef4444;color:#fff;border-radius:9999px;padding:1px 8px;font-size:11px;font-weight:700;white-space:nowrap">کد تخفیف</span>
+                                    </span>
+                                    <span class="row-price flex items-center gap-x-1 font-DanaMedium <%= saleActive(p) ? 'text-green-500' : 'text-gray-700 dark:text-gray-300' %>">
                                         <p class="font-DanaMedium text-xl row-total"><%= Number(unitPrice * item.quantity).toLocaleString('fa-IR') %></p>
                                         <p class="text-lg">تومان</p>
                                     </span>
-                                    <!-- قیمتِ پس از کد تخفیف روی همین محصول (با اعمالِ کد پر می‌شود) -->
-                                    <div class="coupon-line hidden mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-lg bg-green-50 dark:bg-green-900/15 border border-green-200 dark:border-green-700/40 px-2 py-1 w-fit text-xs">
-                                        <svg class="w-3.5 h-3.5 text-green-600 dark:text-green-400"><use href="#tag"></use></svg>
-                                        <span class="text-green-700 dark:text-green-300 font-DanaMedium">با کد تخفیف:</span>
-                                        <span class="coupon-after text-green-600 dark:text-green-400 font-DanaMedium text-sm"></span>
-                                        <span>تومان</span>
-                                        <span class="coupon-amount text-red-500"></span>
-                                    </div>
+                                    <!-- قیمتِ نهایی پس از کد تخفیف (قرمز، مثلِ قیمتِ فروش) -->
+                                    <span class="coupon-final-row hidden items-center gap-x-1 font-DanaMedium text-green-500">
+                                        <p class="coupon-after font-DanaMedium text-xl"></p>
+                                        <p class="text-lg">تومان</p>
+                                    </span>
                                 </div>
                                 <svg class="flex sm:hidden absolute top-0 left-0 w-5 h-5 cursor-pointer remove-item" data-product-id="<%= p._id %>">
                                     <use href="#close"></use>
@@ -556,25 +558,33 @@
         //   قیمتِ اصلیِ ردیف خط می‌خورد و قیمتِ جدید (پس از کد) زیرش نشان داده می‌شود.
         // ابتدا همه‌ی ردیف‌ها پاک می‌شوند، سپس فقط محصولاتِ مشمول علامت می‌خورند.
         function applyCouponToRows(list) {
+            // پاک‌سازیِ همه‌ی ردیف‌ها به حالتِ عادی
             document.querySelectorAll(".cart-row").forEach(function (row) {
-                var line = row.querySelector(".coupon-line");
-                if (line) line.classList.add("hidden");
+                var badge = row.querySelector(".coupon-badge-row");
+                var finalRow = row.querySelector(".coupon-final-row");
                 var price = row.querySelector(".row-price");
-                if (price) price.classList.remove("line-through", "opacity-50");
+                if (badge) { badge.classList.add("hidden"); badge.classList.remove("flex"); }
+                if (finalRow) { finalRow.classList.add("hidden"); finalRow.classList.remove("flex"); }
+                if (price) price.classList.remove("hidden");
             });
             if (!list || !list.length) return;
             list.forEach(function (it) {
                 var row = document.querySelector('.cart-row[data-product-id="' + it.id + '"]');
                 if (!row) return;
-                // قیمتِ قبلی را خط بزن
+                var badge = row.querySelector(".coupon-badge-row");
+                var finalRow = row.querySelector(".coupon-final-row");
                 var price = row.querySelector(".row-price");
-                if (price) price.classList.add("line-through", "opacity-50");
-                // قیمتِ جدید را نشان بده
-                var line = row.querySelector(".coupon-line");
-                if (!line) return;
-                line.querySelector(".coupon-after").textContent = faNum(it.after);
-                line.querySelector(".coupon-amount").textContent = "(" + faNum(it.discount) + "− تخفیف)";
-                line.classList.remove("hidden");
+                // قیمتِ قبلی به‌صورتِ خط‌خورده در بَج
+                if (badge) {
+                    badge.querySelector(".coupon-before").textContent = faNum(it.before) + " تومان";
+                    badge.classList.remove("hidden"); badge.classList.add("flex");
+                }
+                // قیمتِ عادی مخفی، قیمتِ نهاییِ قرمز نمایش داده می‌شود
+                if (price) price.classList.add("hidden");
+                if (finalRow) {
+                    finalRow.querySelector(".coupon-after").textContent = faNum(it.after);
+                    finalRow.classList.remove("hidden"); finalRow.classList.add("flex");
+                }
             });
         }
 

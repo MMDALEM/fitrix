@@ -85,14 +85,21 @@ class paymentController extends controller {
         } else {
           // دامنه‌ی کد: اگر محصول/دسته مشخص شده باشد، تخفیف فقط روی «اقلامِ
           // مشمول» حساب می‌شود؛ اگر هیچ‌کدام مشخص نباشد روی همه‌ی اقلام.
-          const prodIds = (discountDoc.products || []).map((id) => id.toString());
-          const catIds = (discountDoc.categories || []).map((id) => id.toString());
-          const brandIds = (discountDoc.brands || []).map((id) => id.toString());
+          const prodIds = (discountDoc.products || []).map((id) =>
+            id.toString(),
+          );
+          const catIds = (discountDoc.categories || []).map((id) =>
+            id.toString(),
+          );
+          const brandIds = (discountDoc.brands || []).map((id) =>
+            id.toString(),
+          );
           const hasScope = prodIds.length || catIds.length || brandIds.length;
 
           const isEligible = (p) => {
             if (!hasScope) return true;
-            if (prodIds.length && prodIds.includes(p._id.toString())) return true;
+            if (prodIds.length && prodIds.includes(p._id.toString()))
+              return true;
             if (
               catIds.length &&
               p.category &&
@@ -359,7 +366,6 @@ class paymentController extends controller {
         Object.assign(params, req.body);
       }
 
-
       // basketId از مسیر (path) خوانده می‌شود تا در URL تمیز بماند؛
       // برای سازگاری، query هم پشتیبانی می‌شود.
       const basketId = req.params.basketId || params.basketId || params.orderId;
@@ -580,9 +586,7 @@ class paymentController extends controller {
       if (req.flash)
         req.flash(
           "payMessage",
-          failReason
-            ? `پرداخت ناموفق بود: ${failReason}`
-            : "پرداخت ناموفق بود",
+          failReason ? `پرداخت ناموفق بود: ${failReason}` : "پرداخت ناموفق بود",
         );
       return res.redirect("/payment/result/" + basket._id);
     } catch (err) {
